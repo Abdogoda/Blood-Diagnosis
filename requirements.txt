@@ -1,0 +1,42 @@
+# Python Dependencies for Blood Diagnosis System
+
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+jinja2==3.1.2
+
+# Database
+sqlalchemy==2.0.23
+alembic==1.12.1
+
+# Authentication & Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-dotenv==1.0.0
+
+# Image Processing
+opencv-python==4.8.1.78
+Pillow==10.1.0
+
+# Machine Learning & AI
+numpy==1.26.2
+pandas==2.1.3
+scikit-learn==1.3.2
+tensorflow==2.15.0
+# or use: torch==2.1.1 torchvision==0.16.1
+
+# Data Validation
+pydantic==2.5.0
+email-validator==2.1.0
+
+# File Handling
+aiofiles==23.2.1
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
+
+# Utilities
+python-dateutil==2.8.2
