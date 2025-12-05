@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Blood Diagnosis System{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center animate-fade-in">
+            <h1 class="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+                Advanced <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">AI-Powered</span>
+                <br>Blood Diagnosis System
+            </h1>
+            <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                Get instant, accurate blood test analysis using cutting-edge artificial intelligence technology. 
+                Fast, reliable, and accessible healthcare for everyone.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="/auth/login" class="px-8 py-4 gradient-blue text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center space-x-2">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                    </svg>
+                    <span>Get Started</span>
+                </a>
+                <a href="/about" class="px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg border-2 border-blue-600 hover:bg-blue-50 transition-all duration-300 flex items-center space-x-2">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Learn More</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="text-center mb-12">
+        <h2 class="text-4xl font-bold text-gray-900 mb-4">Why Choose Our Platform?</h2>
+        <p class="text-gray-600 text-lg">Advanced technology meets healthcare excellence</p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="glass-effect p-8 rounded-2xl hover-lift">
+            <div class="h-16 w-16 rounded-xl gradient-blue flex items-center justify-center mb-6 shadow-lg">
+                <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-3">Lightning Fast</h3>
+            <p class="text-gray-600">Get your blood test results analyzed in under 30 seconds with our advanced AI algorithms.</p>
+        </div>
+
+        <div class="glass-effect p-8 rounded-2xl hover-lift">
+            <div class="h-16 w-16 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center mb-6 shadow-lg">
+                <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-3">Highly Accurate</h3>
+            <p class="text-gray-600">Our AI models are trained on millions of samples, ensuring 99%+ accuracy in diagnostics.</p>
+        </div>
+
+        <div class="glass-effect p-8 rounded-2xl hover-lift">
+            <div class="h-16 w-16 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-6 shadow-lg">
+                <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-3">Secure & Private</h3>
+            <p class="text-gray-600">Your medical data is encrypted and protected with enterprise-grade security measures.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Section -->
+<div class="gradient-blue py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center text-white">
+            <div class="animate-fade-in">
+                <div class="text-5xl font-bold mb-2">10K+</div>
+                <div class="text-blue-100">Tests Analyzed</div>
+            </div>
+            <div class="animate-fade-in">
+                <div class="text-5xl font-bold mb-2">99.5%</div>
+                <div class="text-blue-100">Accuracy Rate</div>
+            </div>
+            <div class="animate-fade-in">
+                <div class="text-5xl font-bold mb-2">5K+</div>
+                <div class="text-blue-100">Happy Patients</div>
+            </div>
+            <div class="animate-fade-in">
+                <div class="text-5xl font-bold mb-2">24/7</div>
+                <div class="text-blue-100">Available</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="text-center mb-12">
+        <h2 class="text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
+        <p class="text-gray-600 text-lg">Simple, fast, and effective</p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="text-center">
+            <div class="inline-flex items-center justify-center h-20 w-20 rounded-full bg-blue-100 text-blue-600 text-2xl font-bold mb-4">1</div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Upload Sample</h3>
+            <p class="text-gray-600">Upload your blood sample image or CBC report securely to our platform.</p>
+        </div>
+        
+        <div class="text-center">
+            <div class="inline-flex items-center justify-center h-20 w-20 rounded-full bg-green-100 text-green-600 text-2xl font-bold mb-4">2</div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">AI Analysis</h3>
+            <p class="text-gray-600">Our advanced AI processes your sample and identifies potential conditions.</p>
+        </div>
+        
+        <div class="text-center">
+            <div class="inline-flex items-center justify-center h-20 w-20 rounded-full bg-purple-100 text-purple-600 text-2xl font-bold mb-4">3</div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Get Results</h3>
+            <p class="text-gray-600">Receive detailed analysis and recommendations instantly on your dashboard.</p>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="glass-effect rounded-2xl p-12 text-center">
+        <h2 class="text-3xl font-bold text-gray-900 mb-4">Ready to Get Started?</h2>
+        <p class="text-gray-600 text-lg mb-8 max-w-2xl mx-auto">
+            Join thousands of patients and healthcare professionals using our platform for accurate blood diagnostics.
+        </p>
+        <a href="/auth/register" class="inline-flex items-center px-8 py-4 gradient-blue text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <span>Create Free Account</span>
+            <svg class="h-5 w-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+            </svg>
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -8,9 +8,9 @@ fastapi = "*"
 uvicorn = "*"
 jinja2 = "*"
 python-multipart = "*"
-sqlalchemy = "*"
-psycopg2-binary = "*"
 python-dotenv = "*"
+psycopg2-binary = "*"
+sqlalchemy = "*"
 
 [dev-packages]
 

@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Feedback - Blood Diagnosis System{% endblock %}
+
+{% block content %}
+<div class="px-4 py-6 animate-slide-up">
+    <div class="max-w-3xl mx-auto">
+        <!-- Header Section -->
+        <div class="mb-8 text-center">
+            <div class="mx-auto h-20 w-20 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-4 shadow-xl">
+                <svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                </svg>
+            </div>
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">Share Your Feedback</h1>
+            <p class="text-gray-600">Help us improve our platform and services</p>
+        </div>
+
+        <!-- Feedback Form Card -->
+        <div class="glass-effect shadow-2xl rounded-2xl overflow-hidden">
+            <div class="px-8 py-10 bg-white">
+                <form action="/feedback/submit" method="POST" class="space-y-8">
+                    <!-- Rating Section -->
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-4">
+                            How would you rate your experience?
+                        </label>
+                        <div class="flex justify-center space-x-4">
+                            <input type="radio" id="rating-5" name="rating" value="5" class="sr-only peer/5" required>
+                            <label for="rating-5" class="cursor-pointer peer-checked/5:scale-110 transition-transform duration-200">
+                                <div class="h-16 w-16 rounded-full bg-green-100 hover:bg-green-200 flex items-center justify-center peer-checked/5:bg-green-500 peer-checked/5:shadow-lg">
+                                    <svg class="h-8 w-8 text-green-600 peer-checked/5:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <p class="text-xs text-center mt-2 font-medium text-gray-600">Excellent</p>
+                            </label>
+
+                            <input type="radio" id="rating-4" name="rating" value="4" class="sr-only peer/4">
+                            <label for="rating-4" class="cursor-pointer peer-checked/4:scale-110 transition-transform duration-200">
+                                <div class="h-16 w-16 rounded-full bg-blue-100 hover:bg-blue-200 flex items-center justify-center peer-checked/4:bg-blue-500 peer-checked/4:shadow-lg">
+                                    <svg class="h-8 w-8 text-blue-600 peer-checked/4:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <p class="text-xs text-center mt-2 font-medium text-gray-600">Good</p>
+                            </label>
+
+                            <input type="radio" id="rating-3" name="rating" value="3" class="sr-only peer/3">
+                            <label for="rating-3" class="cursor-pointer peer-checked/3:scale-110 transition-transform duration-200">
+                                <div class="h-16 w-16 rounded-full bg-yellow-100 hover:bg-yellow-200 flex items-center justify-center peer-checked/3:bg-yellow-500 peer-checked/3:shadow-lg">
+                                    <svg class="h-8 w-8 text-yellow-600 peer-checked/3:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <p class="text-xs text-center mt-2 font-medium text-gray-600">Average</p>
+                            </label>
+
+                            <input type="radio" id="rating-2" name="rating" value="2" class="sr-only peer/2">
+                            <label for="rating-2" class="cursor-pointer peer-checked/2:scale-110 transition-transform duration-200">
+                                <div class="h-16 w-16 rounded-full bg-orange-100 hover:bg-orange-200 flex items-center justify-center peer-checked/2:bg-orange-500 peer-checked/2:shadow-lg">
+                                    <svg class="h-8 w-8 text-orange-600 peer-checked/2:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <p class="text-xs text-center mt-2 font-medium text-gray-600">Poor</p>
+                            </label>
+
+                            <input type="radio" id="rating-1" name="rating" value="1" class="sr-only peer/1">
+                            <label for="rating-1" class="cursor-pointer peer-checked/1:scale-110 transition-transform duration-200">
+                                <div class="h-16 w-16 rounded-full bg-red-100 hover:bg-red-200 flex items-center justify-center peer-checked/1:bg-red-500 peer-checked/1:shadow-lg">
+                                    <svg class="h-8 w-8 text-red-600 peer-checked/1:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </div>
+                                <p class="text-xs text-center mt-2 font-medium text-gray-600">Very Poor</p>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Category Selection -->
+                    <div>
+                        <label for="category" class="block text-sm font-bold text-gray-700 mb-3">
+                            Feedback Category
+                        </label>
+                        <select id="category" name="category" required
+                                class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-400">
+                            <option value="">Select a category</option>
+                            <option value="accuracy">Diagnostic Accuracy</option>
+                            <option value="speed">Processing Speed</option>
+                            <option value="interface">User Interface</option>
+                            <option value="features">Features & Functionality</option>
+                            <option value="support">Customer Support</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Feedback Message -->
+                    <div>
+                        <label for="message" class="block text-sm font-bold text-gray-700 mb-3">
+                            Your Feedback
+                        </label>
+                        <textarea id="message" name="message" rows="6" required
+                                  class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-400 resize-none"
+                                  placeholder="Please share your thoughts, suggestions, or concerns..."></textarea>
+                        <p class="mt-2 text-sm text-gray-500">Minimum 20 characters</p>
+                    </div>
+
+                    <!-- Feature Suggestions -->
+                    <div>
+                        <label for="suggestions" class="block text-sm font-bold text-gray-700 mb-3">
+                            Feature Suggestions (Optional)
+                        </label>
+                        <textarea id="suggestions" name="suggestions" rows="3"
+                                  class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-400 resize-none"
+                                  placeholder="Any features you'd like to see in the future?"></textarea>
+                    </div>
+
+                    <!-- Contact Permission -->
+                    <div class="flex items-start">
+                        <input id="contact-permission" name="contact-permission" type="checkbox"
+                               class="h-4 w-4 mt-1 text-blue-600 focus:ring-blue-500 border-gray-300 rounded transition-all duration-200 cursor-pointer">
+                        <label for="contact-permission" class="ml-2 block text-sm text-gray-700 cursor-pointer">
+                            I agree to be contacted by the support team regarding my feedback
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="flex items-center justify-end space-x-4 pt-4">
+                        <a href="{{ back_url }}" 
+                           class="px-6 py-3 border-2 border-gray-300 text-sm font-semibold rounded-lg text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 transition-all duration-200">
+                            Cancel
+                        </a>
+                        <button type="submit" 
+                                class="px-8 py-3 gradient-blue text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center space-x-2">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span>Submit Feedback</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="mt-8 glass-effect rounded-xl p-6">
+            <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0 h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                    <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Your feedback matters</h3>
+                    <p class="text-sm text-gray-600">We review all feedback carefully and use it to continuously improve our platform. Thank you for helping us serve you better!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
