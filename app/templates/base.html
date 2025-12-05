@@ -65,6 +65,13 @@
             transform: translateY(-4px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
+
+        .mobile-menu {
+            display: none;
+        }
+        .mobile-menu.active {
+            display: block;
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -73,32 +80,68 @@
     <nav class="glass-effect sticky top-0 z-50 shadow-lg border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
-                <div class="flex items-center space-x-3">
-                    <div class="flex-shrink-0 flex items-center">
-                        <div class="h-10 w-10 rounded-lg gradient-blue flex items-center justify-center shadow-lg">
-                            <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                    <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                        Blood Diagnosis System
-                    </span>
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <a href="/" class="flex-shrink-0 flex items-center">
+                        <img src="{{ url_for('static', path='/img/icon.jpg') }}" alt="Blood Diagnosis Icon" class="h-8 w-8 sm:h-10 sm:w-10 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-200 object-cover">
+                    </a>
+                    <a href="/" class="text-base sm:text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent hover:from-blue-700 hover:to-indigo-700 transition-all duration-200">
+                        <span class="hidden sm:inline">Blood Diagnosis System</span>
+                        <span class="sm:hidden">BDS</span>
+                    </a>
                 </div>
-                <div class="flex items-center space-x-1">
-                    {% block nav_items %}{% endblock %}
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-1">
+                    {% block nav_items %}
+                    <a href="/" class="px-3 lg:px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Home</a>
+                    <a href="/about" class="px-3 lg:px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">About</a>
+                    <a href="/contact" class="px-3 lg:px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Contact</a>
+                    <a href="/auth/login" class="px-3 lg:px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">Login</a>
+                    <a href="/auth/register" class="px-3 lg:px-4 py-2 text-sm font-medium text-blue-600 border-2 border-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Register</a>
+                    {% endblock %}
                 </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" type="button" class="text-gray-700 hover:text-blue-600 focus:outline-none focus:text-blue-600">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Navigation Menu -->
+            <div id="mobile-menu" class="mobile-menu md:hidden pb-4">
+                {% block mobile_nav_items %}
+                <a href="/" class="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Home</a>
+                <a href="/about" class="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">About</a>
+                <a href="/contact" class="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Contact</a>
+                <a href="/auth/login" class="block px-4 py-2 mt-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg text-center">Login</a>
+                <a href="/auth/register" class="block px-4 py-2 mt-2 text-sm font-medium text-blue-600 border-2 border-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 text-center">Register</a>
+                {% endblock %}
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto py-4 sm:px-6 lg:px-8 animate-fade-in">
+    <main class="max-w-7xl mx-auto px-2 py-2 sm:px-6 sm:py-4 lg:px-8 animate-fade-in">
         {% block content %}{% endblock %}
     </main>
 
 
     <script src="{{ url_for('static', path='/js/main.js') }}"></script>
+    <script>
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('active');
+            });
+        }
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>
