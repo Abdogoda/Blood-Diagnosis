@@ -2,13 +2,18 @@
 from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from app.database import get_db
+from app.database import get_db, User
+from app.services.auth_dependencies import require_role
 
-router = APIRouter(prefix="/patients", tags=["patients"])
+router = APIRouter(prefix="/patient", tags=["patients"])
 templates = Jinja2Templates(directory="app/templates")
 
 @router.get("/dashboard")
-async def patient_dashboard(request: Request, db: Session = Depends(get_db)):
+async def patient_dashboard(
+    request: Request,
+    current_user: User = Depends(require_role(["patient", "admin"])),
+    db: Session = Depends(get_db)
+):
     stats = {
         "total_tests": 12,
         "pending_results": 2,
@@ -20,16 +25,28 @@ async def patient_dashboard(request: Request, db: Session = Depends(get_db)):
     ]
     return templates.TemplateResponse("patient/dashboard.html", {
         "request": request,
+        "current_user": current_user,
         "stats": stats,
         "recent_tests": recent_tests
     })
 
 @router.get("/upload")
-async def upload_page(request: Request):
-    return templates.TemplateResponse("patient/upload_file.html", {"request": request})
+async def upload_page(
+    request: Request,
+    current_user: User = Depends(require_role(["patient", "admin"]))
+):
+    return templates.TemplateResponse("patient/upload_file.html", {
+        "request": request,
+        "current_user": current_user
+    })
 
 @router.get("/result/{test_id}")
-async def result_page(request: Request, test_id: int, db: Session = Depends(get_db)):
+async def result_page(
+    request: Request,
+    test_id: int,
+    current_user: User = Depends(require_role(["patient", "admin"])),
+    db: Session = Depends(get_db)
+):
     result = {
         "test_type": "CBC Analysis",
         "date": "2025-12-01",
@@ -45,15 +62,24 @@ async def result_page(request: Request, test_id: int, db: Session = Depends(get_
             "Regular exercise recommended"
         ]
     }
-    return templates.TemplateResponse("patient/file_result.html", {"request": request, "result": result})
+    return templates.TemplateResponse("patient/file_result.html", {
+        "request": request,
+        "current_user": current_user,
+        "result": result
+    })
 
 @router.get("/account")
-async def account_page(request: Request):
-    patient = {
-        "name": "Sarah Miller",
-        "email": "sarah@example.com",
-        "age": 32,
-        "phone": "+1 234-567-8900",
-        "blood_type": "A+"
-    }
-    return templates.TemplateResponse("patient/account.html", {"request": request, "patient": patient})
+async def account_page(
+    request: Request,
+    current_user: User = Depends(require_role(["patient", "admin"])),
+    db: Session = Depends(get_db)
+):
+    # Get user phones
+    phones = db.query(User).filter(User.id == current_user.id).first().phones
+    phone = phones[0].phone if phones else None
+    
+    return templates.TemplateResponse("patient/account.html", {
+        "request": request,
+        "patient": current_user,
+        "phone": phone
+    })

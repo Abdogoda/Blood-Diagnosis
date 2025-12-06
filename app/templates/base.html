@@ -76,6 +76,9 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body class="bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 min-h-screen">
+    <!-- Flash Messages -->
+    {% include "shared/messages.html" %}
+    
     <!-- Navigation -->
     <nav class="glass-effect sticky top-0 z-50 shadow-lg border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -96,8 +99,44 @@
                     <a href="/" class="px-3 lg:px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Home</a>
                     <a href="/about" class="px-3 lg:px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">About</a>
                     <a href="/contact" class="px-3 lg:px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Contact</a>
+                    {% if current_user %}
+                    <!-- Authenticated User Menu -->
+                    <div class="relative group">
+                        <button class="flex items-center space-x-2 px-3 lg:px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">
+                            <div class="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-semibold shadow-md">
+                                {{ current_user.fname[0] }}{{ current_user.lname[0] }}
+                            </div>
+                            <span class="hidden lg:inline">{{ current_user.fname }} {{ current_user.lname }}</span>
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        <!-- Dropdown Menu -->
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="py-2">
+                                <div class="px-4 py-2 border-b border-gray-200">
+                                    <p class="text-sm font-semibold text-gray-900">{{ current_user.fname }} {{ current_user.lname }}</p>
+                                    <p class="text-xs text-gray-500">{{ current_user.email }}</p>
+                                    <p class="text-xs text-blue-600 font-medium mt-1">{{ current_user.role|capitalize }}</p>
+                                </div>
+                                {% if current_user.role == 'admin' %}
+                                <a href="/admin/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">Dashboard</a>
+                                {% elif current_user.role == 'doctor' %}
+                                <a href="/doctor/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">Dashboard</a>
+                                <a href="/doctor/account" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">Account</a>
+                                {% elif current_user.role == 'patient' %}
+                                <a href="/patient/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">Dashboard</a>
+                                <a href="/patient/account" class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">Account</a>
+                                {% endif %}
+                                <a href="/auth/logout" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-gray-200">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- Guest User Menu -->
                     <a href="/auth/login" class="px-3 lg:px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">Login</a>
                     <a href="/auth/register" class="px-3 lg:px-4 py-2 text-sm font-medium text-blue-600 border-2 border-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Register</a>
+                    {% endif %}
                     {% endblock %}
                 </div>
 
@@ -117,8 +156,37 @@
                 <a href="/" class="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Home</a>
                 <a href="/about" class="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">About</a>
                 <a href="/contact" class="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Contact</a>
+                {% if current_user %}
+                <!-- Authenticated User Mobile Menu -->
+                <div class="mt-3 pt-3 border-t border-gray-200">
+                    <div class="px-4 py-2">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-semibold shadow-md">
+                                {{ current_user.fname[0] }}{{ current_user.lname[0] }}
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-gray-900">{{ current_user.fname }} {{ current_user.lname }}</p>
+                                <p class="text-xs text-gray-500">{{ current_user.email }}</p>
+                                <p class="text-xs text-blue-600 font-medium">{{ current_user.role|capitalize }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% if current_user.role == 'admin' %}
+                    <a href="/admin/dashboard" class="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Dashboard</a>
+                    {% elif current_user.role == 'doctor' %}
+                    <a href="/doctor/dashboard" class="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Dashboard</a>
+                    <a href="/doctor/account" class="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Account</a>
+                    {% elif current_user.role == 'patient' %}
+                    <a href="/patient/dashboard" class="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Dashboard</a>
+                    <a href="/patient/account" class="block px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Account</a>
+                    {% endif %}
+                    <a href="/auth/logout" class="block px-4 py-2 mt-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg text-center">Logout</a>
+                </div>
+                {% else %}
+                <!-- Guest User Mobile Menu -->
                 <a href="/auth/login" class="block px-4 py-2 mt-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg text-center">Login</a>
                 <a href="/auth/register" class="block px-4 py-2 mt-2 text-sm font-medium text-blue-600 border-2 border-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 text-center">Register</a>
+                {% endif %}
                 {% endblock %}
             </div>
         </div>

@@ -3,8 +3,8 @@
 {% block title %}My Account - Patient Dashboard{% endblock %}
 
 {% block nav_items %}
-<a href="/patients/dashboard" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Dashboard</a>
-<a href="/patients/reports" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">My Reports</a>
+<a href="/patient/dashboard" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Dashboard</a>
+<a href="/patient/upload" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Upload</a>
 <a href="/auth/logout" class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">Logout</a>
 {% endblock %}
 
@@ -24,7 +24,7 @@
                     <div class="flex justify-center mb-6">
                         <div class="relative">
                             <div class="h-24 w-24 rounded-full gradient-blue flex items-center justify-center">
-                                <span class="text-3xl font-bold text-white">{{ patient.initials }}</span>
+                                <span class="text-3xl font-bold text-white">{{ patient.fname[0] }}{{ patient.lname[0] }}</span>
                             </div>
                             <button type="button" class="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-white border-2 border-blue-600 flex items-center justify-center hover:bg-blue-50 transition-all duration-200">
                                 <svg class="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -35,22 +35,36 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
-                            <input type="text" value="{{ patient.name }}" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">First Name</label>
+                            <input type="text" value="{{ patient.fname }}" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Last Name</label>
+                            <input type="text" value="{{ patient.lname }}" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
                             <input type="email" value="{{ patient.email }}" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Gender</label>
+                            <select class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option {% if patient.gender == 'male' %}selected{% endif %}>Male</option>
+                                <option {% if patient.gender == 'female' %}selected{% endif %}>Female</option>
+                                <option {% if patient.gender == 'other' %}selected{% endif %}>Other</option>
+                            </select>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
-                            <input type="tel" value="{{ patient.phone }}" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="tel" value="{{ phone or '' }}" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Date of Birth</label>
-                            <input type="date" value="{{ patient.dob }}" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Blood Type</label>
+                            <input type="text" value="{{ patient.blood_type or 'N/A' }}" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                     </div>
                     <button type="submit" class="px-6 py-3 gradient-blue text-white rounded-lg hover:shadow-lg transition-all duration-200">
