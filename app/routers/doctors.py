@@ -114,6 +114,7 @@ async def account_page(
     
     return templates.TemplateResponse("doctor/account.html", {
         "request": request,
+        "current_user": current_user,
         "doctor": current_user,
         "doctor_info": doctor_info,
         "phone": phone

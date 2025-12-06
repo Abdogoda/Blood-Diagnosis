@@ -82,11 +82,56 @@
                                 </svg>
                             </div>
                             <select id="role" name="role" required 
-                                    class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-400">
+                                    class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-400"
+                                    onchange="toggleDoctorFields()">
                                 <option value="">Select your role</option>
                                 <option value="patient">Patient</option>
                                 <option value="doctor">Doctor</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <!-- Doctor-specific fields (hidden by default) -->
+                    <div id="doctor-fields" class="space-y-6 hidden">
+                        <!-- License Number -->
+                        <div class="space-y-2">
+                            <label for="license_number" class="block text-sm font-semibold text-gray-700">
+                                Medical License Number
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                                <input id="license_number" name="license_number" type="text" 
+                                       class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-400" 
+                                       placeholder="e.g., MD123456">
+                            </div>
+                        </div>
+
+                        <!-- Specialization -->
+                        <div class="space-y-2">
+                            <label for="specialization" class="block text-sm font-semibold text-gray-700">
+                                Specialization
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                                    </svg>
+                                </div>
+                                <select id="specialization" name="specialization" 
+                                        class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-400">
+                                    <option value="">Select specialization</option>
+                                    <option value="Hematology">Hematology</option>
+                                    <option value="Pathology">Pathology</option>
+                                    <option value="General Practitioner">General Practitioner</option>
+                                    <option value="Internal Medicine">Internal Medicine</option>
+                                    <option value="Laboratory Medicine">Laboratory Medicine</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -160,4 +205,41 @@
         </div>
     </div>
 </div>
+
+<script>
+    function toggleDoctorFields() {
+        const role = document.getElementById('role').value;
+        const doctorFields = document.getElementById('doctor-fields');
+        const licenseInput = document.getElementById('license_number');
+        const specializationSelect = document.getElementById('specialization');
+        
+        if (role === 'doctor') {
+            doctorFields.classList.remove('hidden');
+            licenseInput.required = true;
+            specializationSelect.required = true;
+        } else {
+            doctorFields.classList.add('hidden');
+            licenseInput.required = false;
+            specializationSelect.required = false;
+            // Clear values when hiding
+            licenseInput.value = '';
+            specializationSelect.value = '';
+        }
+    }
+
+    // Password validation
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm-password');
+    
+    function validatePassword() {
+        if (confirmPasswordInput.value && passwordInput.value !== confirmPasswordInput.value) {
+            confirmPasswordInput.setCustomValidity("Passwords don't match");
+        } else {
+            confirmPasswordInput.setCustomValidity('');
+        }
+    }
+    
+    passwordInput.addEventListener('change', validatePassword);
+    confirmPasswordInput.addEventListener('keyup', validatePassword);
+</script>
 {% endblock %}

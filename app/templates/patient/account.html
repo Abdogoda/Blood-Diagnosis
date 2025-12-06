@@ -1,12 +1,6 @@
-{% extends "base.html" %}
+{% extends "layouts/base_patient.html" %}
 
 {% block title %}My Account - Patient Dashboard{% endblock %}
-
-{% block nav_items %}
-<a href="/patient/dashboard" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Dashboard</a>
-<a href="/patient/upload" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">Upload</a>
-<a href="/auth/logout" class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">Logout</a>
-{% endblock %}
 
 {% block content %}
 <div class="px-4 py-6 animate-slide-up">

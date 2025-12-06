@@ -80,6 +80,7 @@ async def account_page(
     
     return templates.TemplateResponse("patient/account.html", {
         "request": request,
+        "current_user": current_user,
         "patient": current_user,
         "phone": phone
     })
