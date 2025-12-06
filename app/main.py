@@ -126,6 +126,35 @@ async def contact(request: Request, db: Session = Depends(get_db)):
     current_user = await get_current_user_optional(request, db)
     return templates.TemplateResponse("contact.html", {"request": request, "current_user": current_user})
 
+# Shared routes (require authentication)
+@app.get("/shared/feedback")
+async def feedback_page(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    from app.services.auth_dependencies import get_current_user_optional
+    current_user = await get_current_user_optional(request, db)
+    if not current_user:
+        response = RedirectResponse(url="/auth/login", status_code=303)
+        set_flash_message(response, "error", "Please login to access feedback page")
+        return response
+    return templates.TemplateResponse("shared/feedback.html", {"request": request, "current_user": current_user})
+
+@app.post("/shared/feedback")
+async def submit_feedback(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    from app.services.auth_dependencies import get_current_user_optional
+    current_user = await get_current_user_optional(request, db)
+    if not current_user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    # TODO: Implement feedback submission logic
+    response = RedirectResponse(url=f"/{current_user.role}/dashboard", status_code=303)
+    set_flash_message(response, "success", "Thank you for your feedback!")
+    return response
+
 # Admin routes
 @app.get("/admin/dashboard")
 def admin_dashboard(

@@ -63,6 +63,7 @@ async def patient_profile(
     if not patient:
         return templates.TemplateResponse("doctor/dashboard.html", {
             "request": request,
+            "current_user": current_user,
             "error": "Patient not found"
         }, status_code=404)
     
