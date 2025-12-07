@@ -1,9 +1,11 @@
 # Patients router
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Form
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from app.database import get_db, User
 from app.services.auth_dependencies import require_role
+from app.services.flash_messages import set_flash_message
 
 router = APIRouter(prefix="/patient", tags=["patients"])
 templates = Jinja2Templates(directory="app/templates")
@@ -84,3 +86,90 @@ async def account_page(
         "patient": current_user,
         "phone": phone
     })
+
+
+@router.post("/update-profile")
+async def update_profile(
+    request: Request,
+    fname: str = Form(...),
+    lname: str = Form(...),
+    email: str = Form(...),
+    gender: str = Form(None),
+    phone: str = Form(None),
+    blood_type: str = Form(None),
+    current_user: User = Depends(require_role(["patient", "admin"])),
+    db: Session = Depends(get_db)
+):
+    from app.services.flash_messages import set_flash_message
+    from fastapi.responses import RedirectResponse
+    
+    # Check if email already exists for another user
+    existing_user = db.query(User).filter(User.email == email, User.id != current_user.id).first()
+    if existing_user:
+        response = RedirectResponse(url="/patient/account", status_code=303)
+        set_flash_message(response, "error", "Email already exists for another user")
+        return response
+    
+    # Update user information
+    current_user.fname = fname
+    current_user.lname = lname
+    current_user.email = email
+    current_user.gender = gender
+    current_user.blood_type = blood_type
+    
+    # Update or create phone number
+    if phone:
+        from app.database import UserPhone
+        user_phone = db.query(UserPhone).filter(UserPhone.user_id == current_user.id).first()
+        if user_phone:
+            user_phone.phone = phone
+        else:
+            new_phone = UserPhone(user_id=current_user.id, phone=phone)
+            db.add(new_phone)
+    
+    db.commit()
+    db.refresh(current_user)
+    
+    response = RedirectResponse(url="/patient/account", status_code=303)
+    set_flash_message(response, "success", "Profile updated successfully!")
+    return response
+
+
+@router.post("/change-password")
+async def change_password(
+    request: Request,
+    current_password: str = Form(...),
+    new_password: str = Form(...),
+    confirm_password: str = Form(...),
+    current_user: User = Depends(require_role(["patient", "admin"])),
+    db: Session = Depends(get_db)
+):
+    from app.services.flash_messages import set_flash_message
+    from app.services.password_utils import verify_password, get_password_hash
+    from fastapi.responses import RedirectResponse
+    
+    # Verify current password
+    if not verify_password(current_password, current_user.password):
+        response = RedirectResponse(url="/patient/account", status_code=303)
+        set_flash_message(response, "error", "Current password is incorrect")
+        return response
+    
+    # Check if new passwords match
+    if new_password != confirm_password:
+        response = RedirectResponse(url="/patient/account", status_code=303)
+        set_flash_message(response, "error", "New passwords do not match")
+        return response
+    
+    # Check password length
+    if len(new_password) < 8:
+        response = RedirectResponse(url="/patient/account", status_code=303)
+        set_flash_message(response, "error", "Password must be at least 8 characters long")
+        return response
+    
+    # Update password
+    current_user.password = get_password_hash(new_password)
+    db.commit()
+    
+    response = RedirectResponse(url="/patient/account", status_code=303)
+    set_flash_message(response, "success", "Password changed successfully!")
+    return response
