@@ -11,6 +11,28 @@
             <!-- Profile Section -->
             <div class="glass-effect rounded-2xl shadow-xl p-8">
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">Profile Information</h2>
+                
+                <!-- Profile Image Upload -->
+                <form action="/doctor/upload-profile-image" method="POST" enctype="multipart/form-data" class="mb-6">
+                    <div class="flex justify-center mb-6">
+                        <div class="relative">
+                            {% if doctor.profile_image %}
+                            <img src="/{{ doctor.profile_image }}" alt="Profile" class="h-24 w-24 rounded-full object-cover border-4 border-green-500">
+                            {% else %}
+                            <div class="h-24 w-24 rounded-full gradient-blue flex items-center justify-center">
+                                <span class="text-3xl font-bold text-white">{{ doctor.fname[0] }}{{ doctor.lname[0] }}</span>
+                            </div>
+                            {% endif %}
+                            <label for="doctor-profile-image-input" class="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-white border-2 border-green-600 flex items-center justify-center hover:bg-green-50 transition-all duration-200 cursor-pointer">
+                                <svg class="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                                </svg>
+                            </label>
+                            <input type="file" id="doctor-profile-image-input" name="profile_image" accept="image/*" class="hidden" onchange="this.form.submit()">
+                        </div>
+                    </div>
+                </form>
+                
                 <form action="/doctor/update-profile" method="POST" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>

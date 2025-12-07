@@ -31,6 +31,7 @@ class User(Base):
     email = Column(String(200), unique=True, nullable=False)
     role = Column(String(10))
     blood_type = Column(String(3))
+    profile_image = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     phones = relationship("UserPhone", back_populates="user")
@@ -118,6 +119,16 @@ class Prediction(Base):
     confidence_score = Column(Numeric(5,4))
     comment = Column(Text)
     prediction_time = Column(DateTime, nullable=False)
+
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    token = Column(String(255), unique=True, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    used = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 if __name__ == "__main__":
     from database import Base, engine

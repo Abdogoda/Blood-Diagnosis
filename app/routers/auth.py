@@ -27,9 +27,15 @@ async def login_page(request: Request, current_user: User = Depends(get_current_
         else:
             return RedirectResponse(url="/patient/dashboard", status_code=303)
     
-    # Check for success message from registration
+    # Check for success message from registration or password reset
     registered = request.query_params.get("registered")
-    success = "Registration successful! Please login with your credentials." if registered else None
+    reset = request.query_params.get("reset")
+    
+    success = None
+    if registered:
+        success = "Registration successful! Please login with your credentials."
+    elif reset == "success":
+        success = "Password reset successful! Please login with your new password."
     
     return templates.TemplateResponse("login.html", {
         "request": request,
@@ -444,3 +450,157 @@ async def change_password(
     db.commit()
     
     return {"message": "Password changed successfully"}
+
+
+@router.get("/reset-password")
+async def reset_password_page(request: Request):
+    """Display password reset request page."""
+    return templates.TemplateResponse("reset_password.html", {"request": request})
+
+
+@router.post("/reset-password-request")
+async def reset_password_request(
+    request: Request,
+    email: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Handle password reset request.
+    For simplicity, we'll generate a token and store it in the database.
+    In production, you would send an email with the reset link.
+    """
+    import secrets
+    from datetime import datetime, timedelta
+    from app.database import PasswordResetToken
+    
+    # Find user by email
+    user = db.query(User).filter(User.email == email).first()
+    
+    if not user:
+        # Don't reveal if email exists for security
+        return templates.TemplateResponse("reset_password.html", {
+            "request": request,
+            "success": "If that email exists, a password reset link has been sent."
+        })
+    
+    # Generate secure token
+    token = secrets.token_urlsafe(32)
+    
+    # Delete any existing unused tokens for this user
+    db.query(PasswordResetToken).filter(
+        PasswordResetToken.user_id == user.id,
+        PasswordResetToken.used == 0
+    ).delete()
+    
+    # Create new reset token (expires in 1 hour)
+    reset_token = PasswordResetToken(
+        user_id=user.id,
+        token=token,
+        expires_at=datetime.utcnow() + timedelta(hours=1),
+        used=0
+    )
+    db.add(reset_token)
+    db.commit()
+    
+    # In production, send email with reset link: /auth/reset-password-confirm?token={token}
+    # For now, we'll show a success message
+    
+    return templates.TemplateResponse("reset_password.html", {
+        "request": request,
+        "success": f"Password reset link: /auth/reset-password-confirm?token={token} (Copy this link)"
+    })
+
+
+@router.get("/reset-password-confirm")
+async def reset_password_confirm_page(
+    request: Request,
+    token: str,
+    db: Session = Depends(get_db)
+):
+    """Display password reset confirmation page with token."""
+    from app.database import PasswordResetToken
+    from datetime import datetime
+    
+    # Verify token exists and is valid
+    reset_token = db.query(PasswordResetToken).filter(
+        PasswordResetToken.token == token,
+        PasswordResetToken.used == 0,
+        PasswordResetToken.expires_at > datetime.utcnow()
+    ).first()
+    
+    if not reset_token:
+        return templates.TemplateResponse("reset_password_confirm.html", {
+            "request": request,
+            "error": "Invalid or expired reset token",
+            "token": ""
+        })
+    
+    return templates.TemplateResponse("reset_password_confirm.html", {
+        "request": request,
+        "token": token
+    })
+
+
+@router.post("/reset-password-confirm")
+async def reset_password_confirm(
+    request: Request,
+    token: str = Form(...),
+    new_password: str = Form(...),
+    confirm_password: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """
+    Confirm password reset and update user password.
+    """
+    from app.database import PasswordResetToken
+    from datetime import datetime
+    
+    # Verify passwords match
+    if new_password != confirm_password:
+        return templates.TemplateResponse("reset_password_confirm.html", {
+            "request": request,
+            "error": "Passwords do not match",
+            "token": token
+        }, status_code=400)
+    
+    # Check password length
+    if len(new_password) < 8:
+        return templates.TemplateResponse("reset_password_confirm.html", {
+            "request": request,
+            "error": "Password must be at least 8 characters long",
+            "token": token
+        }, status_code=400)
+    
+    # Verify token
+    reset_token = db.query(PasswordResetToken).filter(
+        PasswordResetToken.token == token,
+        PasswordResetToken.used == 0,
+        PasswordResetToken.expires_at > datetime.utcnow()
+    ).first()
+    
+    if not reset_token:
+        return templates.TemplateResponse("reset_password_confirm.html", {
+            "request": request,
+            "error": "Invalid or expired reset token",
+            "token": ""
+        }, status_code=400)
+    
+    # Get user
+    user = db.query(User).filter(User.id == reset_token.user_id).first()
+    if not user:
+        return templates.TemplateResponse("reset_password_confirm.html", {
+            "request": request,
+            "error": "User not found",
+            "token": ""
+        }, status_code=404)
+    
+    # Update password
+    user.password = get_password_hash(new_password)
+    
+    # Mark token as used
+    reset_token.used = 1
+    
+    db.commit()
+    
+    # Redirect to login with success message
+    return RedirectResponse(url="/auth/login?reset=success", status_code=303)

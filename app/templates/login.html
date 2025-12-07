@@ -19,6 +19,18 @@
 
             <!-- Form Section -->
             <div class="p-4 sm:p-8 bg-white">
+                {% if success %}
+                <div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p class="text-green-800 text-sm">{{ success }}</p>
+                </div>
+                {% endif %}
+
+                {% if error %}
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p class="text-red-800 text-sm">{{ error }}</p>
+                </div>
+                {% endif %}
+
                 <form class="space-y-6" action="/auth/login" method="POST">
                     <input type="hidden" name="remember" value="true">
                     
@@ -67,7 +79,7 @@
                         </div>
 
                         <div class="text-sm">
-                            <a href="#" class="font-medium text-blue-600 hover:text-blue-700 transition-colors duration-200 hover:underline">
+                            <a href="/auth/reset-password" class="font-medium text-blue-600 hover:text-blue-700 transition-colors duration-200 hover:underline">
                                 Forgot password?
                             </a>
                         </div>

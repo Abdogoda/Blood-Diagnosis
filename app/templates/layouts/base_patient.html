@@ -8,9 +8,13 @@
 <!-- User Profile Dropdown -->
 <div class="relative group">
     <button class="flex items-center space-x-2 px-3 lg:px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">
+        {% if current_user.profile_image %}
+        <img src="/{{ current_user.profile_image }}" alt="Profile" class="h-8 w-8 rounded-full object-cover border-2 border-blue-500">
+        {% else %}
         <div class="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-semibold shadow-md">
             {{ current_user.fname[0] }}{{ current_user.lname[0] }}
         </div>
+        {% endif %}
         <span class="hidden lg:inline">{{ current_user.fname }} {{ current_user.lname }}</span>
         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -45,10 +49,23 @@
 {% block mobile_nav_items %}
 <!-- Mobile Patient Navigation -->
 <div class="px-2 pt-2 pb-3 space-y-1">
+    <!-- Mobile User Profile -->
+    <div class="flex items-center px-3 py-3 mb-3 border-b border-gray-200">
+        {% if current_user.profile_image %}
+        <img src="/{{ current_user.profile_image }}" alt="Profile" class="h-12 w-12 rounded-full object-cover border-2 border-blue-500">
+        {% else %}
+        <div class="h-12 w-12 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-semibold shadow-md">
+            {{ current_user.fname[0] }}{{ current_user.lname[0] }}
+        </div>
+        {% endif %}
+        <div class="ml-3">
+            <p class="text-sm font-semibold text-gray-900">{{ current_user.fname }} {{ current_user.lname }}</p>
+            <p class="text-xs text-gray-500">{{ current_user.email }}</p>
+        </div>
+    </div>
     <a href="/" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">Home</a>
     <a href="/patient/dashboard" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">Dashboard</a>
     <a href="/patient/upload" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">Upload Test</a>
-    <a href="/about" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">About</a>
     <a href="/patient/account" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">Account Settings</a>
     <a href="/auth/logout" class="block px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50 transition-all duration-200">Logout</a>
 </div>

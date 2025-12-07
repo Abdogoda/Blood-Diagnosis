@@ -5,6 +5,7 @@ from typing import Optional
 from fastapi.templating import Jinja2Templates
 from fastapi import Request, Response
 import json
+from urllib.parse import quote
 
 
 def set_flash_message(response: Response, message_type: str, message: str):
@@ -17,12 +18,15 @@ def set_flash_message(response: Response, message_type: str, message: str):
         message: Message text to display
     """
     flash_data = json.dumps({"type": message_type, "message": message})
+    # URL encode the JSON string to handle special characters
+    encoded_data = quote(flash_data)
     response.set_cookie(
         key="flash_message",
-        value=flash_data,
-        max_age=10,  # Message expires after 10 seconds
+        value=encoded_data,
+        max_age=60,  # Message expires after 60 seconds
         httponly=False,  # Allow JavaScript to read for display
-        samesite="lax"
+        samesite="lax",
+        path="/"  # Make cookie available across all paths
     )
 
 

@@ -1,11 +1,14 @@
 # Patients router
-from fastapi import APIRouter, Depends, Request, Form
+from fastapi import APIRouter, Depends, Request, Form, UploadFile, File
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from app.database import get_db, User
 from app.services.auth_dependencies import require_role
 from app.services.flash_messages import set_flash_message
+import os
+import uuid
+from pathlib import Path
 
 router = APIRouter(prefix="/patient", tags=["patients"])
 templates = Jinja2Templates(directory="app/templates")
@@ -172,4 +175,48 @@ async def change_password(
     
     response = RedirectResponse(url="/patient/account", status_code=303)
     set_flash_message(response, "success", "Password changed successfully!")
+    return response
+
+
+@router.post("/upload-profile-image")
+async def upload_profile_image(
+    request: Request,
+    profile_image: UploadFile = File(...),
+    current_user: User = Depends(require_role(["patient", "admin"])),
+    db: Session = Depends(get_db)
+):
+    # Validate file type
+    allowed_extensions = {".jpg", ".jpeg", ".png", ".gif"}
+    file_ext = os.path.splitext(profile_image.filename)[1].lower()
+    
+    if file_ext not in allowed_extensions:
+        response = RedirectResponse(url="/patient/account", status_code=303)
+        set_flash_message(response, "error", "Invalid file type. Only JPG, PNG, and GIF are allowed")
+        return response
+    
+    # Create uploads/profiles directory if it doesn't exist
+    upload_dir = Path("uploads/profiles")
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Generate unique filename
+    unique_filename = f"{uuid.uuid4()}{file_ext}"
+    file_path = upload_dir / unique_filename
+    
+    # Delete old profile image if exists
+    if current_user.profile_image:
+        old_file = Path(current_user.profile_image)
+        if old_file.exists():
+            old_file.unlink()
+    
+    # Save new file
+    with open(file_path, "wb") as buffer:
+        content = await profile_image.read()
+        buffer.write(content)
+    
+    # Update user profile_image path
+    current_user.profile_image = str(file_path)
+    db.commit()
+    
+    response = RedirectResponse(url="/patient/account", status_code=303)
+    set_flash_message(response, "success", "Profile image updated successfully!")
     return response
