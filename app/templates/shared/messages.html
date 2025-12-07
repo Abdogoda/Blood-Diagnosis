@@ -1,7 +1,7 @@
 <!-- Flash Messages Component -->
 {% if error %}
 <div id="flash-message"
-    class="fixed top-4 right-4 z-50 max-w-md w-full animate-slide-up">
+    class="fixed top-20 right-4 z-[9999] max-w-md w-full animate-slide-up">
     <div class="bg-red-50 border-l-4 border-red-500 rounded-lg shadow-lg p-4">
         <div class="flex items-start">
             <div class="flex-shrink-0">
@@ -31,7 +31,7 @@
 
 {% if success %}
 <div id="flash-message"
-    class="fixed top-4 right-4 z-50 max-w-md w-full animate-slide-up">
+    class="fixed top-20 right-4 z-[9999] max-w-md w-full animate-slide-up">
     <div
         class="bg-green-50 border-l-4 border-green-500 rounded-lg shadow-lg p-4">
         <div class="flex items-start">
@@ -62,7 +62,7 @@
 
 {% if warning %}
 <div id="flash-message"
-    class="fixed top-4 right-4 z-50 max-w-md w-full animate-slide-up">
+    class="fixed top-20 right-4 z-[9999] max-w-md w-full animate-slide-up">
     <div
         class="bg-yellow-50 border-l-4 border-yellow-500 rounded-lg shadow-lg p-4">
         <div class="flex items-start">
@@ -93,7 +93,7 @@
 
 {% if info %}
 <div id="flash-message"
-    class="fixed top-4 right-4 z-50 max-w-md w-full animate-slide-up">
+    class="fixed top-20 right-4 z-[9999] max-w-md w-full animate-slide-up">
     <div class="bg-blue-50 border-l-4 border-blue-500 rounded-lg shadow-lg p-4">
         <div class="flex items-start">
             <div class="flex-shrink-0">
@@ -172,7 +172,7 @@ function showFlashMessage(type, message) {
     
     const messageDiv = document.createElement('div');
     messageDiv.id = 'flash-message';
-    messageDiv.className = 'fixed top-4 right-4 z-50 max-w-md w-full animate-slide-up';
+    messageDiv.className = 'fixed top-20 right-4 z-[9999] max-w-md w-full animate-slide-up';
     messageDiv.innerHTML = `
         <div class="${color.bg} border-l-4 ${color.border} rounded-lg shadow-lg p-4">
             <div class="flex items-start">
