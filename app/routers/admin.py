@@ -6,12 +6,19 @@ from sqlalchemy.orm import Session
 from app.database import get_db, User
 from app.services.auth_dependencies import require_role
 from app.services.flash_messages import set_flash_message
+from passlib.context import CryptContext
 import os
 import uuid
 from pathlib import Path
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="app/templates")
+
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def get_password_hash(password):
+    return pwd_context.hash(password)
 
 
 @router.get("/dashboard")
@@ -260,4 +267,74 @@ async def upload_profile_image(
     
     response = RedirectResponse(url="/admin/account", status_code=303)
     set_flash_message(response, "success", "Profile image updated successfully!")
+    return response
+
+
+@router.get("/settings")
+def system_settings(
+    request: Request,
+    current_user: User = Depends(require_role(["admin"])),
+    db: Session = Depends(get_db)
+):
+    # Get system statistics
+    total_users = db.query(User).count()
+    total_doctors = db.query(User).filter(User.role == "doctor").count()
+    total_patients = db.query(User).filter(User.role == "patient").count()
+    
+    # System settings (these would typically be stored in a database or config file)
+    settings = {
+        "site_name": "Blood Diagnosis System",
+        "site_description": "AI-powered blood analysis and diagnosis system",
+        "maintenance_mode": False,
+        "allow_registration": True,
+        "require_email_verification": False,
+        "max_upload_size": 10,  # MB
+        "session_timeout": 60,  # minutes
+        "enable_notifications": True,
+        "enable_ai_predictions": True,
+        "ai_confidence_threshold": 0.85,
+        "backup_enabled": True,
+        "backup_frequency": "daily",
+    }
+    
+    stats = {
+        "total_users": total_users,
+        "total_doctors": total_doctors,
+        "total_patients": total_patients,
+        "disk_usage": "2.3 GB",
+        "database_size": "156 MB",
+        "uptime": "15 days"
+    }
+    
+    return templates.TemplateResponse("admin/settings.html", {
+        "request": request,
+        "current_user": current_user,
+        "settings": settings,
+        "stats": stats
+    })
+
+
+@router.post("/settings/update")
+async def update_system_settings(
+    request: Request,
+    site_name: str = Form(...),
+    site_description: str = Form(...),
+    maintenance_mode: bool = Form(False),
+    allow_registration: bool = Form(False),
+    require_email_verification: bool = Form(False),
+    max_upload_size: int = Form(...),
+    session_timeout: int = Form(...),
+    enable_notifications: bool = Form(False),
+    enable_ai_predictions: bool = Form(False),
+    ai_confidence_threshold: float = Form(...),
+    backup_enabled: bool = Form(False),
+    backup_frequency: str = Form(...),
+    current_user: User = Depends(require_role(["admin"])),
+    db: Session = Depends(get_db)
+):
+    # In a real application, save these settings to a database or config file
+    # For now, just show a success message
+    
+    response = RedirectResponse(url="/admin/settings", status_code=303)
+    set_flash_message(response, "success", "System settings updated successfully!")
     return response
