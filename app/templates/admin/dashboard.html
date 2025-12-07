@@ -18,9 +18,17 @@
             </div>
             <p class="text-3xl font-bold text-gray-900">{{ stats.total_users }}</p>
             <p class="text-sm text-gray-600 mt-1">Total Users</p>
+            <div class="mt-2 flex items-center text-xs">
+                {% if stats.growth_rate >= 0 %}
+                <span class="text-green-600 font-semibold">↑ {{ stats.growth_rate }}%</span>
+                {% else %}
+                <span class="text-red-600 font-semibold">↓ {{ stats.growth_rate }}%</span>
+                {% endif %}
+                <span class="text-gray-500 ml-1">vs last month</span>
+            </div>
         </div>
 
-        <div class="glass-effect rounded-xl shadow-lg p-6 hover-lift">
+        <div class="glass-effect rounded-xl shadow-lg p-4 sm:p-6 hover-lift">
             <div class="flex items-center justify-between mb-4">
                 <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
                     <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -32,19 +40,19 @@
             <p class="text-sm text-gray-600 mt-1">Tests Processed</p>
         </div>
 
-        <div class="glass-effect rounded-xl shadow-lg p-6 hover-lift">
+        <div class="glass-effect rounded-xl shadow-lg p-4 sm:p-6 hover-lift">
             <div class="flex items-center justify-between mb-4">
                 <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
                     <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                     </svg>
                 </div>
             </div>
-            <p class="text-3xl font-bold text-gray-900">{{ stats.model_accuracy }}%</p>
-            <p class="text-sm text-gray-600 mt-1">Model Accuracy</p>
+            <p class="text-3xl font-bold text-gray-900">{{ stats.active_users }}</p>
+            <p class="text-sm text-gray-600 mt-1">Active Users (30 days)</p>
         </div>
 
-        <div class="glass-effect rounded-xl shadow-lg p-6 hover-lift">
+        <div class="glass-effect rounded-xl shadow-lg p-4 sm:p-6 hover-lift">
             <div class="flex items-center justify-between mb-4">
                 <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
                     <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,10 +65,67 @@
         </div>
     </div>
 
+    <!-- User Analytics Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Registration Trend (Last 7 Days) -->
+        <div class="glass-effect rounded-xl shadow-xl p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-3">Daily Registrations (Last 7 Days)</h2>
+            <div style="height: 200px;">
+                <canvas id="registrationTrendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Role Distribution -->
+        <div class="glass-effect rounded-xl shadow-xl p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-3">User Role Distribution</h2>
+            <div style="height: 200px;">
+                <canvas id="roleDistributionChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- More Analytics -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <!-- Gender Distribution -->
+        <div class="glass-effect rounded-xl shadow-xl p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-3">Gender Distribution</h2>
+            <div style="height: 180px;">
+                <canvas id="genderChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Blood Type Distribution -->
+        <div class="glass-effect rounded-xl shadow-xl p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-3">Blood Type Distribution</h2>
+            <div style="height: 180px;">
+                <canvas id="bloodTypeChart"></canvas>
+            </div>
+        </div>
+
+        <!-- User Statistics Summary -->
+        <div class="glass-effect rounded-xl shadow-xl p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-3">Quick Stats</h2>
+            <div class="space-y-2">
+                <div class="flex justify-between items-center p-2.5 bg-blue-50 rounded-lg">
+                    <span class="text-sm font-semibold text-gray-700">Admins</span>
+                    <span class="text-lg font-bold text-blue-600">{{ stats.total_admins }}</span>
+                </div>
+                <div class="flex justify-between items-center p-2.5 bg-green-50 rounded-lg">
+                    <span class="text-sm font-semibold text-gray-700">Doctors</span>
+                    <span class="text-lg font-bold text-green-600">{{ stats.total_doctors }}</span>
+                </div>
+                <div class="flex justify-between items-center p-2.5 bg-purple-50 rounded-lg">
+                    <span class="text-sm font-semibold text-gray-700">Patients</span>
+                    <span class="text-lg font-bold text-purple-600">{{ stats.total_patients }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Recent Activity -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="glass-effect rounded-xl shadow-xl p-8">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Recent Registrations</h2>
+        <div class="glass-effect rounded-xl shadow-xl p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">Recent Registrations</h2>
             <div class="space-y-4">
                 {% for user in recent_users %}
                 <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:shadow-md transition-all duration-200">
@@ -79,8 +144,8 @@
             </div>
         </div>
 
-        <div class="glass-effect rounded-xl shadow-xl p-8">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">System Health</h2>
+        <div class="glass-effect rounded-xl shadow-xl p-6">
+            <h2 class="text-lg font-bold text-gray-900 mb-4">System Health</h2>
             <div class="space-y-4">
                 <div class="p-4 bg-green-50 rounded-lg">
                     <div class="flex items-center justify-between mb-2">
@@ -113,4 +178,174 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Chart.js configuration
+    const chartColors = {
+        blue: 'rgb(59, 130, 246)',
+        green: 'rgb(34, 197, 94)',
+        purple: 'rgb(168, 85, 247)',
+        orange: 'rgb(249, 115, 22)',
+        red: 'rgb(239, 68, 68)',
+        yellow: 'rgb(234, 179, 8)',
+        pink: 'rgb(236, 72, 153)',
+        indigo: 'rgb(99, 102, 241)'
+    };
+
+    // Daily Registration Trend Chart
+    const registrationCtx = document.getElementById('registrationTrendChart').getContext('2d');
+    new Chart(registrationCtx, {
+        type: 'line',
+        data: {
+            labels: {{ registration_trend | map(attribute='date') | list | tojson }},
+            datasets: [{
+                label: 'New Users',
+                data: {{ registration_trend | map(attribute='count') | list | tojson }},
+                borderColor: chartColors.blue,
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        font: {
+                            size: 11
+                        }
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            size: 11
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Role Distribution Chart
+    const roleCtx = document.getElementById('roleDistributionChart').getContext('2d');
+    new Chart(roleCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Admins', 'Doctors', 'Patients'],
+            datasets: [{
+                data: [
+                    {{ role_distribution.admin }},
+                    {{ role_distribution.doctor }},
+                    {{ role_distribution.patient }}
+                ],
+                backgroundColor: [
+                    chartColors.blue,
+                    chartColors.green,
+                    chartColors.purple
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: {
+                            size: 11
+                        },
+                        padding: 10
+                    }
+                }
+            }
+        }
+    });
+
+    // Gender Distribution Chart
+    const genderCtx = document.getElementById('genderChart').getContext('2d');
+    const genderData = {{ gender_distribution | tojson }};
+    new Chart(genderCtx, {
+        type: 'pie',
+        data: {
+            labels: Object.keys(genderData).map(g => g.charAt(0).toUpperCase() + g.slice(1)),
+            datasets: [{
+                data: Object.values(genderData),
+                backgroundColor: [
+                    chartColors.blue,
+                    chartColors.pink,
+                    chartColors.purple
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: {
+                            size: 11
+                        },
+                        padding: 8
+                    }
+                }
+            }
+        }
+    });
+
+    // Blood Type Distribution Chart
+    const bloodTypeCtx = document.getElementById('bloodTypeChart').getContext('2d');
+    const bloodTypeData = {{ blood_type_distribution | tojson }};
+    new Chart(bloodTypeCtx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(bloodTypeData),
+            datasets: [{
+                label: 'Count',
+                data: Object.values(bloodTypeData),
+                backgroundColor: chartColors.red
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        font: {
+                            size: 11
+                        }
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            size: 11
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
 {% endblock %}

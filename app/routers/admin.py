@@ -10,6 +10,7 @@ import bcrypt
 import os
 import uuid
 from pathlib import Path
+from datetime import datetime, timedelta
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="app/templates")
@@ -30,18 +31,77 @@ def admin_dashboard(
     current_user: User = Depends(require_role(["admin"])),
     db: Session = Depends(get_db)
 ):
+    from sqlalchemy import func, extract
+    from datetime import timedelta
+    from app.database import Test
+    
     total_users = db.query(User).count()
     total_doctors = db.query(User).filter(User.role == "doctor").count()
     total_patients = db.query(User).filter(User.role == "patient").count()
+    total_admins = db.query(User).filter(User.role == "admin").count()
+    total_tests = db.query(Test).count()
+    
+    # Calculate active users (users created in the last 30 days)
+    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    active_users = db.query(User).filter(User.created_at >= thirty_days_ago).count()
+    
+    # Calculate user growth (percentage increase from previous period)
+    sixty_days_ago = datetime.utcnow() - timedelta(days=60)
+    previous_period_users = db.query(User).filter(
+        User.created_at >= sixty_days_ago,
+        User.created_at < thirty_days_ago
+    ).count()
+    
+    growth_rate = 0
+    if previous_period_users > 0:
+        growth_rate = ((active_users - previous_period_users) / previous_period_users) * 100
     
     stats = {
         "total_users": total_users,
         "total_doctors": total_doctors,
         "total_patients": total_patients,
-        "total_tests": 0,  # Will be implemented when tests are added
+        "total_admins": total_admins,
+        "total_tests": total_tests,
+        "active_users": active_users,
+        "growth_rate": round(growth_rate, 1),
         "model_accuracy": 99.5,
         "avg_processing_time": 2.3
     }
+    
+    # User Analytics - Registration trend for last 7 days
+    registration_trend = []
+    for i in range(6, -1, -1):
+        day = datetime.utcnow().date() - timedelta(days=i)
+        count = db.query(User).filter(
+            func.date(User.created_at) == day
+        ).count()
+        registration_trend.append({
+            "date": day.strftime("%m/%d"),
+            "count": count
+        })
+    
+    # Role distribution
+    role_distribution = {
+        "admin": total_admins,
+        "doctor": total_doctors,
+        "patient": total_patients
+    }
+    
+    # Gender distribution
+    gender_stats = db.query(
+        User.gender,
+        func.count(User.id)
+    ).filter(User.gender.isnot(None)).group_by(User.gender).all()
+    
+    gender_distribution = {gender: count for gender, count in gender_stats}
+    
+    # Blood type distribution
+    blood_type_stats = db.query(
+        User.blood_type,
+        func.count(User.id)
+    ).filter(User.blood_type.isnot(None)).group_by(User.blood_type).all()
+    
+    blood_type_distribution = {blood_type: count for blood_type, count in blood_type_stats}
     
     # Get recent users
     recent_users_query = db.query(User).order_by(User.created_at.desc()).limit(5).all()
@@ -59,7 +119,11 @@ def admin_dashboard(
         "request": request,
         "current_user": current_user,
         "stats": stats,
-        "recent_users": recent_users
+        "recent_users": recent_users,
+        "registration_trend": registration_trend,
+        "role_distribution": role_distribution,
+        "gender_distribution": gender_distribution,
+        "blood_type_distribution": blood_type_distribution
     })
 
 
