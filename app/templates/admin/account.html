@@ -54,6 +54,20 @@
                             <input type="tel" name="phone" value="{{ phone or '' }}" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
                         </div>
                     </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Gender</label>
+                            <input type="text" value="{{ admin.gender.capitalize() if admin.gender else 'N/A' }}" readonly class="block w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Blood Type</label>
+                            <input type="text" value="{{ admin.blood_type if admin.blood_type else 'N/A' }}" readonly class="block w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Address</label>
+                        <textarea name="address" rows="3" class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">{{ admin.address or '' }}</textarea>
+                    </div>
                     <button type="submit" class="px-6 py-3 gradient-blue text-white rounded-lg hover:shadow-lg transition-all duration-200">
                         Update Profile
                     </button>

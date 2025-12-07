@@ -268,7 +268,7 @@ def admin_patients(
     elif status == "inactive":
         query = query.filter(User.is_active == 0)
     
-    patients_query = query.all()
+    patients_query = query.order_by(User.created_at.desc()).all()
     
     # Get available blood types
     blood_types = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
@@ -423,6 +423,7 @@ async def update_profile(
     lname: str = Form(...),
     email: str = Form(...),
     phone: str = Form(None),
+    address: str = Form(None),
     current_user: User = Depends(require_role(["admin"])),
     db: Session = Depends(get_db)
 ):
@@ -438,6 +439,7 @@ async def update_profile(
     current_user.lname = lname
     current_user.email = email
     current_user.phone = phone
+    current_user.address = address
     
     db.commit()
     db.refresh(current_user)

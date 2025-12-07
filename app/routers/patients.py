@@ -97,6 +97,7 @@ async def update_profile(
     gender: str = Form(None),
     phone: str = Form(None),
     blood_type: str = Form(None),
+    address: str = Form(None),
     current_user: User = Depends(require_role(["patient", "admin"])),
     db: Session = Depends(get_db)
 ):
@@ -114,9 +115,8 @@ async def update_profile(
     current_user.fname = fname
     current_user.lname = lname
     current_user.email = email
-    current_user.gender = gender
-    current_user.blood_type = blood_type
     current_user.phone = phone
+    current_user.address = address
     
     db.commit()
     db.refresh(current_user)

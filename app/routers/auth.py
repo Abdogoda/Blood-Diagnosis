@@ -178,15 +178,16 @@ async def api_login(
 @router.post("/register")
 async def register(
     request: Request,
-    fullname: str = Form(...),
+    fname: str = Form(...),
+    lname: str = Form(...),
     email: str = Form(...),
     password: str = Form(...),
     confirm_password: str = Form(..., alias="confirm-password"),
     role: str = Form(...),
-    gender: str = Form(None),
-    blood_type: str = Form(None),
+    gender: str = Form(...),
+    blood_type: str = Form(...),
     phone: str = Form(None),
-    address: str = Form(None),
+    address: str = Form(...),
     license_number: str = Form(None),
     specialization: str = Form(None),
     db: Session = Depends(get_db)
@@ -202,11 +203,6 @@ async def register(
     Returns:
         RedirectResponse or template with error
     """
-    # Split fullname into first and last name
-    name_parts = fullname.strip().split(maxsplit=1)
-    fname = name_parts[0] if len(name_parts) > 0 else ""
-    lname = name_parts[1] if len(name_parts) > 1 else ""
-    
     # Use email username part as username if not provided
     username = email.split('@')[0]
     

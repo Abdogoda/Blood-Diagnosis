@@ -132,6 +132,7 @@ async def update_profile(
     lname: str = Form(...),
     email: str = Form(...),
     phone: str = Form(None),
+    address: str = Form(None),
     specialization: str = Form(None),
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
@@ -148,6 +149,7 @@ async def update_profile(
     current_user.lname = lname
     current_user.email = email
     current_user.phone = phone
+    current_user.address = address
     
     # Update doctor info
     if specialization:
