@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db, User
 from app.services.auth_dependencies import require_role
 from app.services.flash_messages import set_flash_message
-from passlib.context import CryptContext
+import bcrypt
 import os
 import uuid
 from pathlib import Path
@@ -14,11 +14,14 @@ from pathlib import Path
 router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="app/templates")
 
-# Password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Password hashing using bcrypt directly
+def get_password_hash(password: str) -> str:
+    # Truncate password to 72 bytes (bcrypt limitation)
+    password_bytes = password.encode('utf-8')[:72]
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password_bytes, salt)
+    return hashed.decode('utf-8')
 
-def get_password_hash(password):
-    return pwd_context.hash(password)
 
 
 @router.get("/dashboard")
@@ -63,10 +66,34 @@ def admin_dashboard(
 @router.get("/doctors")
 def admin_doctors(
     request: Request,
+    search: str = None,
+    specialization: str = None,
+    status: str = None,
     current_user: User = Depends(require_role(["admin"])),
     db: Session = Depends(get_db)
 ):
-    doctors_query = db.query(User).filter(User.role == "doctor").all()
+    # Base query
+    query = db.query(User).filter(User.role == "doctor")
+    
+    # Apply filters
+    if search:
+        search_filter = f"%{search}%"
+        query = query.filter(
+            (User.fname.ilike(search_filter)) |
+            (User.lname.ilike(search_filter)) |
+            (User.email.ilike(search_filter))
+        )
+    
+    if specialization and specialization != "all":
+        from app.database import DoctorInfo
+        query = query.join(DoctorInfo).filter(DoctorInfo.specialization == specialization)
+    
+    if status and status != "all":
+        is_active = 1 if status == "active" else 0
+        query = query.filter(User.is_active == is_active)
+    
+    doctors_query = query.order_by(User.created_at.desc()).all()
+    
     doctors = [
         {
             "id": d.id,
@@ -74,17 +101,146 @@ def admin_doctors(
             "name": f"Dr. {d.fname} {d.lname}",
             "email": d.email,
             "specialization": d.doctor_info.specialization if d.doctor_info else "N/A",
+            "license": d.doctor_info.license_number if d.doctor_info else "N/A",
             "patient_count": 0,  # Will be implemented when patient assignments are added
-            "status": "active"
+            "is_active": d.is_active
         }
         for d in doctors_query
     ]
     
+    # Get unique specializations for filter dropdown
+    from app.database import DoctorInfo
+    specializations_query = db.query(DoctorInfo.specialization).distinct().all()
+    unique_specs = [s[0] for s in specializations_query if s[0]]
+    
     return templates.TemplateResponse("admin/doctors.html", {
         "request": request,
         "current_user": current_user,
-        "doctors": doctors
+        "doctors": doctors,
+        "specializations": unique_specs,
+        "search": search or "",
+        "selected_specialization": specialization or "all",
+        "selected_status": status or "all"
     })
+
+
+@router.get("/doctors/{doctor_id}")
+def view_doctor(
+    request: Request,
+    doctor_id: int,
+    current_user: User = Depends(require_role(["admin"])),
+    db: Session = Depends(get_db)
+):
+    doctor = db.query(User).filter(User.id == doctor_id, User.role == "doctor").first()
+    
+    if not doctor:
+        response = RedirectResponse(url="/admin/doctors", status_code=303)
+        set_flash_message(response, "error", "Doctor not found")
+        return response
+    
+    return templates.TemplateResponse("admin/doctor_detail.html", {
+        "request": request,
+        "current_user": current_user,
+        "doctor": doctor
+    })
+
+
+@router.post("/doctors/add")
+async def add_doctor(
+    request: Request,
+    fname: str = Form(...),
+    lname: str = Form(...),
+    email: str = Form(...),
+    username: str = Form(...),
+    password: str = Form(...),
+    gender: str = Form(...),
+    blood_type: str = Form(None),
+    phone: str = Form(...),
+    address: str = Form(None),
+    specialization: str = Form(...),
+    license_number: str = Form(...),
+    current_user: User = Depends(require_role(["admin"])),
+    db: Session = Depends(get_db)
+):
+    # Check if email or username already exists
+    existing_user = db.query(User).filter(
+        (User.email == email) | (User.username == username)
+    ).first()
+    
+    if existing_user:
+        response = RedirectResponse(url="/admin/doctors", status_code=303)
+        set_flash_message(response, "error", "Email or username already exists")
+        return response
+    
+    # Create new doctor user
+    new_doctor = User(
+        fname=fname,
+        lname=lname,
+        email=email,
+        username=username,
+        password=get_password_hash(password),
+        gender=gender,
+        blood_type=blood_type,
+        role="doctor",
+        is_active=1
+    )
+    
+    db.add(new_doctor)
+    db.flush()
+    
+    # Add phone
+    from app.database import UserPhone, UserAddress, DoctorInfo
+    
+    if phone:
+        new_phone = UserPhone(user_id=new_doctor.id, phone=phone)
+        db.add(new_phone)
+    
+    # Add address
+    if address:
+        new_address = UserAddress(user_id=new_doctor.id, address=address)
+        db.add(new_address)
+    
+    # Add doctor info
+    doctor_info = DoctorInfo(
+        user_id=new_doctor.id,
+        specialization=specialization,
+        license_number=license_number
+    )
+    db.add(doctor_info)
+    
+    db.commit()
+    
+    response = RedirectResponse(url="/admin/doctors", status_code=303)
+    set_flash_message(response, "success", f"Doctor {fname} {lname} added successfully!")
+    return response
+
+
+
+
+
+@router.post("/doctors/{doctor_id}/toggle-status")
+async def toggle_doctor_status(
+    request: Request,
+    doctor_id: int,
+    current_user: User = Depends(require_role(["admin"])),
+    db: Session = Depends(get_db)
+):
+    doctor = db.query(User).filter(User.id == doctor_id, User.role == "doctor").first()
+    
+    if not doctor:
+        response = RedirectResponse(url="/admin/doctors", status_code=303)
+        set_flash_message(response, "error", "Doctor not found")
+        return response
+    
+    # Toggle active status (using 1/0 for integer column)
+    doctor.is_active = 0 if doctor.is_active == 1 else 1
+    
+    db.commit()
+    
+    status_text = "activated" if doctor.is_active == 1 else "deactivated"
+    response = RedirectResponse(url="/admin/doctors", status_code=303)
+    set_flash_message(response, "success", f"Doctor {doctor.fname} {doctor.lname} {status_text} successfully!")
+    return response
 
 
 @router.get("/patients")

@@ -32,6 +32,7 @@ class User(Base):
     role = Column(String(10))
     blood_type = Column(String(3))
     profile_image = Column(String(255), nullable=True)
+    is_active = Column(Integer, default=1, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     phones = relationship("UserPhone", back_populates="user")

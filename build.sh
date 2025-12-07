@@ -203,9 +203,11 @@ init_database() {
         return 1
     fi
     
-    print_warning "Make sure PostgreSQL is running and database exists:"
+    print_warning "This will DROP all existing tables and recreate them!"
     echo "  Database: blood_diagnosis_db"
     echo "  User: postgres (or as configured in .env)"
+    echo ""
+    echo "⚠️  WARNING: ALL DATA WILL BE LOST!"
     echo ""
     echo "To create database manually, run:"
     echo "  psql -U postgres -c 'CREATE DATABASE blood_diagnosis_db;'"
@@ -219,7 +221,7 @@ init_database() {
     
     VENV_PYTHON=$(get_venv_python)
     
-    print_info "Creating database tables..."
+    print_info "Dropping and recreating database tables..."
     $VENV_PYTHON init_db.py
     
     if [ $? -eq 0 ]; then
@@ -230,33 +232,7 @@ init_database() {
     fi
 }
 
-# 6. Run Database Migration
-run_migration() {
-    print_header "Running Database Migration"
-    
-    if ! check_venv; then
-        print_error "Virtual environment not found!"
-        echo "Please create virtual environment first (Option 1)"
-        return 1
-    fi
-    
-    VENV_PYTHON=$(get_venv_python)
-    
-    if [ -f "migrate_profile_image.py" ]; then
-        print_info "Running profile image migration..."
-        $VENV_PYTHON migrate_profile_image.py
-        
-        if [ $? -eq 0 ]; then
-            print_success "Migration completed successfully"
-        else
-            print_warning "Migration may have already been applied"
-        fi
-    else
-        print_warning "No migration file found"
-    fi
-}
-
-# 7. Create Admin User
+# 6. Create Admin User
 create_admin() {
     print_header "Creating Admin User"
     
@@ -272,7 +248,7 @@ create_admin() {
     $VENV_PYTHON create_admin.py
 }
 
-# 8. Run Application
+# 7. Run Application
 run_app() {
     print_header "Starting Blood Diagnosis System"
     
@@ -309,7 +285,7 @@ run_app() {
     uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 }
 
-# 9. Full Setup (All Steps)
+# 8. Full Setup (All Steps)
 full_setup() {
     print_header "FULL SETUP - All Steps"
     
@@ -318,9 +294,8 @@ full_setup() {
     echo "  2. Install dependencies"
     echo "  3. Setup environment variables"
     echo "  4. Create directories"
-    echo "  5. Initialize database"
-    echo "  6. Run migrations"
-    echo "  7. Create admin user"
+    echo "  5. Initialize database (drop & recreate)"
+    echo "  6. Create admin user"
     echo ""
     read -p "Continue with full setup? (y/n): " -n 1 -r
     echo
@@ -334,7 +309,6 @@ full_setup() {
     setup_env
     create_directories
     init_database
-    run_migration
     
     echo ""
     read -p "Do you want to create an admin user now? (y/n): " -n 1 -r
@@ -344,11 +318,11 @@ full_setup() {
     fi
     
     print_header "SETUP COMPLETED!"
-    echo "To start the application, run: ./build.sh and select option 8"
+    echo "To start the application, run: ./build.sh and select option 7"
     echo "Or run manually: source venv/bin/activate && uvicorn app.main:app --reload"
 }
 
-# 10. Clean/Reset
+# 9. Clean/Reset
 clean_reset() {
     print_header "Clean/Reset Environment"
     
@@ -380,7 +354,7 @@ clean_reset() {
     find . -type f -name "*.pyc" -delete 2>/dev/null || true
     
     print_success "Clean completed!"
-    echo "Run full setup (option 9) to start fresh"
+    echo "Run full setup (option 8) to start fresh"
 }
 
 # Main Menu
@@ -396,13 +370,12 @@ show_menu() {
     echo "  2) Install Dependencies"
     echo "  3) Setup Environment Variables"
     echo "  4) Create Required Directories"
-    echo "  5) Initialize Database"
-    echo "  6) Run Database Migration"
-    echo "  7) Create Admin User"
-    echo "  8) Run Application"
+    echo "  5) Initialize Database (Drop & Recreate)"
+    echo "  6) Create Admin User"
+    echo "  7) Run Application"
     echo ""
-    echo "  9) Full Setup (All Steps 1-7)"
-    echo "  10) Clean/Reset Everything"
+    echo "  8) Full Setup (All Steps 1-6)"
+    echo "  9) Clean/Reset Everything"
     echo ""
     echo "  0) Exit"
     echo ""
@@ -415,7 +388,7 @@ main() {
     
     while true; do
         show_menu
-        read -p "Enter your choice [0-10]: " choice
+        read -p "Enter your choice [0-9]: " choice
         
         case $choice in
             1) create_venv ;;
@@ -423,11 +396,10 @@ main() {
             3) setup_env ;;
             4) create_directories ;;
             5) init_database ;;
-            6) run_migration ;;
-            7) create_admin ;;
-            8) run_app ;;
-            9) full_setup ;;
-            10) clean_reset ;;
+            6) create_admin ;;
+            7) run_app ;;
+            8) full_setup ;;
+            9) clean_reset ;;
             0) 
                 echo ""
                 print_success "Goodbye!"
@@ -435,7 +407,7 @@ main() {
                 exit 0
                 ;;
             *)
-                print_error "Invalid option. Please select 0-10"
+                print_error "Invalid option. Please select 0-9"
                 ;;
         esac
         

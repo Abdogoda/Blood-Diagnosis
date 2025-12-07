@@ -1,0 +1,159 @@
+{% extends "layouts/base_admin.html" %}
+
+{% block title %}Doctor Details - {{ doctor.fname }} {{ doctor.lname }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Back Button -->
+    <div class="mb-6">
+        <a href="/admin/doctors" class="inline-flex items-center text-gray-600 hover:text-gray-900">
+            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back to Doctors
+        </a>
+    </div>
+
+    <!-- Flash Messages -->
+    {% include "shared/messages.html" %}
+
+    <!-- Doctor Profile Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+        <div class="bg-gradient-to-r from-green-500 to-emerald-500 px-6 py-8">
+            <div class="flex items-center">
+                {% if doctor.profile_image %}
+                <img src="/{{ doctor.profile_image }}" alt="Profile" class="h-24 w-24 rounded-full object-cover border-4 border-white shadow-lg">
+                {% else %}
+                <div class="h-24 w-24 rounded-full bg-white flex items-center justify-center text-green-600 font-bold text-3xl shadow-lg">
+                    {{ doctor.fname[0] }}{{ doctor.lname[0] }}
+                </div>
+                {% endif %}
+                <div class="ml-6 text-white">
+                    <h1 class="text-3xl font-bold">Dr. {{ doctor.fname }} {{ doctor.lname }}</h1>
+                    <p class="mt-2 text-green-100">{{ doctor.doctor_info.specialization if doctor.doctor_info else 'No specialization' }}</p>
+                    <div class="mt-2">
+                        <span class="px-3 py-1 bg-white {% if doctor.is_active == 1 %}text-green-600{% else %}text-red-600{% endif %} rounded-full text-sm font-semibold">
+                            {% if doctor.is_active == 1 %}Active{% else %}Inactive{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-6 py-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Left Column: Personal Information -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Personal Information</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="w-32 text-sm font-medium text-gray-500">Full Name:</div>
+                            <div class="flex-1 text-gray-900">{{ doctor.fname }} {{ doctor.lname }}</div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-32 text-sm font-medium text-gray-500">Username:</div>
+                            <div class="flex-1 text-gray-900">{{ doctor.username }}</div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-32 text-sm font-medium text-gray-500">Gender:</div>
+                            <div class="flex-1 text-gray-900">{{ doctor.gender.capitalize() if doctor.gender else 'N/A' }}</div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-32 text-sm font-medium text-gray-500">Blood Type:</div>
+                            <div class="flex-1 text-gray-900">{{ doctor.blood_type if doctor.blood_type else 'N/A' }}</div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-32 text-sm font-medium text-gray-500">Member Since:</div>
+                            <div class="flex-1 text-gray-900">{{ doctor.created_at.strftime('%B %d, %Y at %I:%M %p') if doctor.created_at else 'N/A' }}</div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-32 text-sm font-medium text-gray-500">User ID:</div>
+                            <div class="flex-1 text-gray-900">#{{ doctor.id }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Professional Information -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Professional Information</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="w-32 text-sm font-medium text-gray-500">Specialization:</div>
+                            <div class="flex-1 text-gray-900">{{ doctor.doctor_info.specialization if doctor.doctor_info else 'N/A' }}</div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-32 text-sm font-medium text-gray-500">License Number:</div>
+                            <div class="flex-1 text-gray-900 font-mono">{{ doctor.doctor_info.license_number if doctor.doctor_info else 'N/A' }}</div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-32 text-sm font-medium text-gray-500">Role:</div>
+                            <div class="flex-1">
+                                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                                    {{ doctor.role.capitalize() if doctor.role else 'N/A' }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="w-32 text-sm font-medium text-gray-500">Account Status:</div>
+                            <div class="flex-1">
+                                <span class="px-3 py-1 {% if doctor.is_active == 1 %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %} rounded-full text-sm font-medium">
+                                    {% if doctor.is_active == 1 %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information Section -->
+            <div class="mt-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Contact Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="flex items-start">
+                        <svg class="h-5 w-5 text-green-600 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <div>
+                            <div class="text-sm font-medium text-gray-500">Email Address</div>
+                            <div class="text-gray-900 mt-1">{{ doctor.email }}</div>
+                        </div>
+                    </div>
+                    
+                    {% if doctor.phones %}
+                    <div class="flex items-start">
+                        <svg class="h-5 w-5 text-green-600 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                        </svg>
+                        <div>
+                            <div class="text-sm font-medium text-gray-500">Phone Number{{ 's' if doctor.phones|length > 1 else '' }}</div>
+                            <div class="text-gray-900 mt-1 space-y-1">
+                                {% for phone in doctor.phones %}
+                                <div>{{ phone.phone }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if doctor.addresses %}
+                    <div class="flex items-start md:col-span-2">
+                        <svg class="h-5 w-5 text-green-600 mr-3 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        <div>
+                            <div class="text-sm font-medium text-gray-500">Address{{ 'es' if doctor.addresses|length > 1 else '' }}</div>
+                            <div class="text-gray-900 mt-1 space-y-2">
+                                {% for address in doctor.addresses %}
+                                <div>{{ address.address }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
