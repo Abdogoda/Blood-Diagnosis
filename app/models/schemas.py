@@ -57,26 +57,3 @@ class DoctorInfoResponse(BaseModel):
         from_attributes = True
 
 
-# Phone and Address Schemas
-class UserPhoneCreate(BaseModel):
-    phone: str = Field(..., min_length=1, max_length=30)
-
-
-class UserAddressCreate(BaseModel):
-    address: str = Field(..., min_length=1)
-
-
-class UserPhoneResponse(BaseModel):
-    id: int
-    phone: str
-
-    class Config:
-        from_attributes = True
-
-
-class UserAddressResponse(BaseModel):
-    id: int
-    address: str
-
-    class Config:
-        from_attributes = True

@@ -73,8 +73,7 @@ async def patient_profile(
         }, status_code=404)
     
     # Get patient phones
-    phones = patient.phones
-    phone = phones[0].phone if phones else None
+    phone = patient.phone
     
     medical_records = [
         {"date": "2025-12-01", "test": "CBC Analysis", "result": "Normal", "doctor": "Dr. John Doe"},
@@ -115,8 +114,7 @@ async def account_page(
     doctor_info = db.query(User).filter(User.id == current_user.id).first().doctor_info
     
     # Get user phones
-    phones = current_user.phones
-    phone = phones[0].phone if phones else None
+    phone = current_user.phone
     
     return templates.TemplateResponse("doctor/account.html", {
         "request": request,
@@ -149,16 +147,7 @@ async def update_profile(
     current_user.fname = fname
     current_user.lname = lname
     current_user.email = email
-    
-    # Update or create phone number
-    if phone:
-        from app.database import UserPhone
-        user_phone = db.query(UserPhone).filter(UserPhone.user_id == current_user.id).first()
-        if user_phone:
-            user_phone.phone = phone
-        else:
-            new_phone = UserPhone(user_id=current_user.id, phone=phone)
-            db.add(new_phone)
+    current_user.phone = phone
     
     # Update doctor info
     if specialization:

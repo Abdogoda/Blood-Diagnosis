@@ -7,11 +7,7 @@ from .schemas import (
     Token,
     TokenData,
     DoctorInfoCreate,
-    DoctorInfoResponse,
-    UserPhoneCreate,
-    UserAddressCreate,
-    UserPhoneResponse,
-    UserAddressResponse
+    DoctorInfoResponse
 )
 
 __all__ = [
@@ -23,8 +19,4 @@ __all__ = [
     "TokenData",
     "DoctorInfoCreate",
     "DoctorInfoResponse",
-    "UserPhoneCreate",
-    "UserAddressCreate",
-    "UserPhoneResponse",
-    "UserAddressResponse",
 ]

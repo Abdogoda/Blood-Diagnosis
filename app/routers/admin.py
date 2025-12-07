@@ -181,6 +181,8 @@ async def add_doctor(
         password=get_password_hash(password),
         gender=gender,
         blood_type=blood_type,
+        phone=phone,
+        address=address,
         role="doctor",
         is_active=1
     )
@@ -188,19 +190,9 @@ async def add_doctor(
     db.add(new_doctor)
     db.flush()
     
-    # Add phone
-    from app.database import UserPhone, UserAddress, DoctorInfo
-    
-    if phone:
-        new_phone = UserPhone(user_id=new_doctor.id, phone=phone)
-        db.add(new_phone)
-    
-    # Add address
-    if address:
-        new_address = UserAddress(user_id=new_doctor.id, address=address)
-        db.add(new_address)
-    
     # Add doctor info
+    from app.database import DoctorInfo
+    
     doctor_info = DoctorInfo(
         user_id=new_doctor.id,
         specialization=specialization,
@@ -416,15 +408,11 @@ async def account_page(
     current_user: User = Depends(require_role(["admin"])),
     db: Session = Depends(get_db)
 ):
-    # Get user phones
-    phones = current_user.phones
-    phone = phones[0].phone if phones else None
-    
     return templates.TemplateResponse("admin/account.html", {
         "request": request,
         "current_user": current_user,
         "admin": current_user,
-        "phone": phone
+        "phone": current_user.phone
     })
 
 
@@ -449,16 +437,7 @@ async def update_profile(
     current_user.fname = fname
     current_user.lname = lname
     current_user.email = email
-    
-    # Update or create phone number
-    if phone:
-        from app.database import UserPhone
-        user_phone = db.query(UserPhone).filter(UserPhone.user_id == current_user.id).first()
-        if user_phone:
-            user_phone.phone = phone
-        else:
-            new_phone = UserPhone(user_id=current_user.id, phone=phone)
-            db.add(new_phone)
+    current_user.phone = phone
     
     db.commit()
     db.refresh(current_user)

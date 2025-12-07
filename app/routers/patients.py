@@ -80,14 +80,11 @@ async def account_page(
     db: Session = Depends(get_db)
 ):
     # Get user phones
-    phones = db.query(User).filter(User.id == current_user.id).first().phones
-    phone = phones[0].phone if phones else None
-    
     return templates.TemplateResponse("patient/account.html", {
         "request": request,
         "current_user": current_user,
         "patient": current_user,
-        "phone": phone
+        "phone": current_user.phone
     })
 
 
@@ -119,16 +116,7 @@ async def update_profile(
     current_user.email = email
     current_user.gender = gender
     current_user.blood_type = blood_type
-    
-    # Update or create phone number
-    if phone:
-        from app.database import UserPhone
-        user_phone = db.query(UserPhone).filter(UserPhone.user_id == current_user.id).first()
-        if user_phone:
-            user_phone.phone = phone
-        else:
-            new_phone = UserPhone(user_id=current_user.id, phone=phone)
-            db.add(new_phone)
+    current_user.phone = phone
     
     db.commit()
     db.refresh(current_user)

@@ -185,6 +185,8 @@ async def register(
     role: str = Form(...),
     gender: str = Form(None),
     blood_type: str = Form(None),
+    phone: str = Form(None),
+    address: str = Form(None),
     license_number: str = Form(None),
     specialization: str = Form(None),
     db: Session = Depends(get_db)
@@ -262,7 +264,9 @@ async def register(
         lname=lname,
         gender=gender,
         role=role,
-        blood_type=blood_type
+        blood_type=blood_type,
+        phone=phone,
+        address=address
     )
     
     db.add(db_user)

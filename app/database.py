@@ -31,29 +31,13 @@ class User(Base):
     email = Column(String(200), unique=True, nullable=False)
     role = Column(String(10))
     blood_type = Column(String(3))
+    phone = Column(String(30))
+    address = Column(Text)
     profile_image = Column(String(255), nullable=True)
     is_active = Column(Integer, default=1, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    phones = relationship("UserPhone", back_populates="user")
-    addresses = relationship("UserAddress", back_populates="user")
     doctor_info = relationship("DoctorInfo", back_populates="user", uselist=False)
-
-
-class UserPhone(Base):
-    __tablename__ = "user_phones"
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
-    phone = Column(String(30), nullable=False)
-    user = relationship("User", back_populates="phones")
-
-
-class UserAddress(Base):
-    __tablename__ = "user_addresses"
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
-    address = Column(Text, nullable=False)
-    user = relationship("User", back_populates="addresses")
 
 
 class DoctorInfo(Base):
