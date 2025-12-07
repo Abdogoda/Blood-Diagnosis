@@ -1,0 +1,137 @@
+{% extends "layouts/base_admin.html" %}
+
+{% block title %}Patient Reports - {{ patient.fname }} {{ patient.lname }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Back Button -->
+    <div class="mb-6">
+        <a href="/admin/patients/{{ patient.id }}" class="inline-flex items-center text-gray-600 hover:text-gray-900">
+            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Back to Patient Details
+        </a>
+    </div>
+
+    <!-- Flash Messages -->
+    {% include "shared/messages.html" %}
+
+    <!-- Patient Header -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="flex items-center">
+            {% if patient.profile_image %}
+            <img src="/{{ patient.profile_image }}" alt="Profile" class="h-16 w-16 rounded-full object-cover border-2 border-blue-500">
+            {% else %}
+            <div class="h-16 w-16 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-2xl">
+                {{ patient.fname[0] }}{{ patient.lname[0] }}
+            </div>
+            {% endif %}
+            <div class="ml-4">
+                <h1 class="text-2xl font-bold text-gray-900">{{ patient.fname }} {{ patient.lname }}'s Reports</h1>
+                <p class="text-sm text-gray-600">Patient ID: #{{ patient.id }} | {{ patient.email }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tests & Reports -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Test History</h2>
+            <p class="text-sm text-gray-600 mt-1">All tests and reports for this patient</p>
+        </div>
+
+        {% if tests %}
+        <div class="divide-y divide-gray-200">
+            {% for test in tests %}
+            <div class="p-6 hover:bg-gray-50 transition-colors">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center">
+                            <h3 class="text-lg font-semibold text-gray-900">{{ test.name }}</h3>
+                            <span class="ml-3 px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
+                                Test #{{ test.id }}
+                            </span>
+                        </div>
+                        {% if test.description %}
+                        <p class="mt-2 text-sm text-gray-600">{{ test.description }}</p>
+                        {% endif %}
+                        <div class="mt-3 flex items-center space-x-4 text-sm text-gray-500">
+                            <div class="flex items-center">
+                                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                {{ test.test_time }}
+                            </div>
+                            <div class="flex items-center">
+                                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                {{ test.results_count }} Result{{ 's' if test.results_count != 1 else '' }}
+                            </div>
+                            <div class="flex items-center">
+                                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                                </svg>
+                                {{ test.files_count }} File{{ 's' if test.files_count != 1 else '' }}
+                            </div>
+                        </div>
+
+                        <!-- Results Section -->
+                        {% if test.results %}
+                        <div class="mt-4">
+                            <h4 class="text-sm font-medium text-gray-700 mb-2">Test Results:</h4>
+                            <div class="space-y-2">
+                                {% for result in test.results %}
+                                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="text-sm font-medium text-gray-900">Result Value: {{ result.result_value }}</div>
+                                            {% if result.comment %}
+                                            <p class="mt-1 text-sm text-gray-600">{{ result.comment }}</p>
+                                            {% endif %}
+                                        </div>
+                                        <span class="text-xs text-gray-500">{{ result.result_time.strftime('%b %d, %Y') }}</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Files Section -->
+                        {% if test.files %}
+                        <div class="mt-4">
+                            <h4 class="text-sm font-medium text-gray-700 mb-2">Attached Files:</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {% for file in test.files %}
+                                <a href="/{{ file.file_path }}" target="_blank" class="flex items-center p-2 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors">
+                                    <svg class="h-5 w-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-900 truncate">{{ file.file_name }}</p>
+                                        <p class="text-xs text-gray-500">{{ file.file_type }} | {{ file.uploaded_time.strftime('%b %d, %Y') }}</p>
+                                    </div>
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="px-6 py-12 text-center">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <p class="mt-4 text-lg font-medium text-gray-900">No tests found</p>
+            <p class="mt-1 text-sm text-gray-500">This patient hasn't taken any tests yet</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -246,10 +246,41 @@ async def toggle_doctor_status(
 @router.get("/patients")
 def admin_patients(
     request: Request,
+    search: str = "",
+    blood_type: str = "all",
+    status: str = "all",
     current_user: User = Depends(require_role(["admin"])),
     db: Session = Depends(get_db)
 ):
-    patients_query = db.query(User).filter(User.role == "patient").all()
+    from app.database import Test
+    
+    # Base query
+    query = db.query(User).filter(User.role == "patient")
+    
+    # Search filter
+    if search:
+        search_filter = f"%{search}%"
+        query = query.filter(
+            (User.fname.ilike(search_filter)) |
+            (User.lname.ilike(search_filter)) |
+            (User.email.ilike(search_filter))
+        )
+    
+    # Blood type filter
+    if blood_type and blood_type != "all":
+        query = query.filter(User.blood_type == blood_type)
+    
+    # Status filter
+    if status == "active":
+        query = query.filter(User.is_active == 1)
+    elif status == "inactive":
+        query = query.filter(User.is_active == 0)
+    
+    patients_query = query.all()
+    
+    # Get available blood types
+    blood_types = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+    
     patients = [
         {
             "id": p.id,
@@ -257,8 +288,9 @@ def admin_patients(
             "name": f"{p.fname} {p.lname}",
             "email": p.email,
             "blood_type": p.blood_type or "N/A",
-            "test_count": 0,  # Will be implemented when tests are added
-            "last_visit": p.created_at.strftime("%Y-%m-%d")
+            "test_count": db.query(Test).filter(Test.patient_id == p.id).count(),
+            "joined": p.created_at.strftime("%b %d, %Y"),
+            "is_active": p.is_active == 1
         }
         for p in patients_query
     ]
@@ -266,8 +298,100 @@ def admin_patients(
     return templates.TemplateResponse("admin/patients.html", {
         "request": request,
         "current_user": current_user,
-        "patients": patients
+        "patients": patients,
+        "search": search,
+        "blood_types": blood_types,
+        "selected_blood_type": blood_type,
+        "selected_status": status
     })
+
+
+@router.get("/patients/{patient_id}")
+def view_patient(
+    request: Request,
+    patient_id: int,
+    current_user: User = Depends(require_role(["admin"])),
+    db: Session = Depends(get_db)
+):
+    patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
+    
+    if not patient:
+        response = RedirectResponse(url="/admin/patients", status_code=303)
+        set_flash_message(response, "error", "Patient not found")
+        return response
+    
+    return templates.TemplateResponse("admin/patient_detail.html", {
+        "request": request,
+        "current_user": current_user,
+        "patient": patient
+    })
+
+
+@router.get("/patients/{patient_id}/reports")
+def view_patient_reports(
+    request: Request,
+    patient_id: int,
+    current_user: User = Depends(require_role(["admin"])),
+    db: Session = Depends(get_db)
+):
+    from app.database import Test, TestResult, TestFile
+    
+    patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
+    
+    if not patient:
+        response = RedirectResponse(url="/admin/patients", status_code=303)
+        set_flash_message(response, "error", "Patient not found")
+        return response
+    
+    # Get all tests for this patient
+    tests = db.query(Test).filter(Test.patient_id == patient_id).order_by(Test.test_time.desc()).all()
+    
+    # Format tests with their results and files
+    formatted_tests = []
+    for test in tests:
+        results = db.query(TestResult).filter(TestResult.test_id == test.id).all()
+        files = db.query(TestFile).filter(TestFile.test_id == test.id).all()
+        
+        formatted_tests.append({
+            "id": test.id,
+            "name": test.name,
+            "description": test.description,
+            "test_time": test.test_time.strftime("%b %d, %Y at %I:%M %p"),
+            "results_count": len(results),
+            "files_count": len(files),
+            "results": results,
+            "files": files
+        })
+    
+    return templates.TemplateResponse("admin/patient_reports.html", {
+        "request": request,
+        "current_user": current_user,
+        "patient": patient,
+        "tests": formatted_tests
+    })
+
+
+@router.post("/patients/{patient_id}/toggle-status")
+def toggle_patient_status(
+    patient_id: int,
+    current_user: User = Depends(require_role(["admin"])),
+    db: Session = Depends(get_db)
+):
+    patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
+    
+    if not patient:
+        response = RedirectResponse(url="/admin/patients", status_code=303)
+        set_flash_message(response, "error", "Patient not found")
+        return response
+    
+    # Toggle status
+    patient.is_active = 0 if patient.is_active == 1 else 1
+    db.commit()
+    
+    status_text = "activated" if patient.is_active == 1 else "deactivated"
+    response = RedirectResponse(url="/admin/patients", status_code=303)
+    set_flash_message(response, "success", f"Patient {patient.fname} {patient.lname} has been {status_text}")
+    return response
 
 
 @router.get("/models")
