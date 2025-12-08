@@ -510,20 +510,6 @@ def toggle_patient_status(
     return response
 
 
-@router.get("/models")
-def admin_models(
-    request: Request,
-    current_user: User = Depends(require_role(["admin"]))
-):
-    models = [
-        {"name": "CBC Analysis Model", "version": "2.1", "accuracy": 99.5, "predictions": 10234, "speed": 2.1, "status": "active", "last_updated": "2025-12-01", "type": "Neural Network"},
-        {"name": "Blood Image Classifier", "version": "1.8", "accuracy": 98.7, "predictions": 5000, "speed": 2.5, "status": "active", "last_updated": "2025-11-25", "type": "CNN"},
-    ]
-    return templates.TemplateResponse("admin/models.html", {
-        "request": request,
-        "current_user": current_user,
-        "models": models
-    })
 
 
 @router.get("/account")
