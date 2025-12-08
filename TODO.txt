@@ -1,0 +1,23 @@
+1. i see there are three functions repeated for all kind of users which are update_profile, change_password, and upload_profile_image
+
+2. Doctor can diagnois a patient and that will create a record in medical history. 
+	- doctor can do this only for his patients. 
+	- view patient medical history in patient profile.
+
+3. Working with blood cell images:
+	- i will not make ai prediction to it.
+	- it will only upload the image to uploads/tests/blood_cell with random name with datetime.
+	- make a new tests record with the patient id.
+	- make a new test_files record with the image name, extension, path, type (input).
+
+4. Working with cbc test:
+	- create tests record in the database for the patient_id.
+	- if the user upload csv file: add two columns in the file called Diagnosis, Predicted_Anemia having the prediction values.
+	- if the user made a test with inputs: make an csv file with the input data and add the output columns.
+	- save the updated file in uploads/tests/cbc with random name with datetime.
+	- make a new test_files record with the csv file name, extension, path, type (output).
+
+5. Create a messages table:
+	- Any user (not nessecary authentiacted) can send a message to admin from contact page.
+	- The messages show for the admin in order and make it able to response to user by its email.
+	- Apply read message functionality.
