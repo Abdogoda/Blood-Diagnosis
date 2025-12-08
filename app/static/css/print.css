@@ -1,4 +1,4 @@
-/* Print Styles for Medical Reports */
+/* Print Styles for Professional Laboratory Reports */
 
 @media print {
     /* Hide non-essential elements */
@@ -12,221 +12,234 @@
         display: none !important;
     }
 
-    /* Reset page styles */
+    /* Reset and professional setup */
     body {
         background: white !important;
-        color: black !important;
+        color: #000 !important;
         margin: 0;
-        padding: 20px;
+        padding: 0;
+        font-family: 'Arial', 'Helvetica', sans-serif;
+        font-size: 11pt;
+        line-height: 1.4;
     }
 
-    /* Page setup */
+    /* Page setup with professional margins */
     @page {
         size: A4;
-        margin: 1.5cm;
+        margin: 1cm 1.5cm;
     }
 
-    /* Simple container */
-    .print-container {
-        width: 100%;
-        max-width: 100%;
+    /* Container */
+    .px-4, .py-6, .animate-slide-up {
+        padding: 0 !important;
+        margin: 0 !important;
     }
 
-    /* Report header */
+    .max-w-5xl, .mx-auto {
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+
+    /* Professional Report Header */
     .report-header {
         text-align: center;
-        margin-bottom: 30px;
-        padding-bottom: 20px;
-        border-bottom: 2px solid #000;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 3px solid #2563eb;
     }
 
     .report-header h1 {
-        font-size: 24px;
+        font-size: 20pt;
         font-weight: bold;
-        margin: 0 0 10px 0;
-        color: #000;
+        margin: 0 0 5px 0;
+        color: #1e40af;
+        letter-spacing: 0.5px;
     }
 
     .report-header p {
-        font-size: 12px;
-        color: #333;
-        margin: 5px 0;
+        font-size: 10pt;
+        color: #475569;
+        margin: 3px 0;
     }
 
-    /* Result sections */
-    .result-section {
+    /* Result sections with professional styling */
+    .result-section,
+    .glass-effect {
         page-break-inside: avoid;
-        margin-bottom: 30px;
-        border: 1px solid #ddd;
-        padding: 15px;
+        margin-bottom: 15px;
+        border: 2px solid #e2e8f0;
+        background: white !important;
+        padding: 0;
+    }
+
+    /* Section headers with blue accent */
+    .result-section > div:first-child,
+    .px-8.py-6 {
+        background: #f1f5f9 !important;
+        border-bottom: 2px solid #cbd5e1 !important;
+        padding: 8px 12px !important;
+        margin: 0 !important;
     }
 
     .result-section h2 {
-        font-size: 18px;
+        font-size: 14pt;
         font-weight: bold;
-        margin: 0 0 15px 0;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #ddd;
-        color: #000;
+        margin: 0 !important;
+        color: #1e40af !important;
     }
 
-    /* Prediction summary */
+    /* Prediction Summary - Professional cards */
+    .prediction-summary-container,
+    .bg-white.p-6.border-b {
+        padding: 10px 12px !important;
+        background: white !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+    }
+
     .prediction-summary {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        margin-bottom: 20px;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px !important;
     }
 
     .summary-item {
-        padding: 10px;
-        border: 1px solid #ddd;
-        background: #f9f9f9;
+        padding: 8px 10px !important;
+        border: 1px solid #cbd5e1 !important;
+        background: #f8fafc !important;
     }
 
     .summary-item .label {
-        font-size: 10px;
-        color: #666;
+        font-size: 9pt !important;
+        color: #64748b !important;
         text-transform: uppercase;
-        margin-bottom: 5px;
+        font-weight: 600;
+        margin-bottom: 3px;
+        display: block;
     }
 
     .summary-item .value {
-        font-size: 16px;
+        font-size: 13pt !important;
         font-weight: bold;
-        color: #000;
+        color: #0f172a !important;
+        display: block;
     }
 
-    /* CBC Parameters */
+    /* CBC Parameters - Professional table */
     .cbc-parameters {
-        margin-bottom: 20px;
+        padding: 10px 12px !important;
+        background: white !important;
+        border-bottom: 1px solid #e2e8f0 !important;
     }
 
     .cbc-parameters h3 {
-        font-size: 14px;
+        font-size: 12pt !important;
         font-weight: bold;
-        margin: 0 0 10px 0;
-        color: #000;
+        margin: 0 0 8px 0 !important;
+        color: #1e40af !important;
     }
 
     .parameters-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 8px !important;
     }
 
     .parameter-item {
-        border: 1px solid #ddd;
-        padding: 8px;
+        border: 1px solid #cbd5e1 !important;
+        padding: 6px 8px !important;
         text-align: center;
-        background: white;
+        background: #f8fafc !important;
     }
 
     .parameter-item .param-label {
-        font-size: 9px;
-        color: #666;
-        margin-bottom: 3px;
+        font-size: 9pt !important;
+        color: #0f172a !important;
+        font-weight: bold;
+        margin-bottom: 2px;
+        display: block;
     }
 
     .parameter-item .param-value {
-        font-size: 14px;
+        font-size: 12pt !important;
         font-weight: bold;
-        color: #000;
+        color: #1e40af !important;
         margin-bottom: 2px;
+        display: block;
     }
 
     .parameter-item .param-unit {
-        font-size: 8px;
-        color: #666;
+        font-size: 8pt !important;
+        color: #64748b !important;
+        display: block;
     }
 
-    /* Medical Report */
+    /* Medical Report Section */
     .medical-report {
-        margin-top: 20px;
-        page-break-inside: avoid;
+        padding: 10px 12px !important;
+        background: white !important;
     }
 
     .medical-report h3 {
-        font-size: 14px;
+        font-size: 12pt !important;
         font-weight: bold;
-        margin: 0 0 10px 0;
-        color: #000;
+        margin: 0 0 8px 0 !important;
+        color: #1e40af !important;
+    }
+
+    .medical-report .prose {
+        max-width: 100% !important;
     }
 
     .medical-report pre {
-        white-space: pre-wrap;
-        font-family: Arial, sans-serif;
-        font-size: 11px;
-        line-height: 1.6;
-        color: #000;
-        border: 1px solid #ddd;
-        padding: 15px;
-        background: white;
-        margin: 0;
+        white-space: pre-wrap !important;
+        font-family: 'Arial', sans-serif !important;
+        font-size: 10pt !important;
+        line-height: 1.5 !important;
+        color: #1e293b !important;
+        border: 1px solid #cbd5e1 !important;
+        padding: 10px !important;
+        background: #f8fafc !important;
+        margin: 0 !important;
     }
 
-    /* Notes section */
+    /* Notes section - hide for printing */
     .notes-section {
-        margin-top: 20px;
-        padding: 15px;
-        border: 1px solid #ddd;
-        page-break-inside: avoid;
+        display: none !important;
     }
 
-    .notes-section h3 {
-        font-size: 14px;
-        font-weight: bold;
-        margin: 0 0 10px 0;
-        color: #000;
-    }
-
-    .notes-section p {
-        font-size: 11px;
-        line-height: 1.6;
-        color: #000;
-        margin: 0;
-    }
-
-    /* Footer info */
+    /* Professional Footer */
     .print-footer {
-        margin-top: 30px;
-        padding-top: 15px;
-        border-top: 1px solid #ddd;
-        font-size: 9px;
+        margin-top: 15px;
+        padding-top: 8px;
+        border-top: 2px solid #cbd5e1;
+        font-size: 8pt;
         text-align: center;
-        color: #666;
+        color: #64748b !important;
     }
 
-    /* Remove colors and gradients */
-    * {
-        color: #000 !important;
-        background: white !important;
-        box-shadow: none !important;
-        text-shadow: none !important;
-    }
-
-    /* Keep borders and structure */
-    .border,
-    .border-b,
-    .border-t,
-    .border-l,
-    .border-r {
-        border-color: #ddd !important;
-    }
-
-    /* Ensure proper spacing */
-    .mb-8,
-    .my-8 {
-        margin-bottom: 20px !important;
-    }
-
-    /* Icons should be hidden or simplified */
+    /* Hide SVG icons */
     svg {
-        display: none;
+        display: none !important;
     }
 
-    /* Multiple results */
+    /* Remove excessive rounded corners */
+    .rounded-lg,
+    .rounded-xl,
+    .rounded-2xl,
+    .rounded-full {
+        border-radius: 3px !important;
+    }
+
+    /* Page breaks for multiple results */
     .result-separator {
         page-break-after: always;
+    }
+
+    /* Professional hover effects removal */
+    .hover-lift,
+    .hover\:border-blue-400,
+    .transition-colors {
+        transform: none !important;
+        transition: none !important;
     }
 }
