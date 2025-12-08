@@ -59,11 +59,13 @@ class CBCPredictionService:
         prediction = self.model.predict(df)[0]
         probabilities = self.model.predict_proba(df)[0]
         confidence = float(max(probabilities))
+        confidence_percentage = confidence * 100  # Convert to percentage
         
         result = {
             "prediction": int(prediction),
             "prediction_label": "Anemia" if prediction == 1 else "Normal",
-            "confidence": confidence,
+            "confidence": f"{confidence_percentage:.2f}%",
+            "confidence_raw": confidence,
             "probabilities": {
                 "normal": float(probabilities[0]),
                 "anemia": float(probabilities[1])
@@ -94,13 +96,14 @@ class CBCPredictionService:
         results = []
         for i, (pred, probs) in enumerate(zip(predictions, probabilities)):
             row_data = df_prepared.iloc[i]
+            confidence_percentage = float(probs[1]) * 100  # Convert to percentage
             result = {
                 "row_index": i,
-                "prediction": "أنيميا" if int(pred) == 1 else "طبيعي",
+                "prediction": "Anemia" if int(pred) == 1 else "Normal",
                 "prediction_code": int(pred),
-                "probability": float(probs[1]),
+                "probability": f"{confidence_percentage:.2f}%",
                 "probability_text": f"{probs[1]:.2%}",
-                "confidence": "عالية" if max(probs) > 0.8 else "متوسطة",
+                "confidence": "High" if max(probs) > 0.8 else "Medium",
                 "probabilities": {
                     "normal": float(probs[0]),
                     "anemia": float(probs[1])
