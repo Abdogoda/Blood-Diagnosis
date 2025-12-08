@@ -18,15 +18,9 @@
                 <div class="flex items-center justify-between">
                     <div class="flex-1">
                         <p class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-2">Total Patients</p>
-                        <p class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">0</p>
+                        <p class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">{{ stats.total_patients }}</p>
                         <div class="mt-4 flex items-center text-sm">
-                            <span class="text-green-600 font-semibold flex items-center">
-                                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                                </svg>
-                                +12%
-                            </span>
-                            <span class="text-gray-500 ml-2">vs last month</span>
+                            <span class="text-gray-500">Your patients</span>
                         </div>
                     </div>
                     <div class="flex-shrink-0">
@@ -54,7 +48,7 @@
                 <div class="flex items-center justify-between">
                     <div class="flex-1">
                         <p class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-2">Pending Reports</p>
-                        <p class="text-4xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">0</p>
+                        <p class="text-4xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">{{ stats.pending_reports }}</p>
                         <div class="mt-4 flex items-center text-sm">
                             <span class="text-gray-500">Awaiting review</span>
                         </div>
@@ -84,7 +78,7 @@
                 <div class="flex items-center justify-between">
                     <div class="flex-1">
                         <p class="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-2">Urgent Cases</p>
-                        <p class="text-4xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">0</p>
+                        <p class="text-4xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">{{ stats.urgent_cases }}</p>
                         <div class="mt-4 flex items-center text-sm">
                             <span class="text-gray-500">Requires attention</span>
                         </div>

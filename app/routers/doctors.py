@@ -19,15 +19,18 @@ async def doctor_dashboard(
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
+    # Get actual patient count
+    total_patients = db.query(User).filter(User.role == "patient", User.is_active == 1).count()
+    
     stats = {
-        "total_patients": 45,
-        "pending_reports": 12,
-        "urgent_cases": 3,
-        "completed_today": 8
+        "total_patients": total_patients,
+        "pending_reports": 0,
+        "urgent_cases": 0,
+        "completed_today": 0
     }
     
     # Get recent patients (users with role='patient')
-    recent_patients_query = db.query(User).filter(User.role == "patient").limit(5).all()
+    recent_patients_query = db.query(User).filter(User.role == "patient", User.is_active == 1).order_by(User.created_at.desc()).limit(5).all()
     recent_patients = [
         {
             "initials": f"{p.fname[0]}{p.lname[0]}",
@@ -46,6 +49,45 @@ async def doctor_dashboard(
         "recent_patients": recent_patients
     })
 
+@router.get("/patients")
+async def patients_list(
+    request: Request,
+    search: str = None,
+    blood_type: str = None,
+    gender: str = None,
+    current_user: User = Depends(require_role(["doctor", "admin"])),
+    db: Session = Depends(get_db)
+):
+    # Build query for patients
+    query = db.query(User).filter(User.role == "patient", User.is_active == 1)
+    
+    # Apply filters
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(
+            (User.fname.ilike(search_term)) | 
+            (User.lname.ilike(search_term)) | 
+            (User.email.ilike(search_term))
+        )
+    
+    if blood_type:
+        query = query.filter(User.blood_type == blood_type)
+    
+    if gender:
+        query = query.filter(User.gender == gender)
+    
+    # Get patients
+    patients = query.order_by(User.created_at.desc()).all()
+    
+    return templates.TemplateResponse("doctor/patients.html", {
+        "request": request,
+        "current_user": current_user,
+        "patients": patients,
+        "search": search,
+        "selected_blood_type": blood_type,
+        "selected_gender": gender
+    })
+
 @router.get("/add-patient")
 async def add_patient_page(
     request: Request,
@@ -56,6 +98,76 @@ async def add_patient_page(
         "current_user": current_user
     })
 
+@router.post("/patient/add")
+async def add_patient(
+    request: Request,
+    first_name: str = Form(...),
+    last_name: str = Form(...),
+    email: str = Form(...),
+    phone: str = Form(...),
+    dob: str = Form(None),
+    gender: str = Form(...),
+    address: str = Form(None),
+    blood_type: str = Form(None),
+    medical_history: str = Form(None),
+    current_user: User = Depends(require_role(["doctor", "admin"])),
+    db: Session = Depends(get_db)
+):
+    from app.services.password_utils import get_password_hash
+    import random
+    import string
+    
+    # Check if email already exists
+    existing_user = db.query(User).filter(User.email == email).first()
+    if existing_user:
+        response = RedirectResponse(url="/doctor/add-patient", status_code=303)
+        set_flash_message(response, "error", "A user with this email already exists")
+        return response
+    
+    # Generate username from email
+    username = email.split('@')[0]
+    # Check if username exists and make it unique if necessary
+    base_username = username
+    counter = 1
+    while db.query(User).filter(User.username == username).first():
+        username = f"{base_username}{counter}"
+        counter += 1
+    
+    # Generate random temporary password
+    temp_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+    
+    # Create new patient user
+    new_patient = User(
+        username=username,
+        password=get_password_hash(temp_password),
+        fname=first_name,
+        lname=last_name,
+        email=email,
+        phone=phone,
+        gender=gender,
+        address=address,
+        blood_type=blood_type if blood_type else None,
+        role="patient",
+        is_active=1
+    )
+    
+    try:
+        db.add(new_patient)
+        db.commit()
+        db.refresh(new_patient)
+        
+        # TODO: Send email with temporary password to patient
+        # For now, we'll just show a success message
+        
+        response = RedirectResponse(url=f"/doctor/patient/{new_patient.id}", status_code=303)
+        set_flash_message(response, "success", f"Patient added successfully! Temporary password: {temp_password}")
+        return response
+    except Exception as e:
+        db.rollback()
+        response = RedirectResponse(url="/doctor/add-patient", status_code=303)
+        set_flash_message(response, "error", f"Error adding patient: {str(e)}")
+        return response
+
 @router.get("/patient/{patient_id}")
 async def patient_profile(
     request: Request,
@@ -63,6 +175,8 @@ async def patient_profile(
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
+    from app.database import MedicalHistory, Test
+    
     # Get patient user
     patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
     if not patient:
@@ -72,12 +186,38 @@ async def patient_profile(
             "error": "Patient not found"
         }, status_code=404)
     
-    # Get patient phones
+    # Get patient phone
     phone = patient.phone
     
-    medical_records = [
-        {"date": "2025-12-01", "test": "CBC Analysis", "result": "Normal", "doctor": "Dr. John Doe"},
-        {"date": "2025-11-15", "test": "Blood Smear", "result": "Normal", "doctor": "Dr. John Doe"},
+    # Get medical history ordered from oldest to latest
+    medical_history_query = db.query(MedicalHistory).filter(
+        MedicalHistory.patient_id == patient_id
+    ).order_by(MedicalHistory.diagnosis_date.asc()).all()
+    
+    medical_history = []
+    for record in medical_history_query:
+        doctor = db.query(User).filter(User.id == record.doctor_id).first() if record.doctor_id else None
+        medical_history.append({
+            "id": record.id,
+            "condition": record.medical_condition,
+            "date": record.diagnosis_date.strftime("%b %d, %Y"),
+            "treatment": record.treatment,
+            "notes": record.notes,
+            "doctor_name": f"Dr. {doctor.fname} {doctor.lname}" if doctor else "Unknown"
+        })
+    
+    # Get recent tests
+    recent_tests_query = db.query(Test).filter(
+        Test.patient_id == patient_id
+    ).order_by(Test.test_time.desc()).limit(5).all()
+    
+    recent_tests = [
+        {
+            "id": test.id,
+            "name": test.name,
+            "date": test.test_time.strftime("%b %d, %Y")
+        }
+        for test in recent_tests_query
     ]
     
     return templates.TemplateResponse("doctor/patient_profile.html", {
@@ -85,7 +225,8 @@ async def patient_profile(
         "current_user": current_user,
         "patient": patient,
         "phone": phone,
-        "medical_records": medical_records
+        "medical_history": medical_history,
+        "recent_tests": recent_tests
     })
 
 @router.get("/reports")

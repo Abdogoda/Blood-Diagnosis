@@ -427,6 +427,87 @@ def view_patient_reports(
     })
 
 
+@router.get("/add-patient")
+async def add_patient_page(
+    request: Request,
+    current_user: User = Depends(require_role(["admin"]))
+):
+    return templates.TemplateResponse("admin/add_patient.html", {
+        "request": request,
+        "current_user": current_user
+    })
+
+
+@router.post("/patients/add")
+async def add_patient(
+    request: Request,
+    first_name: str = Form(...),
+    last_name: str = Form(...),
+    email: str = Form(...),
+    phone: str = Form(...),
+    dob: str = Form(None),
+    gender: str = Form(...),
+    address: str = Form(None),
+    blood_type: str = Form(None),
+    medical_history: str = Form(None),
+    current_user: User = Depends(require_role(["admin"])),
+    db: Session = Depends(get_db)
+):
+    import random
+    import string
+    
+    # Check if email already exists
+    existing_user = db.query(User).filter(User.email == email).first()
+    if existing_user:
+        response = RedirectResponse(url="/admin/add-patient", status_code=303)
+        set_flash_message(response, "error", "A user with this email already exists")
+        return response
+    
+    # Generate username from email
+    username = email.split('@')[0]
+    # Check if username exists and make it unique if necessary
+    base_username = username
+    counter = 1
+    while db.query(User).filter(User.username == username).first():
+        username = f"{base_username}{counter}"
+        counter += 1
+    
+    # Generate random temporary password
+    temp_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
+    
+    # Create new patient user
+    new_patient = User(
+        username=username,
+        password=get_password_hash(temp_password),
+        fname=first_name,
+        lname=last_name,
+        email=email,
+        phone=phone,
+        gender=gender,
+        address=address,
+        blood_type=blood_type if blood_type else None,
+        role="patient",
+        is_active=1
+    )
+    
+    try:
+        db.add(new_patient)
+        db.commit()
+        db.refresh(new_patient)
+        
+        # TODO: Send email with temporary password to patient
+        # For now, we'll just show a success message
+        
+        response = RedirectResponse(url=f"/admin/patients/{new_patient.id}", status_code=303)
+        set_flash_message(response, "success", f"Patient {first_name} {last_name} added successfully! Temporary password: {temp_password}")
+        return response
+    except Exception as e:
+        db.rollback()
+        response = RedirectResponse(url="/admin/add-patient", status_code=303)
+        set_flash_message(response, "error", f"Error adding patient: {str(e)}")
+        return response
+
+
 @router.post("/patients/{patient_id}/toggle-status")
 def toggle_patient_status(
     patient_id: int,

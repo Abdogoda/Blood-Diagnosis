@@ -1,0 +1,173 @@
+{% extends "layouts/base_doctor.html" %}
+
+{% block title %}My Patients - Doctor Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-slide-up">
+    <!-- Page Header -->
+    <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">My Patients</h1>
+            <p class="mt-2 text-sm text-gray-600">View and manage your patients</p>
+        </div>
+        <a href="/doctor/add-patient" 
+           class="inline-flex items-center px-6 py-3 gradient-blue text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+            </svg>
+            Add New Patient
+        </a>
+    </div>
+
+    <!-- Flash Messages -->
+    {% include "shared/messages.html" %}
+
+    <!-- Search and Filters -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6 glass-effect">
+        <form method="GET" action="/doctor/patients" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                <input type="text" name="search" value="{{ search or '' }}" placeholder="Name, email..." 
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Blood Type</label>
+                <select name="blood_type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                    <option value="">All Blood Types</option>
+                    <option value="A+" {% if selected_blood_type == 'A+' %}selected{% endif %}>A+</option>
+                    <option value="A-" {% if selected_blood_type == 'A-' %}selected{% endif %}>A-</option>
+                    <option value="B+" {% if selected_blood_type == 'B+' %}selected{% endif %}>B+</option>
+                    <option value="B-" {% if selected_blood_type == 'B-' %}selected{% endif %}>B-</option>
+                    <option value="AB+" {% if selected_blood_type == 'AB+' %}selected{% endif %}>AB+</option>
+                    <option value="AB-" {% if selected_blood_type == 'AB-' %}selected{% endif %}>AB-</option>
+                    <option value="O+" {% if selected_blood_type == 'O+' %}selected{% endif %}>O+</option>
+                    <option value="O-" {% if selected_blood_type == 'O-' %}selected{% endif %}>O-</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                <select name="gender" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                    <option value="">All Genders</option>
+                    <option value="male" {% if selected_gender == 'male' %}selected{% endif %}>Male</option>
+                    <option value="female" {% if selected_gender == 'female' %}selected{% endif %}>Female</option>
+                    <option value="other" {% if selected_gender == 'other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="w-full px-4 py-2 gradient-blue text-white rounded-lg hover:shadow-lg transition-all">
+                    Apply Filters
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Patients Count -->
+    <div class="mb-4">
+        <p class="text-sm text-gray-600">
+            <span class="font-semibold text-gray-900">{{ patients|length }}</span> patient(s) found
+        </p>
+    </div>
+
+    <!-- Patients Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden glass-effect">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gradient-to-r from-blue-50 to-indigo-50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Patient</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Gender</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Blood Type</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Phone</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Joined</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% if patients %}
+                        {% for patient in patients %}
+                        <tr class="hover:bg-blue-50 transition-colors duration-200">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    {% if patient.profile_image %}
+                                    <img src="/{{ patient.profile_image }}" alt="{{ patient.fname }} {{ patient.lname }}" 
+                                         class="h-10 w-10 rounded-full object-cover shadow-md">
+                                    {% else %}
+                                    <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-semibold shadow-md">
+                                        {{ patient.fname[0] }}{{ patient.lname[0] }}
+                                    </div>
+                                    {% endif %}
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ patient.fname }} {{ patient.lname }}</div>
+                                        <div class="text-sm text-gray-500">{{ patient.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="text-sm text-gray-900 capitalize">{{ patient.gender or 'N/A' }}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if patient.blood_type %}
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    {{ patient.blood_type }}
+                                </span>
+                                {% else %}
+                                <span class="text-sm text-gray-400">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ patient.phone or 'N/A' }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ patient.created_at.strftime('%Y-%m-%d') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex items-center space-x-3">
+                                    <a href="/doctor/patient/{{ patient.id }}" 
+                                       class="text-blue-600 hover:text-blue-900 transition-colors hover:scale-110 transform" 
+                                       title="View Profile">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                    </a>
+                                    <a href="/doctor/patient/{{ patient.id }}/upload" 
+                                       class="text-green-600 hover:text-green-900 transition-colors hover:scale-110 transform" 
+                                       title="Upload Test">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                                <p class="text-lg font-medium text-gray-900 mb-2">No patients found</p>
+                                <p class="text-sm text-gray-500 mb-4">
+                                    {% if search or selected_blood_type or selected_gender %}
+                                    Try adjusting your filters
+                                    {% else %}
+                                    Start by adding your first patient
+                                    {% endif %}
+                                </p>
+                                <a href="/doctor/add-patient" 
+                                   class="inline-flex items-center px-6 py-3 gradient-blue text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Add Your First Patient
+                                </a>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

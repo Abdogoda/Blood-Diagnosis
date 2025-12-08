@@ -1,0 +1,136 @@
+{% extends "layouts/base_admin.html" %}
+
+{% block title %}Add Patient - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="px-4 py-6 animate-slide-up">
+    <div class="max-w-3xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="/admin/patients" class="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4 transition-colors duration-200">
+                <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Back to Patients
+            </a>
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">Add New Patient</h1>
+            <p class="text-gray-600">Register a new patient in the system</p>
+        </div>
+
+        <!-- Flash Messages -->
+        {% include "shared/messages.html" %}
+
+        <!-- Form Card -->
+        <div class="glass-effect shadow-2xl rounded-2xl overflow-hidden">
+            <div class="px-8 py-10 bg-white">
+                <form action="/admin/patients/add" method="POST" class="space-y-6">
+                    <!-- Personal Information -->
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">Personal Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="first-name" class="block text-sm font-semibold text-gray-700 mb-2">First Name <span class="text-red-500">*</span></label>
+                                <input type="text" id="first-name" name="first_name" required
+                                       class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-400"
+                                       placeholder="John">
+                            </div>
+                            <div>
+                                <label for="last-name" class="block text-sm font-semibold text-gray-700 mb-2">Last Name <span class="text-red-500">*</span></label>
+                                <input type="text" id="last-name" name="last_name" required
+                                       class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-400"
+                                       placeholder="Doe">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="dob" class="block text-sm font-semibold text-gray-700 mb-2">Date of Birth</label>
+                            <input type="date" id="dob" name="dob"
+                                   class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-400">
+                        </div>
+                        <div>
+                            <label for="gender" class="block text-sm font-semibold text-gray-700 mb-2">Gender <span class="text-red-500">*</span></label>
+                            <select id="gender" name="gender" required
+                                    class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-400">
+                                <option value="">Select gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">Contact Information</h3>
+                        <div class="space-y-6">
+                            <div>
+                                <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">Email Address <span class="text-red-500">*</span></label>
+                                <input type="email" id="email" name="email" required
+                                       class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-400"
+                                       placeholder="patient@example.com">
+                            </div>
+                            <div>
+                                <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2">Phone Number <span class="text-red-500">*</span></label>
+                                <input type="tel" id="phone" name="phone" required
+                                       class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-400"
+                                       placeholder="+1 (234) 567-8900">
+                            </div>
+                            <div>
+                                <label for="address" class="block text-sm font-semibold text-gray-700 mb-2">Address</label>
+                                <textarea id="address" name="address" rows="3"
+                                          class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-400 resize-none"
+                                          placeholder="Street address, city, state, ZIP"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medical Information -->
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">Medical Information</h3>
+                        <div class="space-y-6">
+                            <div>
+                                <label for="blood-type" class="block text-sm font-semibold text-gray-700 mb-2">Blood Type</label>
+                                <select id="blood-type" name="blood_type"
+                                        class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-400">
+                                    <option value="">Select blood type</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="medical-history" class="block text-sm font-semibold text-gray-700 mb-2">Medical History</label>
+                                <textarea id="medical-history" name="medical_history" rows="4"
+                                          class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-400 resize-none"
+                                          placeholder="Pre-existing conditions, allergies, medications..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex items-center justify-end space-x-4 pt-4">
+                        <a href="/admin/patients" 
+                           class="px-6 py-3 border-2 border-gray-300 text-sm font-semibold rounded-lg text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 transition-all duration-200">
+                            Cancel
+                        </a>
+                        <button type="submit" 
+                                class="px-8 py-3 gradient-blue text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center space-x-2">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                            </svg>
+                            <span>Add Patient</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

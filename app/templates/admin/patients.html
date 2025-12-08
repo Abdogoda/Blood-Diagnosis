@@ -5,9 +5,18 @@
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Page Header -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Manage Patients</h1>
-        <p class="mt-2 text-sm text-gray-600">View and manage patient accounts</p>
+    <div class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Manage Patients</h1>
+            <p class="mt-2 text-sm text-gray-600">View and manage patient accounts</p>
+        </div>
+        <a href="/admin/add-patient" 
+           class="inline-flex items-center px-6 py-3 gradient-blue text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+            </svg>
+            Add New Patient
+        </a>
     </div>
 
     <!-- Flash Messages -->
