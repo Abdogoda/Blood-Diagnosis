@@ -72,9 +72,9 @@ class MedicalHistory(Base):
     patient_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     doctor_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"))
     medical_condition = Column(Text, nullable=False)
-    diagnosis_date = Column(Date, nullable=False)
-    treatment = Column(Text)
-    notes = Column(Text)
+    treatment = Column(Text, nullable=True)
+    notes = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 
 class Test(Base):
@@ -88,7 +88,7 @@ class Test(Base):
     reviewed_at = Column(DateTime, nullable=True)
     review_status = Column(String(20), default='pending', nullable=False)  # accepted, rejected, pending
     result = Column(Text, nullable=True)
-    comment = Column(Text)
+    comment = Column(Text, nullable=True)
     confidence = Column(Numeric(5,4), nullable=True)
     
     # Relationships
@@ -114,6 +114,7 @@ class Model(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False, unique=True)
     accuracy = Column(Numeric(5,2))
+    tests_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
