@@ -196,6 +196,7 @@ async def patient_profile(
     db: Session = Depends(get_db)
 ):
     from app.database import MedicalHistory, Test
+    from app.services.patient_doctors_service import get_patient_doctors
     
     # Get patient user
     patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
@@ -208,6 +209,9 @@ async def patient_profile(
     
     # Get patient phone
     phone = patient.phone
+    
+    # Get connected doctors for this patient
+    connected_doctors = get_patient_doctors(patient_id, db)
     
     # Get medical history ordered from oldest to latest
     medical_history_query = db.query(MedicalHistory).filter(
@@ -245,6 +249,7 @@ async def patient_profile(
         "current_user": current_user,
         "patient": patient,
         "phone": phone,
+        "connected_doctors": connected_doctors,
         "medical_history": medical_history,
         "recent_tests": recent_tests
     })

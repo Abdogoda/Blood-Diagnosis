@@ -369,6 +369,8 @@ def view_patient(
     current_user: User = Depends(require_role(["admin"])),
     db: Session = Depends(get_db)
 ):
+    from app.services.patient_doctors_service import get_patient_doctors
+    
     patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
     
     if not patient:
@@ -376,10 +378,14 @@ def view_patient(
         set_flash_message(response, "error", "Patient not found")
         return response
     
+    # Get connected doctors for this patient
+    connected_doctors = get_patient_doctors(patient_id, db)
+    
     return templates.TemplateResponse("admin/patient_detail.html", {
         "request": request,
         "current_user": current_user,
-        "patient": patient
+        "patient": patient,
+        "connected_doctors": connected_doctors
     })
 
 

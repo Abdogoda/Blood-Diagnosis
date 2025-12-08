@@ -205,12 +205,17 @@ async def account_page(
     current_user: User = Depends(require_role(["patient", "admin"])),
     db: Session = Depends(get_db)
 ):
-    # Get user phones
+    from app.services.patient_doctors_service import get_patient_doctors
+    
+    # Get doctors connected to this patient
+    connected_doctors = get_patient_doctors(current_user.id, db)
+    
     return templates.TemplateResponse("patient/account.html", {
         "request": request,
         "current_user": current_user,
         "patient": current_user,
-        "phone": current_user.phone
+        "phone": current_user.phone,
+        "connected_doctors": connected_doctors
     })
 
 
