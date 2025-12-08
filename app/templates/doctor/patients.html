@@ -24,39 +24,54 @@
 
     <!-- Search and Filters -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6 glass-effect">
-        <form method="GET" action="/doctor/patients" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
-                <input type="text" name="search" value="{{ search or '' }}" placeholder="Name, email..." 
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+        <form method="GET" action="/doctor/patients" class="space-y-4">
+            <!-- My Patients Toggle (only for doctors) -->
+            {% if current_user.role == 'doctor' %}
+            <div class="flex items-center justify-between pb-4 border-b border-gray-200">
+                <label class="flex items-center cursor-pointer">
+                    <input type="checkbox" name="my_patients" value="true" 
+                           {% if my_patients == 'true' %}checked{% endif %}
+                           onchange="this.form.submit()"
+                           class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 transition-all">
+                    <span class="ml-3 text-sm font-medium text-gray-700">Show only my patients</span>
+                </label>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Blood Type</label>
-                <select name="blood_type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
-                    <option value="">All Blood Types</option>
-                    <option value="A+" {% if selected_blood_type == 'A+' %}selected{% endif %}>A+</option>
-                    <option value="A-" {% if selected_blood_type == 'A-' %}selected{% endif %}>A-</option>
-                    <option value="B+" {% if selected_blood_type == 'B+' %}selected{% endif %}>B+</option>
-                    <option value="B-" {% if selected_blood_type == 'B-' %}selected{% endif %}>B-</option>
-                    <option value="AB+" {% if selected_blood_type == 'AB+' %}selected{% endif %}>AB+</option>
-                    <option value="AB-" {% if selected_blood_type == 'AB-' %}selected{% endif %}>AB-</option>
-                    <option value="O+" {% if selected_blood_type == 'O+' %}selected{% endif %}>O+</option>
-                    <option value="O-" {% if selected_blood_type == 'O-' %}selected{% endif %}>O-</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-                <select name="gender" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
-                    <option value="">All Genders</option>
-                    <option value="male" {% if selected_gender == 'male' %}selected{% endif %}>Male</option>
-                    <option value="female" {% if selected_gender == 'female' %}selected{% endif %}>Female</option>
-                    <option value="other" {% if selected_gender == 'other' %}selected{% endif %}>Other</option>
-                </select>
-            </div>
-            <div class="flex items-end">
-                <button type="submit" class="w-full px-4 py-2 gradient-blue text-white rounded-lg hover:shadow-lg transition-all">
-                    Apply Filters
-                </button>
+            {% endif %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                    <input type="text" name="search" value="{{ search or '' }}" placeholder="Name, email..." 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Blood Type</label>
+                    <select name="blood_type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                        <option value="">All Blood Types</option>
+                        <option value="A+" {% if selected_blood_type == 'A+' %}selected{% endif %}>A+</option>
+                        <option value="A-" {% if selected_blood_type == 'A-' %}selected{% endif %}>A-</option>
+                        <option value="B+" {% if selected_blood_type == 'B+' %}selected{% endif %}>B+</option>
+                        <option value="B-" {% if selected_blood_type == 'B-' %}selected{% endif %}>B-</option>
+                        <option value="AB+" {% if selected_blood_type == 'AB+' %}selected{% endif %}>AB+</option>
+                        <option value="AB-" {% if selected_blood_type == 'AB-' %}selected{% endif %}>AB-</option>
+                        <option value="O+" {% if selected_blood_type == 'O+' %}selected{% endif %}>O+</option>
+                        <option value="O-" {% if selected_blood_type == 'O-' %}selected{% endif %}>O-</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                    <select name="gender" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                        <option value="">All Genders</option>
+                        <option value="male" {% if selected_gender == 'male' %}selected{% endif %}>Male</option>
+                        <option value="female" {% if selected_gender == 'female' %}selected{% endif %}>Female</option>
+                        <option value="other" {% if selected_gender == 'other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full px-4 py-2 gradient-blue text-white rounded-lg hover:shadow-lg transition-all">
+                        Apply Filters
+                    </button>
+                </div>
             </div>
         </form>
     </div>
@@ -137,6 +152,30 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                         </svg>
                                     </a>
+                                    {% if current_user.role == 'doctor' %}
+                                        {% if patient.id in doctor_patient_ids %}
+                                        <form method="POST" action="/doctor/patient/{{ patient.id }}/unlink" class="inline">
+                                            <button type="submit" 
+                                                   class="text-orange-600 hover:text-orange-900 transition-colors hover:scale-110 transform" 
+                                                   title="Unlink Patient"
+                                                   onclick="return confirm('Unlink {{ patient.fname }} {{ patient.lname }} from your account?')">
+                                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                                                </svg>
+                                            </button>
+                                        </form>
+                                        {% else %}
+                                        <form method="POST" action="/doctor/patient/{{ patient.id }}/link" class="inline">
+                                            <button type="submit" 
+                                                   class="text-purple-600 hover:text-purple-900 transition-colors hover:scale-110 transform" 
+                                                   title="Link Patient to Your Account">
+                                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                                </svg>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    {% endif %}
                                 </div>
                             </td>
                         </tr>

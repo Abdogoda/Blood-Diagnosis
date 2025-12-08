@@ -19,8 +19,32 @@ async def doctor_dashboard(
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
-    # Get actual patient count
-    total_patients = db.query(User).filter(User.role == "patient", User.is_active == 1).count()
+    from app.database import doctor_patients
+    from sqlalchemy import select
+    
+    # Get patient count based on role
+    if current_user.role == "doctor":
+        # Get only linked patients count
+        patient_ids_query = select(doctor_patients.c.patient_id).where(
+            doctor_patients.c.doctor_id == current_user.id
+        )
+        patient_ids = [row[0] for row in db.execute(patient_ids_query).fetchall()]
+        total_patients = db.query(User).filter(
+            User.role == "patient", 
+            User.is_active == 1,
+            User.id.in_(patient_ids) if patient_ids else False
+        ).count()
+        
+        # Get recent linked patients only
+        recent_patients_query = db.query(User).filter(
+            User.role == "patient", 
+            User.is_active == 1,
+            User.id.in_(patient_ids) if patient_ids else False
+        ).order_by(User.created_at.desc()).limit(5).all()
+    else:
+        # Admin sees all patients
+        total_patients = db.query(User).filter(User.role == "patient", User.is_active == 1).count()
+        recent_patients_query = db.query(User).filter(User.role == "patient", User.is_active == 1).order_by(User.created_at.desc()).limit(5).all()
     
     stats = {
         "total_patients": total_patients,
@@ -29,8 +53,6 @@ async def doctor_dashboard(
         "completed_today": 0
     }
     
-    # Get recent patients (users with role='patient')
-    recent_patients_query = db.query(User).filter(User.role == "patient", User.is_active == 1).order_by(User.created_at.desc()).limit(5).all()
     recent_patients = [
         {
             "initials": f"{p.fname[0]}{p.lname[0]}",
@@ -55,11 +77,24 @@ async def patients_list(
     search: str = None,
     blood_type: str = None,
     gender: str = None,
+    my_patients: str = None,
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
+    from app.database import doctor_patients
+    from sqlalchemy import select
+    
     # Build query for patients
     query = db.query(User).filter(User.role == "patient", User.is_active == 1)
+    
+    # Filter by doctor's patients only
+    if my_patients == "true" and current_user.role == "doctor":
+        # Get patient IDs linked to this doctor
+        patient_ids_query = select(doctor_patients.c.patient_id).where(
+            doctor_patients.c.doctor_id == current_user.id
+        )
+        patient_ids = [row[0] for row in db.execute(patient_ids_query).fetchall()]
+        query = query.filter(User.id.in_(patient_ids))
     
     # Apply filters
     if search:
@@ -79,13 +114,23 @@ async def patients_list(
     # Get patients
     patients = query.order_by(User.created_at.desc()).all()
     
+    # Get patient IDs linked to current doctor (for displaying link status)
+    doctor_patient_ids = []
+    if current_user.role == "doctor":
+        patient_ids_query = select(doctor_patients.c.patient_id).where(
+            doctor_patients.c.doctor_id == current_user.id
+        )
+        doctor_patient_ids = [row[0] for row in db.execute(patient_ids_query).fetchall()]
+    
     return templates.TemplateResponse("doctor/patients.html", {
         "request": request,
         "current_user": current_user,
         "patients": patients,
         "search": search,
         "selected_blood_type": blood_type,
-        "selected_gender": gender
+        "selected_gender": gender,
+        "my_patients": my_patients,
+        "doctor_patient_ids": doctor_patient_ids
     })
 
 @router.get("/add-patient")
@@ -127,7 +172,8 @@ async def add_patient(
         blood_type=blood_type,
         dob=dob,
         db=db,
-        redirect_url="/doctor/add-patient"
+        redirect_url="/doctor/add-patient",
+        doctor_id=current_user.id  # Link patient to this doctor
     )
     
     if isinstance(result, RedirectResponse):
@@ -202,6 +248,97 @@ async def patient_profile(
         "medical_history": medical_history,
         "recent_tests": recent_tests
     })
+
+@router.post("/patient/{patient_id}/link")
+async def link_patient(
+    patient_id: int,
+    current_user: User = Depends(require_role(["doctor"])),
+    db: Session = Depends(get_db)
+):
+    """Link a patient to the current doctor"""
+    from app.database import doctor_patients
+    from sqlalchemy.exc import IntegrityError
+    
+    # Verify patient exists
+    patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
+    if not patient:
+        response = RedirectResponse(url="/doctor/patients", status_code=303)
+        set_flash_message(response, "error", "Patient not found")
+        return response
+    
+    try:
+        # Check if already linked
+        existing = db.execute(
+            doctor_patients.select().where(
+                doctor_patients.c.doctor_id == current_user.id,
+                doctor_patients.c.patient_id == patient_id
+            )
+        ).first()
+        
+        if existing:
+            response = RedirectResponse(url="/doctor/patients", status_code=303)
+            set_flash_message(response, "info", f"{patient.fname} {patient.lname} is already linked to you")
+            return response
+        
+        # Create the link
+        db.execute(
+            doctor_patients.insert().values(
+                doctor_id=current_user.id,
+                patient_id=patient_id
+            )
+        )
+        db.commit()
+        
+        response = RedirectResponse(url="/doctor/patients", status_code=303)
+        set_flash_message(response, "success", f"Successfully linked {patient.fname} {patient.lname} to your account")
+        return response
+        
+    except IntegrityError:
+        db.rollback()
+        response = RedirectResponse(url="/doctor/patients", status_code=303)
+        set_flash_message(response, "error", "Failed to link patient")
+        return response
+
+@router.post("/patient/{patient_id}/unlink")
+async def unlink_patient(
+    patient_id: int,
+    current_user: User = Depends(require_role(["doctor"])),
+    db: Session = Depends(get_db)
+):
+    """Unlink a patient from the current doctor"""
+    from app.database import doctor_patients
+    
+    # Verify patient exists
+    patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
+    if not patient:
+        response = RedirectResponse(url="/doctor/patients", status_code=303)
+        set_flash_message(response, "error", "Patient not found")
+        return response
+    
+    try:
+        # Delete the link
+        result = db.execute(
+            doctor_patients.delete().where(
+                doctor_patients.c.doctor_id == current_user.id,
+                doctor_patients.c.patient_id == patient_id
+            )
+        )
+        db.commit()
+        
+        if result.rowcount == 0:
+            response = RedirectResponse(url="/doctor/patients", status_code=303)
+            set_flash_message(response, "info", f"{patient.fname} {patient.lname} was not linked to you")
+            return response
+        
+        response = RedirectResponse(url="/doctor/patients", status_code=303)
+        set_flash_message(response, "success", f"Successfully unlinked {patient.fname} {patient.lname} from your account")
+        return response
+        
+    except Exception as e:
+        db.rollback()
+        response = RedirectResponse(url="/doctor/patients", status_code=303)
+        set_flash_message(response, "error", "Failed to unlink patient")
+        return response
 
 @router.get("/upload-test/{patient_id}")
 async def upload_test_page(

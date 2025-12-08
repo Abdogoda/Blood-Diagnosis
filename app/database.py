@@ -1,5 +1,5 @@
 # Database configuration and session management
-from sqlalchemy import create_engine, Column, Integer, String, Date, DateTime, Numeric, Text, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, Date, DateTime, Numeric, Text, ForeignKey, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship, declarative_base
 from datetime import datetime
@@ -12,6 +12,15 @@ engine = create_engine(
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
+
+# Association table for many-to-many relationship between doctors and patients
+doctor_patients = Table(
+    'doctor_patients',
+    Base.metadata,
+    Column('doctor_id', Integer, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True),
+    Column('patient_id', Integer, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True),
+    Column('created_at', DateTime, default=datetime.utcnow)
+)
 
 def get_db():
     db = SessionLocal()
@@ -38,6 +47,15 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     doctor_info = relationship("DoctorInfo", back_populates="user", uselist=False)
+    
+    # Many-to-many: doctors can have many patients
+    patients = relationship(
+        "User",
+        secondary=doctor_patients,
+        primaryjoin=id == doctor_patients.c.doctor_id,
+        secondaryjoin=id == doctor_patients.c.patient_id,
+        backref="doctors"
+    )
 
 
 class DoctorInfo(Base):

@@ -26,11 +26,13 @@ def add_patient_logic(
     blood_type: str,
     dob: str,
     db: Session,
-    redirect_url: str
+    redirect_url: str,
+    doctor_id: int = None
 ) -> RedirectResponse:
     """
     Shared logic for adding a patient
     Used by both admin and doctor routes
+    If doctor_id is provided, creates association between doctor and patient
     """
     # Check if email already exists
     existing_user = db.query(User).filter(User.email == email).first()
@@ -70,6 +72,17 @@ def add_patient_logic(
         db.add(new_patient)
         db.commit()
         db.refresh(new_patient)
+        
+        # If doctor_id is provided, create association
+        if doctor_id:
+            from app.database import doctor_patients
+            db.execute(
+                doctor_patients.insert().values(
+                    doctor_id=doctor_id,
+                    patient_id=new_patient.id
+                )
+            )
+            db.commit()
         
         # Return success with patient ID
         return {
