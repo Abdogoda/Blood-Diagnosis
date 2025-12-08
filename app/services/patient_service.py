@@ -98,9 +98,38 @@ def upload_cbc_csv_logic(
     Used by both patient and doctor routes
     """
     try:
+        # Validate file was actually uploaded
+        if not file or not file.filename:
+            return {
+                "success": False,
+                "message": "No file was selected. Please select a CSV file to upload."
+            }
+        
+        # Validate file extension
+        if not file.filename.lower().endswith('.csv'):
+            return {
+                "success": False,
+                "message": "Invalid file type. Please upload a CSV file (.csv extension)."
+            }
+        
         # Read the uploaded CSV file
         contents = file.file.read()
+        
+        # Check if file is empty
+        if len(contents) == 0:
+            return {
+                "success": False,
+                "message": "The uploaded file is empty. Please upload a valid CSV file with CBC data."
+            }
+        
         df = pd.read_csv(io.BytesIO(contents))
+        
+        # Check if CSV has data
+        if df.empty:
+            return {
+                "success": False,
+                "message": "The CSV file contains no data. Please ensure your file has CBC test results."
+            }
         
         # Import prediction module
         from app.ai.cbc.predict import load_model_and_assets, prepare_dataframe_for_inference

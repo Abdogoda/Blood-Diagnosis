@@ -1,6 +1,3 @@
-// Main JavaScript file
-console.log('Blood Diagnosis System loaded');
-
 // File upload preview
 document.addEventListener('DOMContentLoaded', function() {
     // Handle file drag and drop

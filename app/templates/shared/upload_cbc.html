@@ -41,12 +41,12 @@
                 Upload CSV File
             </h3>
             
-            <form action="{{ csv_action }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ csv_action }}" method="POST" enctype="multipart/form-data" id="csv-upload-form">
                 <div class="space-y-6">
                     <!-- File Upload Area -->
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-3">Select CSV File</label>
-                        <div class="mt-1 flex justify-center px-6 pt-8 pb-8 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all duration-200">
+                        <div id="drop-zone" class="mt-1 flex justify-center px-6 pt-8 pb-8 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 cursor-pointer">
                             <div class="space-y-2 text-center">
                                 <div class="mx-auto h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center">
                                     <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,6 +61,28 @@
                                     <p class="pl-1 text-base">or drag and drop</p>
                                 </div>
                                 <p class="text-xs text-gray-500">CSV file with CBC parameters</p>
+                            </div>
+                        </div>
+                        
+                        <!-- File Selected Indicator -->
+                        <div id="file-selected" class="mt-4 hidden">
+                            <div class="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                                        <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p id="selected-file-name" class="text-sm font-semibold text-gray-900"></p>
+                                        <p id="selected-file-size" class="text-xs text-gray-500"></p>
+                                    </div>
+                                </div>
+                                <button type="button" id="remove-csv-file" class="text-red-600 hover:text-red-700 transition-colors">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -197,6 +219,12 @@
     const manualBtn = document.getElementById('manualBtn');
     const csvForm = document.getElementById('csvForm');
     const manualForm = document.getElementById('manualForm');
+    const csvFileInput = document.getElementById('csv-file');
+    const fileSelectedDiv = document.getElementById('file-selected');
+    const selectedFileName = document.getElementById('selected-file-name');
+    const selectedFileSize = document.getElementById('selected-file-size');
+    const removeCsvFile = document.getElementById('remove-csv-file');
+    const dropZone = document.getElementById('drop-zone');
 
     csvBtn.addEventListener('click', () => {
         csvBtn.classList.remove('bg-white', 'text-gray-700');
@@ -214,6 +242,94 @@
         csvBtn.classList.add('bg-white', 'text-gray-700');
         manualForm.classList.remove('hidden');
         csvForm.classList.add('hidden');
+    });
+
+    // Format file size
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    // Show selected file
+    function showSelectedFile(file) {
+        selectedFileName.textContent = file.name;
+        selectedFileSize.textContent = formatFileSize(file.size);
+        fileSelectedDiv.classList.remove('hidden');
+        dropZone.classList.add('border-green-400', 'bg-green-50');
+    }
+
+    // Hide selected file
+    function hideSelectedFile() {
+        fileSelectedDiv.classList.add('hidden');
+        dropZone.classList.remove('border-green-400', 'bg-green-50');
+        csvFileInput.value = '';
+    }
+
+    // CSV file validation and display
+    csvFileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // Check file extension
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                alert('Please select a CSV file (.csv extension)');
+                this.value = '';
+                return;
+            }
+            
+            // Check file size (max 5MB)
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                alert('File is too large. Maximum size is 5MB');
+                this.value = '';
+                return;
+            }
+            
+            // Show selected file
+            showSelectedFile(file);
+        }
+    });
+
+    // Remove file button
+    removeCsvFile.addEventListener('click', function() {
+        hideSelectedFile();
+    });
+
+    // Drag and drop
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-blue-500', 'bg-blue-100');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-blue-500', 'bg-blue-100');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-blue-500', 'bg-blue-100');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.name.toLowerCase().endsWith('.csv')) {
+                csvFileInput.files = files;
+                showSelectedFile(file);
+            } else {
+                alert('Please drop a CSV file');
+            }
+        }
+    });
+
+    // Form validation before submit
+    document.getElementById('csv-upload-form').addEventListener('submit', function(e) {
+        if (!csvFileInput.files || csvFileInput.files.length === 0) {
+            e.preventDefault();
+            alert('Please select a CSV file before uploading');
+            return false;
+        }
     });
 </script>
 {% endblock %}
