@@ -228,6 +228,115 @@ async def patient_profile(
         "recent_tests": recent_tests
     })
 
+@router.get("/upload-test/{patient_id}")
+async def upload_test_page(
+    request: Request,
+    patient_id: int,
+    current_user: User = Depends(require_role(["doctor", "admin"])),
+    db: Session = Depends(get_db)
+):
+    # Get patient
+    patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
+    if not patient:
+        response = RedirectResponse(url="/doctor/patients", status_code=303)
+        set_flash_message(response, "error", "Patient not found")
+        return response
+    
+    return templates.TemplateResponse("doctor/upload_test.html", {
+        "request": request,
+        "current_user": current_user,
+        "patient": patient
+    })
+
+@router.get("/upload-cbc/{patient_id}")
+async def upload_cbc_page(
+    request: Request,
+    patient_id: int,
+    current_user: User = Depends(require_role(["doctor", "admin"])),
+    db: Session = Depends(get_db)
+):
+    # Get patient
+    patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
+    if not patient:
+        response = RedirectResponse(url="/doctor/patients", status_code=303)
+        set_flash_message(response, "error", "Patient not found")
+        return response
+    
+    return templates.TemplateResponse("doctor/upload_cbc.html", {
+        "request": request,
+        "current_user": current_user,
+        "patient": patient
+    })
+
+@router.post("/upload-cbc-csv/{patient_id}")
+async def upload_cbc_csv(
+    request: Request,
+    patient_id: int,
+    file: UploadFile = File(...),
+    notes: str = Form(None),
+    current_user: User = Depends(require_role(["doctor", "admin"])),
+    db: Session = Depends(get_db)
+):
+    # TODO: Implement CBC CSV upload logic
+    response = RedirectResponse(url=f"/doctor/patient/{patient_id}", status_code=303)
+    set_flash_message(response, "success", "CBC test uploaded successfully!")
+    return response
+
+@router.post("/upload-cbc-manual/{patient_id}")
+async def upload_cbc_manual(
+    request: Request,
+    patient_id: int,
+    rbc: float = Form(...),
+    hgb: float = Form(...),
+    pcv: float = Form(...),
+    mcv: float = Form(...),
+    mch: float = Form(...),
+    mchc: float = Form(...),
+    tlc: float = Form(...),
+    plt: float = Form(...),
+    notes: str = Form(None),
+    current_user: User = Depends(require_role(["doctor", "admin"])),
+    db: Session = Depends(get_db)
+):
+    # TODO: Implement CBC manual input logic
+    response = RedirectResponse(url=f"/doctor/patient/{patient_id}", status_code=303)
+    set_flash_message(response, "success", "CBC test submitted successfully!")
+    return response
+
+@router.get("/upload-image/{patient_id}")
+async def upload_image_page(
+    request: Request,
+    patient_id: int,
+    current_user: User = Depends(require_role(["doctor", "admin"])),
+    db: Session = Depends(get_db)
+):
+    # Get patient
+    patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
+    if not patient:
+        response = RedirectResponse(url="/doctor/patients", status_code=303)
+        set_flash_message(response, "error", "Patient not found")
+        return response
+    
+    return templates.TemplateResponse("doctor/upload_image.html", {
+        "request": request,
+        "current_user": current_user,
+        "patient": patient
+    })
+
+@router.post("/upload-blood-image/{patient_id}")
+async def upload_blood_image(
+    request: Request,
+    patient_id: int,
+    file: UploadFile = File(...),
+    description: str = Form(None),
+    current_user: User = Depends(require_role(["doctor", "admin"])),
+    db: Session = Depends(get_db)
+):
+    # TODO: Implement blood image upload logic
+    response = RedirectResponse(url=f"/doctor/patient/{patient_id}", status_code=303)
+    set_flash_message(response, "success", "Blood image uploaded successfully!")
+    return response
+
 @router.get("/reports")
 async def reports_page(
     request: Request,

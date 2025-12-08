@@ -35,15 +35,81 @@ async def patient_dashboard(
         "recent_tests": recent_tests
     })
 
-@router.get("/upload")
-async def upload_page(
+@router.get("/upload-test")
+async def upload_test_page(
     request: Request,
     current_user: User = Depends(require_role(["patient", "admin"]))
 ):
-    return templates.TemplateResponse("patient/upload_file.html", {
+    return templates.TemplateResponse("patient/upload_test.html", {
         "request": request,
         "current_user": current_user
     })
+
+@router.get("/upload-cbc")
+async def upload_cbc_page(
+    request: Request,
+    current_user: User = Depends(require_role(["patient", "admin"]))
+):
+    return templates.TemplateResponse("patient/upload_cbc.html", {
+        "request": request,
+        "current_user": current_user
+    })
+
+@router.post("/upload-cbc-csv")
+async def upload_cbc_csv(
+    request: Request,
+    file: UploadFile = File(...),
+    notes: str = Form(None),
+    current_user: User = Depends(require_role(["patient", "admin"])),
+    db: Session = Depends(get_db)
+):
+    # TODO: Implement CBC CSV upload logic
+    response = RedirectResponse(url="/patient/dashboard", status_code=303)
+    set_flash_message(response, "success", "CBC test uploaded successfully!")
+    return response
+
+@router.post("/upload-cbc-manual")
+async def upload_cbc_manual(
+    request: Request,
+    rbc: float = Form(...),
+    hgb: float = Form(...),
+    pcv: float = Form(...),
+    mcv: float = Form(...),
+    mch: float = Form(...),
+    mchc: float = Form(...),
+    tlc: float = Form(...),
+    plt: float = Form(...),
+    notes: str = Form(None),
+    current_user: User = Depends(require_role(["patient", "admin"])),
+    db: Session = Depends(get_db)
+):
+    # TODO: Implement CBC manual input logic
+    response = RedirectResponse(url="/patient/dashboard", status_code=303)
+    set_flash_message(response, "success", "CBC test submitted successfully!")
+    return response
+
+@router.get("/upload-image")
+async def upload_image_page(
+    request: Request,
+    current_user: User = Depends(require_role(["patient", "admin"]))
+):
+    return templates.TemplateResponse("patient/upload_image.html", {
+        "request": request,
+        "current_user": current_user
+    })
+
+@router.post("/upload-blood-image")
+async def upload_blood_image(
+    request: Request,
+    file: UploadFile = File(...),
+    description: str = Form(None),
+    current_user: User = Depends(require_role(["patient", "admin"])),
+    db: Session = Depends(get_db)
+):
+    # TODO: Implement blood image upload logic
+    response = RedirectResponse(url="/patient/dashboard", status_code=303)
+    set_flash_message(response, "success", "Blood image uploaded successfully!")
+    return response
 
 @router.get("/result/{test_id}")
 async def result_page(

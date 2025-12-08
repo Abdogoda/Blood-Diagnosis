@@ -1,0 +1,207 @@
+{% extends "layouts/base_doctor.html" %}
+
+{% block title %}Upload Blood Cell Image - Blood Diagnosis System{% endblock %}
+
+{% block content %}
+<div class="px-4 py-6 animate-slide-up">
+    <div class="max-w-3xl mx-auto">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <a href="/doctor/upload-test/{{ patient.id }}" class="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4 transition-colors duration-200">
+                <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Back to Test Selection
+            </a>
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">Blood Cell Image Analysis</h1>
+            <p class="text-gray-600">Upload microscopic blood smear images for AI-powered cell analysis</p>
+        </div>
+
+        <!-- Flash Messages -->
+        {% include "shared/messages.html" %}
+
+        <!-- Upload Form Card -->
+        <div class="glass-effect shadow-2xl rounded-2xl overflow-hidden">
+            <div class="px-8 py-10 bg-white">
+                <form action="/doctor/upload-blood-image/{{ patient.id }}" method="POST" enctype="multipart/form-data" id="imageUploadForm">
+                    <div class="space-y-8">
+                        <!-- File Upload Area -->
+                        <div>
+                            <label for="file-upload" class="block text-sm font-bold text-gray-700 mb-3">
+                                Select Blood Cell Image
+                            </label>
+                            <div id="drop-zone" class="relative mt-1 flex justify-center px-6 pt-8 pb-8 border-2 border-gray-300 border-dashed rounded-xl hover:border-purple-400 hover:bg-purple-50 transition-all duration-300 cursor-pointer group">
+                                <div class="space-y-2 text-center">
+                                    <div class="mx-auto h-16 w-16 rounded-full bg-purple-100 group-hover:bg-purple-200 flex items-center justify-center transition-colors duration-200">
+                                        <svg class="h-8 w-8 text-purple-600" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    </div>
+                                    <div class="text-sm text-gray-600">
+                                        <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-semibold text-purple-600 hover:text-purple-700 focus-within:outline-none transition-colors duration-200">
+                                            <span class="text-lg">Click to upload</span>
+                                            <input id="file-upload" name="file" type="file" class="sr-only" accept="image/*" required>
+                                        </label>
+                                        <p class="pl-1 text-base">or drag and drop</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-2">PNG, JPG, JPEG up to 10MB</p>
+                                </div>
+                                <div id="drag-overlay" class="absolute inset-0 bg-purple-500 bg-opacity-10 rounded-xl hidden items-center justify-center">
+                                    <p class="text-purple-600 font-semibold text-lg">Drop your file here</p>
+                                </div>
+                            </div>
+                            
+                            <!-- File Preview -->
+                            <div id="file-preview" class="mt-4 hidden">
+                                <div class="glass-effect rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="flex-shrink-0 h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
+                                                <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <p id="file-name" class="text-sm font-semibold text-gray-900"></p>
+                                                <p id="file-size" class="text-xs text-gray-500"></p>
+                                            </div>
+                                        </div>
+                                        <button type="button" id="remove-file" class="text-red-600 hover:text-red-700 transition-colors duration-200">
+                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <!-- Image Preview -->
+                                    <div id="image-preview-container" class="mt-3">
+                                        <img id="image-preview" src="" alt="Preview" class="w-full h-64 object-contain rounded-lg bg-gray-100">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Info Box -->
+                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                            <div class="flex items-start">
+                                <svg class="h-5 w-5 text-purple-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div class="text-sm text-purple-800">
+                                    <p class="font-semibold mb-1">Image Requirements:</p>
+                                    <ul class="list-disc list-inside space-y-1">
+                                        <li>Clear microscopic blood smear images</li>
+                                        <li>Good lighting and focus</li>
+                                        <li>Supported formats: JPG, PNG, JPEG</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Description Input -->
+                        <div>
+                            <label for="description" class="block text-sm font-bold text-gray-700 mb-3">
+                                Additional Notes (Optional)
+                            </label>
+                            <div class="relative">
+                                <textarea id="description" name="description" rows="4" 
+                                          class="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 hover:border-purple-400 resize-none"
+                                          placeholder="Add any relevant information about this blood sample (symptoms, medications, etc.)..."></textarea>
+                                <div class="absolute bottom-3 right-3 text-xs text-gray-400">
+                                    <span id="char-count">0</span> / 500
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex items-center justify-end space-x-4 pt-4">
+                            <a href="/doctor/upload-test/{{ patient.id }}" 
+                               class="px-6 py-3 border-2 border-gray-300 text-sm font-semibold rounded-lg text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 transition-all duration-200">
+                                Cancel
+                            </a>
+                            <button type="submit" 
+                                    class="px-8 py-3 gradient-blue text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 flex items-center space-x-2">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                                <span>Upload and Analyze</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('file-upload');
+    const dropZone = document.getElementById('drop-zone');
+    const dragOverlay = document.getElementById('drag-overlay');
+    const filePreview = document.getElementById('file-preview');
+    const fileName = document.getElementById('file-name');
+    const fileSize = document.getElementById('file-size');
+    const removeFileBtn = document.getElementById('remove-file');
+    const imagePreview = document.getElementById('image-preview');
+    const description = document.getElementById('description');
+    const charCount = document.getElementById('char-count');
+
+    // File input change
+    fileInput.addEventListener('change', handleFile);
+
+    // Drag and drop
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dragOverlay.classList.remove('hidden');
+        dragOverlay.classList.add('flex');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dragOverlay.classList.add('hidden');
+        dragOverlay.classList.remove('flex');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dragOverlay.classList.add('hidden');
+        dragOverlay.classList.remove('flex');
+        fileInput.files = e.dataTransfer.files;
+        handleFile();
+    });
+
+    // Remove file
+    removeFileBtn.addEventListener('click', () => {
+        fileInput.value = '';
+        filePreview.classList.add('hidden');
+        imagePreview.src = '';
+    });
+
+    // Character count
+    description.addEventListener('input', () => {
+        charCount.textContent = description.value.length;
+    });
+
+    function handleFile() {
+        const file = fileInput.files[0];
+        if (file) {
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            filePreview.classList.remove('hidden');
+            
+            // Show image preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imagePreview.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+</script>
+{% endblock %}
