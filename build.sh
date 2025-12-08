@@ -256,6 +256,58 @@ clean_reset() {
     echo "Run full setup (option 7) to start fresh"
 }
 
+# 9. Run Tests
+run_tests() {
+    print_header "Running Test Suite"
+    
+    echo "Test Options:"
+    echo "  1) Run all tests"
+    echo "  2) Run service tests only"
+    echo "  3) Run route tests only"
+    echo "  4) Run specific test file"
+    echo ""
+    read -p "Select test option [1-4]: " test_choice
+    
+    case $test_choice in
+        1)
+            print_info "Running all tests..."
+            $PYTHON_CMD -m pytest tests/ -v
+            ;;
+        2)
+            print_info "Running service tests only..."
+            $PYTHON_CMD -m pytest tests/ -k "not routes" -v
+            ;;
+        3)
+            print_info "Running route tests only..."
+            $PYTHON_CMD -m pytest tests/ -k "routes" -v
+            ;;
+        4)
+            echo ""
+            echo "Available test files:"
+            echo "  - test_auth_service.py"
+            echo "  - test_patient_service.py"
+            echo "  - test_ai_service.py"
+            echo "  - test_ui_service.py"
+            echo "  - test_auth_routes.py"
+            echo "  - test_doctor_routes.py"
+            echo "  - test_patient_routes.py"
+            echo "  - test_admin_routes.py"
+            echo "  - test_public_routes.py"
+            echo ""
+            read -p "Enter test file name: " test_file
+            print_info "Running tests/$test_file..."
+            $PYTHON_CMD -m pytest tests/$test_file -v
+            ;;
+        *)
+            print_error "Invalid option"
+            return 1
+            ;;
+    esac
+    
+    echo ""
+    print_success "Test execution completed!"
+}
+
 # Main Menu
 show_menu() {
     clear
@@ -274,6 +326,7 @@ show_menu() {
     echo ""
     echo "  7) Full Setup (All Steps 1-5)"
     echo "  8) Clean/Reset Everything"
+    echo "  9) Run Tests"
     echo ""
     echo "  0) Exit"
     echo ""
@@ -286,7 +339,7 @@ main() {
     
     while true; do
         show_menu
-        read -p "Enter your choice [0-8]: " choice
+        read -p "Enter your choice [0-9]: " choice
         
         case $choice in
             1) install_dependencies ;;
@@ -297,6 +350,7 @@ main() {
             6) run_app ;;
             7) full_setup ;;
             8) clean_reset ;;
+            9) run_tests ;;
             0) 
                 echo ""
                 print_success "Goodbye!"
@@ -304,7 +358,7 @@ main() {
                 exit 0
                 ;;
             *)
-                print_error "Invalid option. Please select 0-8"
+                print_error "Invalid option. Please select 0-9"
                 ;;
         esac
         
