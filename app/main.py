@@ -6,7 +6,7 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from contextlib import asynccontextmanager
 from app.routers import auth, doctors, patients, admin, public
-from app.services.flash_messages import set_flash_message
+from app.services.ui_service import set_flash_message
 import os
 from dotenv import load_dotenv
 
@@ -17,9 +17,9 @@ async def lifespan(app: FastAPI):
     """Lifespan event handler for startup and shutdown"""
     # Startup
     try:
-        from app.services.ai_predict_cbc import cbc_predictor
-        if cbc_predictor.is_available():
-            cbc_predictor.load_model()
+        from app.services.ai_service import cbc_prediction_service
+        if cbc_prediction_service.is_available():
+            cbc_prediction_service.load_model()
             print("✅ CBC Anemia prediction model loaded successfully")
         else:
             print("⚠️ AI prediction features disabled (missing pytorch_tabnet dependency)")
@@ -61,7 +61,7 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
             )
         
         try:
-            from app.services.jwt_utils import verify_token
+            from app.services.auth_service import verify_token
             token = request.cookies.get("access_token")
             redirect_url = "/"
             

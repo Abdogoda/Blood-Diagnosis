@@ -4,8 +4,15 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from app.database import get_db, User
-from app.services.auth_dependencies import require_role
-from app.services.flash_messages import set_flash_message
+from app.services import (
+    require_role,
+    set_flash_message,
+    get_patient_doctors,
+    cbc_prediction_service,
+    blood_image_service,
+    verify_password,
+    hash_password
+)
 import os
 import uuid
 from pathlib import Path
@@ -71,13 +78,11 @@ async def upload_cbc_csv(
     current_user: User = Depends(require_role(["patient", "admin"])),
     db: Session = Depends(get_db)
 ):
-    from app.services.patient_service import upload_cbc_csv_logic
-    
-    result = upload_cbc_csv_logic(
+    result = cbc_prediction_service.process_csv_upload(
         file=file,
-        notes=notes,
         patient_id=current_user.id,
         uploaded_by_id=current_user.id,
+        notes=notes,
         db=db
     )
     
@@ -111,13 +116,11 @@ async def upload_cbc_manual(
     current_user: User = Depends(require_role(["patient", "admin"])),
     db: Session = Depends(get_db)
 ):
-    from app.services.patient_service import upload_cbc_manual_logic
-    
-    result = upload_cbc_manual_logic(
+    result = cbc_prediction_service.process_manual_input(
         rbc=rbc, hgb=hgb, pcv=pcv, mcv=mcv, mch=mch, mchc=mchc, tlc=tlc, plt=plt,
-        notes=notes,
         patient_id=current_user.id,
         uploaded_by_id=current_user.id,
+        notes=notes,
         db=db
     )
     
@@ -157,13 +160,11 @@ async def upload_blood_image(
     current_user: User = Depends(require_role(["patient", "admin"])),
     db: Session = Depends(get_db)
 ):
-    from app.services.patient_service import upload_blood_image_logic
-    
-    result = upload_blood_image_logic(
+    result = blood_image_service.process_image_upload(
         file=file,
-        description=description,
         patient_id=current_user.id,
         uploaded_by_id=current_user.id,
+        description=description,
         db=db
     )
     
@@ -205,8 +206,6 @@ async def account_page(
     current_user: User = Depends(require_role(["patient", "admin"])),
     db: Session = Depends(get_db)
 ):
-    from app.services.patient_doctors_service import get_patient_doctors
-    
     # Get doctors connected to this patient
     connected_doctors = get_patient_doctors(current_user.id, db)
     
@@ -232,9 +231,6 @@ async def update_profile(
     current_user: User = Depends(require_role(["patient", "admin"])),
     db: Session = Depends(get_db)
 ):
-    from app.services.flash_messages import set_flash_message
-    from fastapi.responses import RedirectResponse
-    
     # Check if email already exists for another user
     existing_user = db.query(User).filter(User.email == email, User.id != current_user.id).first()
     if existing_user:
@@ -266,10 +262,6 @@ async def change_password(
     current_user: User = Depends(require_role(["patient", "admin"])),
     db: Session = Depends(get_db)
 ):
-    from app.services.flash_messages import set_flash_message
-    from app.services.password_utils import verify_password, get_password_hash
-    from fastapi.responses import RedirectResponse
-    
     # Verify current password
     if not verify_password(current_password, current_user.password):
         response = RedirectResponse(url="/patient/account", status_code=303)
@@ -289,7 +281,7 @@ async def change_password(
         return response
     
     # Update password
-    current_user.password = get_password_hash(new_password)
+    current_user.password = hash_password(new_password)
     db.commit()
     
     response = RedirectResponse(url="/patient/account", status_code=303)

@@ -3,7 +3,7 @@ Create admin user for the Blood Diagnosis System.
 Run this script to create an initial admin user.
 """
 from app.database import SessionLocal, User
-from app.services.password_utils import get_password_hash
+from app.services import hash_password
 import getpass
 
 def create_admin():
@@ -53,7 +53,7 @@ def create_admin():
         admin_user = User(
             username=username,
             email=email,
-            password=get_password_hash(password),
+            password=hash_password(password),
             fname=fname,
             lname=lname,
             role="admin"

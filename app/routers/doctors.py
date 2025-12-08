@@ -4,8 +4,19 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from app.database import get_db, User
-from app.services.auth_dependencies import require_role
-from app.services.flash_messages import set_flash_message
+from app.services import (
+    require_role,
+    set_flash_message,
+    create_patient,
+    get_patient_doctors,
+    get_doctor_patients,
+    link_patient_to_doctor,
+    unlink_patient_from_doctor,
+    cbc_prediction_service,
+    blood_image_service,
+    verify_password,
+    hash_password
+)
 import os
 import uuid
 from pathlib import Path
@@ -160,9 +171,7 @@ async def add_patient(
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
-    from app.services.patient_service import add_patient_logic
-    
-    result = add_patient_logic(
+    result = create_patient(
         first_name=first_name,
         last_name=last_name,
         email=email,
@@ -196,7 +205,6 @@ async def patient_profile(
     db: Session = Depends(get_db)
 ):
     from app.database import MedicalHistory, Test
-    from app.services.patient_doctors_service import get_patient_doctors
     
     # Get patient user
     patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
@@ -402,8 +410,6 @@ async def upload_cbc_csv(
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
-    from app.services.patient_service import upload_cbc_csv_logic
-    
     # Get patient
     patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
     if not patient:
@@ -411,11 +417,11 @@ async def upload_cbc_csv(
         set_flash_message(response, "error", "Patient not found")
         return response
     
-    result = upload_cbc_csv_logic(
+    result = cbc_prediction_service.process_csv_upload(
         file=file,
-        notes=notes,
         patient_id=patient_id,
         uploaded_by_id=current_user.id,
+        notes=notes,
         db=db
     )
     
@@ -451,8 +457,6 @@ async def upload_cbc_manual(
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
-    from app.services.patient_service import upload_cbc_manual_logic
-    
     # Get patient
     patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
     if not patient:
@@ -460,11 +464,11 @@ async def upload_cbc_manual(
         set_flash_message(response, "error", "Patient not found")
         return response
     
-    result = upload_cbc_manual_logic(
+    result = cbc_prediction_service.process_manual_input(
         rbc=rbc, hgb=hgb, pcv=pcv, mcv=mcv, mch=mch, mchc=mchc, tlc=tlc, plt=plt,
-        notes=notes,
         patient_id=patient_id,
         uploaded_by_id=current_user.id,
+        notes=notes,
         db=db
     )
     
@@ -516,13 +520,11 @@ async def upload_blood_image(
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
-    from app.services.patient_service import upload_blood_image_logic
-    
-    result = upload_blood_image_logic(
+    result = blood_image_service.process_image_upload(
         file=file,
-        description=description,
         patient_id=patient_id,
         uploaded_by_id=current_user.id,
+        description=description,
         db=db
     )
     
@@ -624,8 +626,6 @@ async def change_password(
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
-    from app.services.password_utils import verify_password, get_password_hash
-    
     # Verify current password
     if not verify_password(current_password, current_user.password):
         response = RedirectResponse(url="/doctor/account", status_code=303)
@@ -645,7 +645,7 @@ async def change_password(
         return response
     
     # Update password
-    current_user.password = get_password_hash(new_password)
+    current_user.password = hash_password(new_password)
     db.commit()
     
     response = RedirectResponse(url="/doctor/account", status_code=303)

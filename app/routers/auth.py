@@ -7,9 +7,15 @@ from sqlalchemy.orm import Session
 from datetime import timedelta
 from app.database import get_db, User, DoctorInfo
 from app.models.schemas import UserCreate, UserResponse, Token, DoctorInfoCreate
-from app.services.password_utils import verify_password, get_password_hash
-from app.services.jwt_utils import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
-from app.services.auth_dependencies import get_current_user, get_current_user_optional
+from app.services import (
+    verify_password, 
+    hash_password,
+    create_access_token,
+    get_current_user,
+    get_current_user_from_cookie,
+    get_current_user_optional,
+    ACCESS_TOKEN_EXPIRE_MINUTES
+)
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 templates = Jinja2Templates(directory="app/templates")
@@ -251,7 +257,7 @@ async def register(
         )
     
     # Create new user
-    hashed_password = get_password_hash(password)
+    hashed_password = hash_password(password)
     db_user = User(
         username=username,
         email=email,
@@ -332,7 +338,7 @@ async def api_register(
         )
     
     # Create new user
-    hashed_password = get_password_hash(user_data.password)
+    hashed_password = hash_password(user_data.password)
     db_user = User(
         username=user_data.username,
         email=user_data.email,
@@ -446,7 +452,7 @@ async def change_password(
         )
     
     # Update password
-    current_user.password = get_password_hash(new_password)
+    current_user.password = hash_password(new_password)
     db.commit()
     
     return {"message": "Password changed successfully"}
@@ -595,7 +601,7 @@ async def reset_password_confirm(
         }, status_code=404)
     
     # Update password
-    user.password = get_password_hash(new_password)
+    user.password = hash_password(new_password)
     
     # Mark token as used
     reset_token.used = 1

@@ -4,9 +4,14 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from app.database import get_db, User
-from app.services.auth_dependencies import require_role
-from app.services.flash_messages import set_flash_message
-import bcrypt
+from app.services import (
+    require_role,
+    set_flash_message,
+    create_patient,
+    get_patient_doctors,
+    verify_password,
+    hash_password
+)
 import os
 import uuid
 from pathlib import Path
@@ -14,14 +19,6 @@ from datetime import datetime
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="app/templates")
-
-# Password hashing using bcrypt directly
-def get_password_hash(password: str) -> str:
-    # Truncate password to 72 bytes (bcrypt limitation)
-    password_bytes = password.encode('utf-8')[:72]
-    salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(password_bytes, salt)
-    return hashed.decode('utf-8')
 
 
 
@@ -242,7 +239,7 @@ async def add_doctor(
         lname=lname,
         email=email,
         username=username,
-        password=get_password_hash(password),
+        password=hash_password(password),
         gender=gender,
         blood_type=blood_type,
         phone=phone,
@@ -369,8 +366,6 @@ def view_patient(
     current_user: User = Depends(require_role(["admin"])),
     db: Session = Depends(get_db)
 ):
-    from app.services.patient_doctors_service import get_patient_doctors
-    
     patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
     
     if not patient:
@@ -461,9 +456,7 @@ async def add_patient(
     current_user: User = Depends(require_role(["admin"])),
     db: Session = Depends(get_db)
 ):
-    from app.services.patient_service import add_patient_logic
-    
-    result = add_patient_logic(
+    result = create_patient(
         first_name=first_name,
         last_name=last_name,
         email=email,
@@ -584,8 +577,6 @@ async def change_password(
     current_user: User = Depends(require_role(["admin"])),
     db: Session = Depends(get_db)
 ):
-    from app.services.password_utils import verify_password, get_password_hash
-    
     # Verify current password
     if not verify_password(current_password, current_user.password):
         response = RedirectResponse(url="/admin/account", status_code=303)
@@ -605,7 +596,7 @@ async def change_password(
         return response
     
     # Update password
-    current_user.password = get_password_hash(new_password)
+    current_user.password = hash_password(new_password)
     db.commit()
     
     response = RedirectResponse(url="/admin/account", status_code=303)
