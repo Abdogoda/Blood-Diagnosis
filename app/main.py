@@ -1,45 +1,57 @@
-from fastapi import FastAPI, Request, HTTPException, Depends
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, JSONResponse
-from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from contextlib import asynccontextmanager
 from app.routers import auth, doctors, patients, files, admin, public
-from app.services.auth_dependencies import require_role
 from app.services.flash_messages import set_flash_message
-from app.database import get_db, User
 import os
 from dotenv import load_dotenv
-from sqlalchemy.orm import Session
 
 load_dotenv()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Lifespan event handler for startup and shutdown"""
+    # Startup
+    try:
+        from app.services.ai_predict_cbc import cbc_predictor
+        if cbc_predictor.is_available():
+            cbc_predictor.load_model()
+            print("✅ CBC Anemia prediction model loaded successfully")
+        else:
+            print("⚠️ AI prediction features disabled (missing pytorch_tabnet dependency)")
+    except Exception as e:
+        print(f"⚠️ Warning: Could not load CBC model: {e}")
+    
+    yield
+    
+    # Shutdown (if needed in the future)
+    # Add cleanup code here
 
 app = FastAPI(
     title=os.getenv("APP_NAME", "Blood Diagnosis System"),
     version=os.getenv("APP_VERSION", "1.0.0"),
-    description="Blood Diagnosis System with AI-powered analysis"
+    description="Blood Diagnosis System with AI-powered analysis",
+    lifespan=lifespan
 )
 
 # Custom exception handler for authentication errors
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-    # If it's an authentication error (401) and it's a browser request (not API)
     if exc.status_code == 401:
-        # Check if it's an API request (Accept: application/json)
         accept_header = request.headers.get("accept", "")
         if "application/json" in accept_header:
-            # Return JSON for API requests
             return JSONResponse(
                 status_code=exc.status_code,
                 content={"detail": exc.detail}
             )
-        # For browser requests, redirect to login
         response = RedirectResponse(url="/auth/login", status_code=303)
         set_flash_message(response, "error", "Please login to access this page")
         return response
     
-    # If it's a forbidden error (403)
     if exc.status_code == 403:
         accept_header = request.headers.get("accept", "")
         if "application/json" in accept_header:
@@ -48,7 +60,6 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
                 content={"detail": exc.detail}
             )
         
-        # For browser requests, try to get user role and redirect to their dashboard
         try:
             from app.services.jwt_utils import verify_token
             token = request.cookies.get("access_token")
@@ -72,12 +83,10 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
             set_flash_message(response, "error", "You don't have permission to access that page")
             return response
         except:
-            # If there's any error, just redirect to home
             response = RedirectResponse(url="/", status_code=303)
             set_flash_message(response, "error", "You don't have permission to access that page")
             return response
     
-    # For other HTTP exceptions, use default handling
     return templates.TemplateResponse(
         "base.html",
         {
@@ -110,3 +119,4 @@ app.include_router(admin.router)
 app.include_router(doctors.router)
 app.include_router(patients.router)
 app.include_router(files.router)
+

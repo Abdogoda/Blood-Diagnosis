@@ -1,6 +1,6 @@
 #!/bin/bash
 # Blood Diagnosis System - Interactive Build Script
-# Universal script for all setup and management tasks
+# Uses system Python 3.12 directly
 
 # Colors for output
 RED='\033[0;31m'
@@ -35,99 +35,32 @@ print_warning() {
 
 # Function to check Python installation
 check_python() {
-    if command -v python3 &> /dev/null; then
-        PYTHON_CMD="python3"
-    elif command -v python &> /dev/null; then
+    if command -v python &> /dev/null; then
         PYTHON_CMD="python"
+    elif command -v python3 &> /dev/null; then
+        PYTHON_CMD="python3"
     else
         print_error "Python is not installed!"
-        echo "Please install Python 3.8 or higher"
+        echo "Please install Python 3.12"
         exit 1
     fi
     
     # Check Python version
     PYTHON_VERSION=$($PYTHON_CMD --version 2>&1 | awk '{print $2}')
-    print_success "Python $PYTHON_VERSION found"
+    print_success "Using system Python $PYTHON_VERSION"
 }
 
-# Function to check if virtual environment exists
-check_venv() {
-    if [ -d "venv" ]; then
-        return 0
-    else
-        return 1
-    fi
-}
-
-# Function to get pip command
-get_pip_cmd() {
-    if [ -f "venv/bin/pip" ]; then
-        echo "venv/bin/pip"
-    elif [ -f "venv/Scripts/pip.exe" ]; then
-        echo "venv/Scripts/pip.exe"
-    else
-        echo "pip"
-    fi
-}
-
-# Function to get python command from venv
-get_venv_python() {
-    if [ -f "venv/bin/python" ]; then
-        echo "venv/bin/python"
-    elif [ -f "venv/Scripts/python.exe" ]; then
-        echo "venv/Scripts/python.exe"
-    else
-        echo "$PYTHON_CMD"
-    fi
-}
-
-# 1. Create Virtual Environment
-create_venv() {
-    print_header "Creating Virtual Environment"
-    
-    if check_venv; then
-        print_warning "Virtual environment already exists"
-        read -p "Do you want to recreate it? (y/n): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            print_info "Removing old virtual environment..."
-            rm -rf venv
-        else
-            print_info "Keeping existing virtual environment"
-            return 0
-        fi
-    fi
-    
-    print_info "Creating virtual environment..."
-    $PYTHON_CMD -m venv venv
-    
-    if [ $? -eq 0 ]; then
-        print_success "Virtual environment created successfully"
-    else
-        print_error "Failed to create virtual environment"
-        exit 1
-    fi
-}
-
-# 2. Install Dependencies
+# 1. Install Dependencies
 install_dependencies() {
     print_header "Installing Dependencies"
     
-    if ! check_venv; then
-        print_error "Virtual environment not found!"
-        echo "Please create virtual environment first (Option 1)"
-        return 1
-    fi
-    
-    VENV_PYTHON=$(get_venv_python)
-    
     print_info "Upgrading pip, setuptools, and wheel..."
-    $VENV_PYTHON -m pip install --upgrade pip setuptools wheel 2>/dev/null || print_warning "Pip upgrade skipped"
+    $PYTHON_CMD -m pip install --upgrade pip setuptools wheel 2>/dev/null || print_warning "Pip upgrade skipped"
     
-    print_info "Installing requirements..."
-    print_warning "This may take a few minutes, especially for packages like numpy, opencv, etc..."
+    print_info "Installing requirements from requirements.txt..."
+    print_warning "This may take a few minutes, especially for packages like numpy, opencv, pytorch-tabnet, etc..."
     
-    $VENV_PYTHON -m pip install -r requirements.txt
+    $PYTHON_CMD -m pip install -r requirements.txt
     
     if [ $? -eq 0 ]; then
         print_success "Dependencies installed successfully"
@@ -139,15 +72,15 @@ install_dependencies() {
     fi
 }
 
-# 3. Setup Environment Variables
+# 2. Setup Environment Variables
 setup_env() {
     print_header "Setting Up Environment Variables"
     
     if [ -f ".env" ]; then
         print_warning ".env file already exists"
-        read -p "Do you want to overwrite it? (y/n): " -n 1 -r
+        read -p "Do you want to overwrite it? [Y/n]: " -r
         echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        if [[ $REPLY =~ ^[Nn]$ ]]; then
             print_info "Keeping existing .env file"
             return 0
         fi
@@ -176,7 +109,7 @@ EOF
     print_warning "Please update .env file with your configuration"
 }
 
-# 4. Create Directories
+# 3. Create Directories
 create_directories() {
     print_header "Creating Required Directories"
     
@@ -187,19 +120,13 @@ create_directories() {
     print_success "Created uploads/tests"
 }
 
-# 5. Initialize Database
+# 4. Initialize Database
 init_database() {
     print_header "Initializing Database"
     
-    if ! check_venv; then
-        print_error "Virtual environment not found!"
-        echo "Please create virtual environment first (Option 1)"
-        return 1
-    fi
-    
     if [ ! -f ".env" ]; then
         print_error ".env file not found!"
-        echo "Please setup environment variables first (Option 3)"
+        echo "Please setup environment variables first (Option 2)"
         return 1
     fi
     
@@ -212,17 +139,15 @@ init_database() {
     echo "To create database manually, run:"
     echo "  psql -U postgres -c 'CREATE DATABASE blood_diagnosis_db;'"
     echo ""
-    read -p "Continue? (y/n): " -n 1 -r
+    read -p "Continue? [Y/n]: " -r
     echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    if [[ $REPLY =~ ^[Nn]$ ]]; then
         print_info "Database initialization cancelled"
         return 0
     fi
     
-    VENV_PYTHON=$(get_venv_python)
-    
     print_info "Dropping and recreating database tables..."
-    $VENV_PYTHON init_db.py
+    $PYTHON_CMD init_db.py
     
     if [ $? -eq 0 ]; then
         print_success "Database initialized successfully"
@@ -232,43 +157,28 @@ init_database() {
     fi
 }
 
-# 6. Create Admin User
+# 5. Create Admin User
 create_admin() {
     print_header "Creating Admin User"
     
-    if ! check_venv; then
-        print_error "Virtual environment not found!"
-        echo "Please create virtual environment first (Option 1)"
-        return 1
-    fi
-    
-    VENV_PYTHON=$(get_venv_python)
-    
     print_info "Starting admin creation script..."
-    $VENV_PYTHON create_admin.py
+    $PYTHON_CMD create_admin.py
 }
 
-# 7. Run Application
+# 6. Run Application
 run_app() {
     print_header "Starting Blood Diagnosis System"
     
-    if ! check_venv; then
-        print_error "Virtual environment not found!"
-        echo "Please create virtual environment first (Option 1)"
-        return 1
-    fi
-    
     if [ ! -f ".env" ]; then
         print_error ".env file not found!"
-        echo "Please setup environment variables first (Option 3)"
+        echo "Please setup environment variables first (Option 2)"
         return 1
     fi
     
     # Check if uvicorn is installed
-    PIP_CMD=$(get_pip_cmd)
-    if ! $PIP_CMD show uvicorn &> /dev/null; then
+    if ! $PYTHON_CMD -c "import uvicorn" 2>/dev/null; then
         print_error "uvicorn not installed!"
-        echo "Please install dependencies first (Option 2)"
+        echo "Please install dependencies first (Option 1)"
         return 1
     fi
     
@@ -276,72 +186,61 @@ run_app() {
     print_info "Press CTRL+C to stop"
     echo ""
     
-    if [ -f "venv/bin/activate" ]; then
-        source venv/bin/activate
-    elif [ -f "venv/Scripts/activate" ]; then
-        source venv/Scripts/activate
-    fi
-    
-    uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+    $PYTHON_CMD -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 }
 
-# 8. Full Setup (All Steps)
+# 7. Full Setup
 full_setup() {
     print_header "FULL SETUP - All Steps"
     
     echo "This will perform all setup steps:"
-    echo "  1. Create virtual environment"
-    echo "  2. Install dependencies"
-    echo "  3. Setup environment variables"
-    echo "  4. Create directories"
-    echo "  5. Initialize database (drop & recreate)"
-    echo "  6. Create admin user"
+    echo "  1. Install dependencies"
+    echo "  2. Setup environment variables"
+    echo "  3. Create directories"
+    echo "  4. Initialize database (drop & recreate)"
+    echo "  5. Create admin user"
     echo ""
-    read -p "Continue with full setup? (y/n): " -n 1 -r
+    read -p "Continue with full setup? [Y/n]: " -r
     echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    if [[ $REPLY =~ ^[Nn]$ ]]; then
         print_info "Full setup cancelled"
         return 0
     fi
     
-    create_venv
     install_dependencies
     setup_env
     create_directories
     init_database
     
     echo ""
-    read -p "Do you want to create an admin user now? (y/n): " -n 1 -r
+    read -p "Do you want to create an admin user now? [Y/n]: " -r
     echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
+    if [[ ! $REPLY =~ ^[Nn]$ ]]; then
         create_admin
     fi
     
     print_header "SETUP COMPLETED!"
-    echo "To start the application, run: ./build.sh and select option 7"
-    echo "Or run manually: source venv/bin/activate && uvicorn app.main:app --reload"
+    echo "To start the application, run: ./build.sh and select option 6"
+    echo "Or run manually: python -m uvicorn app.main:app --reload"
 }
 
-# 9. Clean/Reset
+# 8. Clean/Reset
 clean_reset() {
     print_header "Clean/Reset Environment"
     
     echo "This will remove:"
-    echo "  - Virtual environment (venv/)"
     echo "  - Environment file (.env)"
     echo "  - Upload directories (uploads/)"
+    echo "  - Python cache files (__pycache__)"
     echo ""
-    print_warning "This will NOT delete the database!"
+    print_warning "This will NOT delete the database or uninstall packages!"
     echo ""
-    read -p "Are you sure you want to continue? (y/n): " -n 1 -r
+    read -p "Are you sure you want to continue? [Y/n]: " -r
     echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    if [[ $REPLY =~ ^[Nn]$ ]]; then
         print_info "Clean cancelled"
         return 0
     fi
-    
-    print_info "Removing virtual environment..."
-    rm -rf venv
     
     print_info "Removing .env file..."
     rm -f .env
@@ -354,7 +253,7 @@ clean_reset() {
     find . -type f -name "*.pyc" -delete 2>/dev/null || true
     
     print_success "Clean completed!"
-    echo "Run full setup (option 8) to start fresh"
+    echo "Run full setup (option 7) to start fresh"
 }
 
 # Main Menu
@@ -366,16 +265,15 @@ show_menu() {
     echo ""
     echo "Select an option:"
     echo ""
-    echo "  1) Create Virtual Environment"
-    echo "  2) Install Dependencies"
-    echo "  3) Setup Environment Variables"
-    echo "  4) Create Required Directories"
-    echo "  5) Initialize Database (Drop & Recreate)"
-    echo "  6) Create Admin User"
-    echo "  7) Run Application"
+    echo "  1) Install Dependencies"
+    echo "  2) Setup Environment Variables"
+    echo "  3) Create Required Directories"
+    echo "  4) Initialize Database (Drop & Recreate)"
+    echo "  5) Create Admin User"
+    echo "  6) Run Application"
     echo ""
-    echo "  8) Full Setup (All Steps 1-6)"
-    echo "  9) Clean/Reset Everything"
+    echo "  7) Full Setup (All Steps 1-5)"
+    echo "  8) Clean/Reset Everything"
     echo ""
     echo "  0) Exit"
     echo ""
@@ -388,18 +286,17 @@ main() {
     
     while true; do
         show_menu
-        read -p "Enter your choice [0-9]: " choice
+        read -p "Enter your choice [0-8]: " choice
         
         case $choice in
-            1) create_venv ;;
-            2) install_dependencies ;;
-            3) setup_env ;;
-            4) create_directories ;;
-            5) init_database ;;
-            6) create_admin ;;
-            7) run_app ;;
-            8) full_setup ;;
-            9) clean_reset ;;
+            1) install_dependencies ;;
+            2) setup_env ;;
+            3) create_directories ;;
+            4) init_database ;;
+            5) create_admin ;;
+            6) run_app ;;
+            7) full_setup ;;
+            8) clean_reset ;;
             0) 
                 echo ""
                 print_success "Goodbye!"
@@ -407,7 +304,7 @@ main() {
                 exit 0
                 ;;
             *)
-                print_error "Invalid option. Please select 0-9"
+                print_error "Invalid option. Please select 0-8"
                 ;;
         esac
         

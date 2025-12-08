@@ -68,14 +68,10 @@ Thumbs.db
 htmlcov/
 .tox/
 
-# Models
-*.h5
-*.pkl
-*.pth
-*.onnx
-models/*.h5
-models/*.pkl
-
 # Temporary files
 *.tmp
 *.bak
+
+# Logging Files
+*.log
+logs/

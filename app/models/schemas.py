@@ -57,3 +57,15 @@ class DoctorInfoResponse(BaseModel):
         from_attributes = True
 
 
+# AI Prediction Schemas
+class CBCInput(BaseModel):
+    id: Optional[str] = None
+    RBC: float
+    HGB: float
+    PCV: float
+    MCV: float
+    MCH: float
+    MCHC: float
+    TLC: float
+    PLT: float
+    RDW: Optional[float] = None
