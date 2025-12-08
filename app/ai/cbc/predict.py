@@ -1,6 +1,12 @@
 import os
 import json
 from pathlib import Path
+import warnings
+
+# Suppress warnings
+warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_tabnet')
+warnings.filterwarnings('ignore', category=UserWarning, module='sklearn')
+warnings.filterwarnings('ignore', message='.*InconsistentVersionWarning.*')
 
 import numpy as np
 import pandas as pd

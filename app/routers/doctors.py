@@ -109,7 +109,6 @@ async def add_patient(
     gender: str = Form(...),
     address: str = Form(None),
     blood_type: str = Form(None),
-    medical_history: str = Form(None),
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
