@@ -93,9 +93,12 @@ async def add_patient_page(
     request: Request,
     current_user: User = Depends(require_role(["doctor", "admin"]))
 ):
-    return templates.TemplateResponse("doctor/add_patient.html", {
+    return templates.TemplateResponse("shared/add_patient.html", {
         "request": request,
-        "current_user": current_user
+        "current_user": current_user,
+        "base_layout": "layouts/base_doctor.html",
+        "back_url": "/doctor/patients",
+        "form_action": "/doctor/patient/add"
     })
 
 @router.post("/patient/add")
@@ -112,59 +115,31 @@ async def add_patient(
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
-    from app.services.password_utils import get_password_hash
-    import random
-    import string
+    from app.services.patient_service import add_patient_logic
     
-    # Check if email already exists
-    existing_user = db.query(User).filter(User.email == email).first()
-    if existing_user:
-        response = RedirectResponse(url="/doctor/add-patient", status_code=303)
-        set_flash_message(response, "error", "A user with this email already exists")
-        return response
-    
-    # Generate username from email
-    username = email.split('@')[0]
-    # Check if username exists and make it unique if necessary
-    base_username = username
-    counter = 1
-    while db.query(User).filter(User.username == username).first():
-        username = f"{base_username}{counter}"
-        counter += 1
-    
-    # Generate random temporary password
-    temp_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
-    
-    # Create new patient user
-    new_patient = User(
-        username=username,
-        password=get_password_hash(temp_password),
-        fname=first_name,
-        lname=last_name,
+    result = add_patient_logic(
+        first_name=first_name,
+        last_name=last_name,
         email=email,
         phone=phone,
         gender=gender,
         address=address,
-        blood_type=blood_type if blood_type else None,
-        role="patient",
-        is_active=1
+        blood_type=blood_type,
+        dob=dob,
+        db=db,
+        redirect_url="/doctor/add-patient"
     )
     
-    try:
-        db.add(new_patient)
-        db.commit()
-        db.refresh(new_patient)
-        
-        # TODO: Send email with temporary password to patient
-        # For now, we'll just show a success message
-        
-        response = RedirectResponse(url=f"/doctor/patient/{new_patient.id}", status_code=303)
-        set_flash_message(response, "success", f"Patient added successfully! Temporary password: {temp_password}")
+    if isinstance(result, RedirectResponse):
+        return result
+    
+    if result["success"]:
+        response = RedirectResponse(url=f"/doctor/patient/{result['patient_id']}", status_code=303)
+        set_flash_message(response, "success", f"Patient {result['name']} added successfully! Temporary password: {result['temp_password']}")
         return response
-    except Exception as e:
-        db.rollback()
+    else:
         response = RedirectResponse(url="/doctor/add-patient", status_code=303)
-        set_flash_message(response, "error", f"Error adding patient: {str(e)}")
+        set_flash_message(response, "error", f"Error adding patient: {result['error']}")
         return response
 
 @router.get("/patient/{patient_id}")
@@ -242,10 +217,14 @@ async def upload_test_page(
         set_flash_message(response, "error", "Patient not found")
         return response
     
-    return templates.TemplateResponse("doctor/upload_test.html", {
+    return templates.TemplateResponse("shared/upload_test.html", {
         "request": request,
         "current_user": current_user,
-        "patient": patient
+        "patient": patient,
+        "base_layout": "layouts/base_doctor.html",
+        "back_url": "/doctor/patients",
+        "cbc_url": f"/doctor/upload-cbc/{patient_id}",
+        "image_url": f"/doctor/upload-image/{patient_id}"
     })
 
 @router.get("/upload-cbc/{patient_id}")
@@ -262,10 +241,14 @@ async def upload_cbc_page(
         set_flash_message(response, "error", "Patient not found")
         return response
     
-    return templates.TemplateResponse("doctor/upload_cbc.html", {
+    return templates.TemplateResponse("shared/upload_cbc.html", {
         "request": request,
         "current_user": current_user,
-        "patient": patient
+        "patient": patient,
+        "base_layout": "layouts/base_doctor.html",
+        "back_url": f"/doctor/upload-test/{patient_id}",
+        "csv_action": f"/doctor/upload-cbc-csv/{patient_id}",
+        "manual_action": f"/doctor/upload-cbc-manual/{patient_id}"
     })
 
 @router.post("/upload-cbc-csv/{patient_id}")
@@ -277,9 +260,18 @@ async def upload_cbc_csv(
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
-    # TODO: Implement CBC CSV upload logic
+    from app.services.patient_service import upload_cbc_csv_logic
+    
+    result = upload_cbc_csv_logic(
+        file=file,
+        notes=notes,
+        patient_id=patient_id,
+        uploaded_by_id=current_user.id,
+        db=db
+    )
+    
     response = RedirectResponse(url=f"/doctor/patient/{patient_id}", status_code=303)
-    set_flash_message(response, "success", "CBC test uploaded successfully!")
+    set_flash_message(response, "success" if result["success"] else "error", result["message"])
     return response
 
 @router.post("/upload-cbc-manual/{patient_id}")
@@ -298,9 +290,18 @@ async def upload_cbc_manual(
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
-    # TODO: Implement CBC manual input logic
+    from app.services.patient_service import upload_cbc_manual_logic
+    
+    result = upload_cbc_manual_logic(
+        rbc=rbc, hgb=hgb, pcv=pcv, mcv=mcv, mch=mch, mchc=mchc, tlc=tlc, plt=plt,
+        notes=notes,
+        patient_id=patient_id,
+        uploaded_by_id=current_user.id,
+        db=db
+    )
+    
     response = RedirectResponse(url=f"/doctor/patient/{patient_id}", status_code=303)
-    set_flash_message(response, "success", "CBC test submitted successfully!")
+    set_flash_message(response, "success" if result["success"] else "error", result["message"])
     return response
 
 @router.get("/upload-image/{patient_id}")
@@ -317,10 +318,13 @@ async def upload_image_page(
         set_flash_message(response, "error", "Patient not found")
         return response
     
-    return templates.TemplateResponse("doctor/upload_image.html", {
+    return templates.TemplateResponse("shared/upload_image.html", {
         "request": request,
         "current_user": current_user,
-        "patient": patient
+        "patient": patient,
+        "base_layout": "layouts/base_doctor.html",
+        "back_url": f"/doctor/upload-test/{patient_id}",
+        "form_action": f"/doctor/upload-blood-image/{patient_id}"
     })
 
 @router.post("/upload-blood-image/{patient_id}")
@@ -332,9 +336,18 @@ async def upload_blood_image(
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
-    # TODO: Implement blood image upload logic
+    from app.services.patient_service import upload_blood_image_logic
+    
+    result = upload_blood_image_logic(
+        file=file,
+        description=description,
+        patient_id=patient_id,
+        uploaded_by_id=current_user.id,
+        db=db
+    )
+    
     response = RedirectResponse(url=f"/doctor/patient/{patient_id}", status_code=303)
-    set_flash_message(response, "success", "Blood image uploaded successfully!")
+    set_flash_message(response, "success" if result["success"] else "error", result["message"])
     return response
 
 @router.get("/reports")

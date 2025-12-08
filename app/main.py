@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from contextlib import asynccontextmanager
-from app.routers import auth, doctors, patients, files, admin, public
+from app.routers import auth, doctors, patients, admin, public
 from app.services.flash_messages import set_flash_message
 import os
 from dotenv import load_dotenv
@@ -118,5 +118,4 @@ app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(doctors.router)
 app.include_router(patients.router)
-app.include_router(files.router)
 

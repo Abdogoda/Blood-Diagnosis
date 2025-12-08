@@ -10,7 +10,7 @@ import bcrypt
 import os
 import uuid
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="app/templates")
@@ -432,9 +432,12 @@ async def add_patient_page(
     request: Request,
     current_user: User = Depends(require_role(["admin"]))
 ):
-    return templates.TemplateResponse("admin/add_patient.html", {
+    return templates.TemplateResponse("shared/add_patient.html", {
         "request": request,
-        "current_user": current_user
+        "current_user": current_user,
+        "base_layout": "layouts/base_admin.html",
+        "back_url": "/admin/patients",
+        "form_action": "/admin/patients/add"
     })
 
 
@@ -452,58 +455,31 @@ async def add_patient(
     current_user: User = Depends(require_role(["admin"])),
     db: Session = Depends(get_db)
 ):
-    import random
-    import string
+    from app.services.patient_service import add_patient_logic
     
-    # Check if email already exists
-    existing_user = db.query(User).filter(User.email == email).first()
-    if existing_user:
-        response = RedirectResponse(url="/admin/add-patient", status_code=303)
-        set_flash_message(response, "error", "A user with this email already exists")
-        return response
-    
-    # Generate username from email
-    username = email.split('@')[0]
-    # Check if username exists and make it unique if necessary
-    base_username = username
-    counter = 1
-    while db.query(User).filter(User.username == username).first():
-        username = f"{base_username}{counter}"
-        counter += 1
-    
-    # Generate random temporary password
-    temp_password = ''.join(random.choices(string.ascii_letters + string.digits, k=12))
-    
-    # Create new patient user
-    new_patient = User(
-        username=username,
-        password=get_password_hash(temp_password),
-        fname=first_name,
-        lname=last_name,
+    result = add_patient_logic(
+        first_name=first_name,
+        last_name=last_name,
         email=email,
         phone=phone,
         gender=gender,
         address=address,
-        blood_type=blood_type if blood_type else None,
-        role="patient",
-        is_active=1
+        blood_type=blood_type,
+        dob=dob,
+        db=db,
+        redirect_url="/admin/add-patient"
     )
     
-    try:
-        db.add(new_patient)
-        db.commit()
-        db.refresh(new_patient)
-        
-        # TODO: Send email with temporary password to patient
-        # For now, we'll just show a success message
-        
-        response = RedirectResponse(url=f"/admin/patients/{new_patient.id}", status_code=303)
-        set_flash_message(response, "success", f"Patient {first_name} {last_name} added successfully! Temporary password: {temp_password}")
+    if isinstance(result, RedirectResponse):
+        return result
+    
+    if result["success"]:
+        response = RedirectResponse(url=f"/admin/patients/{result['patient_id']}", status_code=303)
+        set_flash_message(response, "success", f"Patient {result['name']} added successfully! Temporary password: {result['temp_password']}")
         return response
-    except Exception as e:
-        db.rollback()
+    else:
         response = RedirectResponse(url="/admin/add-patient", status_code=303)
-        set_flash_message(response, "error", f"Error adding patient: {str(e)}")
+        set_flash_message(response, "error", f"Error adding patient: {result['error']}")
         return response
 
 

@@ -40,9 +40,13 @@ async def upload_test_page(
     request: Request,
     current_user: User = Depends(require_role(["patient", "admin"]))
 ):
-    return templates.TemplateResponse("patient/upload_test.html", {
+    return templates.TemplateResponse("shared/upload_test.html", {
         "request": request,
-        "current_user": current_user
+        "current_user": current_user,
+        "base_layout": "layouts/base_patient.html",
+        "back_url": "/patient/dashboard",
+        "cbc_url": "/patient/upload-cbc",
+        "image_url": "/patient/upload-image"
     })
 
 @router.get("/upload-cbc")
@@ -50,9 +54,13 @@ async def upload_cbc_page(
     request: Request,
     current_user: User = Depends(require_role(["patient", "admin"]))
 ):
-    return templates.TemplateResponse("patient/upload_cbc.html", {
+    return templates.TemplateResponse("shared/upload_cbc.html", {
         "request": request,
-        "current_user": current_user
+        "current_user": current_user,
+        "base_layout": "layouts/base_patient.html",
+        "back_url": "/patient/upload-test",
+        "csv_action": "/patient/upload-cbc-csv",
+        "manual_action": "/patient/upload-cbc-manual"
     })
 
 @router.post("/upload-cbc-csv")
@@ -63,9 +71,18 @@ async def upload_cbc_csv(
     current_user: User = Depends(require_role(["patient", "admin"])),
     db: Session = Depends(get_db)
 ):
-    # TODO: Implement CBC CSV upload logic
+    from app.services.patient_service import upload_cbc_csv_logic
+    
+    result = upload_cbc_csv_logic(
+        file=file,
+        notes=notes,
+        patient_id=current_user.id,
+        uploaded_by_id=current_user.id,
+        db=db
+    )
+    
     response = RedirectResponse(url="/patient/dashboard", status_code=303)
-    set_flash_message(response, "success", "CBC test uploaded successfully!")
+    set_flash_message(response, "success" if result["success"] else "error", result["message"])
     return response
 
 @router.post("/upload-cbc-manual")
@@ -83,9 +100,18 @@ async def upload_cbc_manual(
     current_user: User = Depends(require_role(["patient", "admin"])),
     db: Session = Depends(get_db)
 ):
-    # TODO: Implement CBC manual input logic
+    from app.services.patient_service import upload_cbc_manual_logic
+    
+    result = upload_cbc_manual_logic(
+        rbc=rbc, hgb=hgb, pcv=pcv, mcv=mcv, mch=mch, mchc=mchc, tlc=tlc, plt=plt,
+        notes=notes,
+        patient_id=current_user.id,
+        uploaded_by_id=current_user.id,
+        db=db
+    )
+    
     response = RedirectResponse(url="/patient/dashboard", status_code=303)
-    set_flash_message(response, "success", "CBC test submitted successfully!")
+    set_flash_message(response, "success" if result["success"] else "error", result["message"])
     return response
 
 @router.get("/upload-image")
@@ -93,9 +119,12 @@ async def upload_image_page(
     request: Request,
     current_user: User = Depends(require_role(["patient", "admin"]))
 ):
-    return templates.TemplateResponse("patient/upload_image.html", {
+    return templates.TemplateResponse("shared/upload_image.html", {
         "request": request,
-        "current_user": current_user
+        "current_user": current_user,
+        "base_layout": "layouts/base_patient.html",
+        "back_url": "/patient/upload-test",
+        "form_action": "/patient/upload-blood-image"
     })
 
 @router.post("/upload-blood-image")
@@ -106,9 +135,18 @@ async def upload_blood_image(
     current_user: User = Depends(require_role(["patient", "admin"])),
     db: Session = Depends(get_db)
 ):
-    # TODO: Implement blood image upload logic
+    from app.services.patient_service import upload_blood_image_logic
+    
+    result = upload_blood_image_logic(
+        file=file,
+        description=description,
+        patient_id=current_user.id,
+        uploaded_by_id=current_user.id,
+        db=db
+    )
+    
     response = RedirectResponse(url="/patient/dashboard", status_code=303)
-    set_flash_message(response, "success", "Blood image uploaded successfully!")
+    set_flash_message(response, "success" if result["success"] else "error", result["message"])
     return response
 
 @router.get("/result/{test_id}")
