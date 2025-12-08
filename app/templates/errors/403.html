@@ -1,0 +1,133 @@
+{% extends "errors/base_error.html" %}
+
+{% block title %}403 - Access Forbidden{% endblock %}
+
+{% block body_class %}bg-gradient-to-br from-red-50 via-rose-50 to-pink-50{% endblock %}
+
+{% block icon_container_class %}shield-container{% endblock %}
+
+{% block icon %}
+<svg class="w-32 h-32 mx-auto text-red-500 animate-shield-pulse" fill="currentColor" viewBox="0 0 20 20">
+    <path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 10-2 0v3a1 1 0 102 0V7z" clip-rule="evenodd"/>
+</svg>
+{% endblock %}
+
+{% block pulse_ring_class %}pulse-ring-red{% endblock %}
+
+{% block error_code %}403{% endblock %}
+
+{% block gradient_class %}bg-gradient-to-r from-red-500 via-rose-500 to-pink-600{% endblock %}
+
+{% block line_gradient_left %}bg-gradient-to-r from-red-500 to-pink-600{% endblock %}
+
+{% block middle_icon %}
+<svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+    <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"/>
+</svg>
+{% endblock %}
+
+{% block line_gradient_right %}bg-gradient-to-r from-pink-600 to-red-500{% endblock %}
+
+{% block error_title %}Access Forbidden{% endblock %}
+
+{% block error_description %}
+You don't have permission to access this medical resource. 
+This area is restricted to authorized personnel only.
+{% endblock %}
+
+{% block detail_bg %}bg-red-100 border border-red-300{% endblock %}
+{% block detail_text %}text-red-800{% endblock %}
+
+{% block additional_info %}
+<div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 max-w-md mx-auto border border-gray-200">
+    <div class="flex items-start space-x-4">
+        <div class="flex-shrink-0">
+            <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+        </div>
+        <div class="flex-1 text-left">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">Why am I seeing this?</h3>
+            <ul class="text-sm text-gray-600 space-y-1">
+                <li class="flex items-start">
+                    <span class="text-red-500 mr-2">•</span>
+                    <span>Your account type doesn't have access to this section</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-red-500 mr-2">•</span>
+                    <span>This page requires elevated privileges</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-red-500 mr-2">•</span>
+                    <span>Your session may have insufficient permissions</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block action_buttons %}
+{% if user_role %}
+    {% if user_role == 'admin' %}
+        <a href="/admin/dashboard" class="group relative inline-flex items-center justify-center px-8 py-3 overflow-hidden font-bold text-white rounded-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+            Go to Dashboard
+        </a>
+    {% elif user_role == 'doctor' %}
+        <a href="/doctor/dashboard" class="group relative inline-flex items-center justify-center px-8 py-3 overflow-hidden font-bold text-white rounded-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+            Go to Dashboard
+        </a>
+    {% elif user_role == 'patient' %}
+        <a href="/patient/dashboard" class="group relative inline-flex items-center justify-center px-8 py-3 overflow-hidden font-bold text-white rounded-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+            Go to Dashboard
+        </a>
+    {% endif %}
+{% else %}
+    <a href="/" class="group relative inline-flex items-center justify-center px-8 py-3 overflow-hidden font-bold text-white rounded-full bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+        Go Home
+    </a>
+{% endif %}
+<button onclick="history.back()" class="group inline-flex items-center justify-center px-8 py-3 font-bold text-gray-700 bg-white rounded-full hover:bg-gray-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 border-2 border-gray-200">
+    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+    </svg>
+    Go Back
+</button>
+{% endblock %}
+
+{% block help_title %}Need help?{% endblock %}
+
+{% block help_links %}
+<a href="/contact" class="text-sm px-6 py-2 text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+    <svg class="inline-block w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+    </svg>
+    Contact Support
+</a>
+<a href="/about" class="text-sm px-6 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200 border border-gray-300">
+    About System Access
+</a>
+{% endblock %}
+
+{% block custom_styles %}
+@keyframes shield-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.animate-shield-pulse {
+    animation: shield-pulse 2s ease-in-out infinite;
+}
+{% endblock %}

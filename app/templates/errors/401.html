@@ -1,0 +1,89 @@
+{% extends "errors/base_error.html" %}
+
+{% block title %}401 - Authentication Required{% endblock %}
+
+{% block body_class %}bg-gradient-to-br from-yellow-50 via-orange-50 to-red-50{% endblock %}
+
+{% block icon_container_class %}lock-container{% endblock %}
+
+{% block icon %}
+<svg class="w-32 h-32 mx-auto text-orange-500 animate-lock-shake" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+</svg>
+{% endblock %}
+
+{% block pulse_ring_class %}pulse-ring-orange{% endblock %}
+
+{% block error_code %}401{% endblock %}
+
+{% block gradient_class %}bg-gradient-to-r from-orange-500 via-red-500 to-pink-600{% endblock %}
+
+{% block line_gradient_left %}bg-gradient-to-r from-orange-500 to-red-600{% endblock %}
+
+{% block middle_icon %}
+<svg class="w-6 h-6 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+</svg>
+{% endblock %}
+
+{% block line_gradient_right %}bg-gradient-to-r from-red-600 to-orange-500{% endblock %}
+
+{% block error_title %}Authentication Required{% endblock %}
+
+{% block error_description %}
+Access to medical records requires proper authentication. 
+Please log in to continue with your diagnosis.
+{% endblock %}
+
+{% block detail_bg %}bg-orange-100 border border-orange-300{% endblock %}
+{% block detail_text %}text-orange-800{% endblock %}
+
+{% block action_buttons %}
+<a href="/auth/login?next={{ request.url.path }}" class="group relative inline-flex items-center justify-center px-8 py-3 overflow-hidden font-bold text-white rounded-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+    </svg>
+    Sign In Now
+</a>
+<a href="/" class="group inline-flex items-center justify-center px-8 py-3 font-bold text-gray-700 bg-white rounded-full hover:bg-gray-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 border-2 border-gray-200">
+    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+    </svg>
+    Go Home
+</a>
+{% endblock %}
+
+{% block help_title %}Need an account?{% endblock %}
+
+{% block help_links %}
+<a href="/auth/register" class="text-sm px-6 py-2 text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+    <svg class="inline-block w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+    </svg>
+    Create Account
+</a>
+<a href="/auth/reset-password" class="text-sm px-6 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200 border border-gray-300">
+    Forgot Password?
+</a>
+{% endblock %}
+
+{% block extra_footer %}
+<div class="mt-6 inline-flex items-center text-xs text-gray-500 bg-gray-100 px-4 py-2 rounded-full">
+    <svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+    </svg>
+    Your data is secured with encryption
+</div>
+{% endblock %}
+
+{% block custom_styles %}
+@keyframes lock-shake {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-10deg); }
+    75% { transform: rotate(10deg); }
+}
+
+.animate-lock-shake {
+    animation: lock-shake 2s ease-in-out infinite;
+}
+{% endblock %}

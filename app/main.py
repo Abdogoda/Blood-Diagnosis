@@ -38,32 +38,39 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Custom exception handler for authentication errors
+# Custom exception handler for HTTP errors
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    accept_header = request.headers.get("accept", "")
+    
+    # Handle 401 - Unauthorized
     if exc.status_code == 401:
-        accept_header = request.headers.get("accept", "")
         if "application/json" in accept_header:
             return JSONResponse(
                 status_code=exc.status_code,
                 content={"detail": exc.detail}
             )
-        response = RedirectResponse(url="/auth/login", status_code=303)
-        set_flash_message(response, "error", "Please login to access this page")
-        return response
+        return templates.TemplateResponse(
+            "errors/401.html",
+            {
+                "request": request,
+                "detail": exc.detail
+            },
+            status_code=401
+        )
     
+    # Handle 403 - Forbidden
     if exc.status_code == 403:
-        accept_header = request.headers.get("accept", "")
         if "application/json" in accept_header:
             return JSONResponse(
                 status_code=exc.status_code,
                 content={"detail": exc.detail}
             )
         
+        user_role = None
         try:
             from app.services.auth_service import verify_token
             token = request.cookies.get("access_token")
-            redirect_url = "/"
             
             if token:
                 if token.startswith("Bearer "):
@@ -71,22 +78,37 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
                 token_data = verify_token(token)
                 
                 if token_data and token_data.role:
-                    # Redirect based on user's role
-                    if token_data.role == "admin":
-                        redirect_url = "/admin/dashboard"
-                    elif token_data.role == "doctor":
-                        redirect_url = "/doctor/dashboard"
-                    elif token_data.role == "patient":
-                        redirect_url = "/patient/dashboard"
-            
-            response = RedirectResponse(url=redirect_url, status_code=303)
-            set_flash_message(response, "error", "You don't have permission to access that page")
-            return response
+                    user_role = token_data.role
         except:
-            response = RedirectResponse(url="/", status_code=303)
-            set_flash_message(response, "error", "You don't have permission to access that page")
-            return response
+            pass
+        
+        return templates.TemplateResponse(
+            "errors/403.html",
+            {
+                "request": request,
+                "detail": exc.detail,
+                "user_role": user_role
+            },
+            status_code=403
+        )
     
+    # Handle 404 - Not Found
+    if exc.status_code == 404:
+        if "application/json" in accept_header:
+            return JSONResponse(
+                status_code=exc.status_code,
+                content={"detail": exc.detail}
+            )
+        return templates.TemplateResponse(
+            "errors/404.html",
+            {
+                "request": request,
+                "detail": exc.detail
+            },
+            status_code=404
+        )
+    
+    # Handle other status codes with generic error page
     return templates.TemplateResponse(
         "base.html",
         {
@@ -94,6 +116,60 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
             "error": str(exc.detail) if exc.detail else "An error occurred"
         },
         status_code=exc.status_code
+    )
+
+# Custom exception handler for 500 Internal Server Errors
+@app.exception_handler(500)
+async def internal_server_error_handler(request: Request, exc: Exception):
+    accept_header = request.headers.get("accept", "")
+    
+    if "application/json" in accept_header:
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal server error occurred"}
+        )
+    
+    import uuid
+    error_id = str(uuid.uuid4())[:8]
+    
+    # Log the error (in production, you'd log to a file or monitoring service)
+    print(f"Error ID {error_id}: {str(exc)}")
+    
+    return templates.TemplateResponse(
+        "errors/500.html",
+        {
+            "request": request,
+            "detail": "An unexpected error occurred",
+            "error_id": error_id
+        },
+        status_code=500
+    )
+
+# Global exception handler for unhandled exceptions
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    accept_header = request.headers.get("accept", "")
+    
+    if "application/json" in accept_header:
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal server error occurred"}
+        )
+    
+    import uuid
+    error_id = str(uuid.uuid4())[:8]
+    
+    # Log the error (in production, you'd log to a file or monitoring service)
+    print(f"Error ID {error_id}: {type(exc).__name__} - {str(exc)}")
+    
+    return templates.TemplateResponse(
+        "errors/500.html",
+        {
+            "request": request,
+            "detail": "An unexpected error occurred",
+            "error_id": error_id
+        },
+        status_code=500
     )
 
 # CORS Configuration

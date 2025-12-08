@@ -1,0 +1,469 @@
+{% extends "errors/base_error.html" %}
+
+{% block title %}500 - Internal Server Error{% endblock %}
+
+{% block body_class %}bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50{% endblock %}
+
+{% block icon_container_class %}server-container{% endblock %}
+
+{% block icon %}
+<svg class="w-32 h-32 mx-auto text-purple-500 animate-glitch" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+</svg>
+{% endblock %}
+
+{% block pulse_ring_class %}pulse-ring-purple{% endblock %}
+
+{% block extra_effects %}
+<div class="spark spark-1"></div>
+<div class="spark spark-2"></div>
+<div class="spark spark-3"></div>
+{% endblock %}
+
+{% block error_code %}500{% endblock %}
+
+{% block gradient_class %}bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-600{% endblock %}
+
+{% block line_gradient_left %}bg-gradient-to-r from-purple-500 to-blue-600{% endblock %}
+
+{% block middle_icon %}
+<svg class="w-6 h-6 text-purple-500 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+</svg>
+{% endblock %}
+
+{% block line_gradient_right %}bg-gradient-to-r from-blue-600 to-purple-500{% endblock %}
+
+{% block error_title %}Internal Server Error{% endblock %}
+
+{% block error_description %}
+Our diagnostic system encountered an unexpected error. 
+Our technical team has been notified and is working on a fix.
+{% endblock %}
+
+{% block detail_bg %}bg-purple-100 border border-purple-300{% endblock %}
+{% block detail_text %}text-purple-800{% endblock %}
+
+{% block additional_info %}
+<div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 max-w-md mx-auto border border-gray-200">
+    <div class="flex items-start space-x-4">
+        <div class="flex-shrink-0">
+            <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+        </div>
+        <div class="flex-1 text-left">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">What happened?</h3>
+            <ul class="text-sm text-gray-600 space-y-2">
+                <li class="flex items-start">
+                    <span class="text-purple-500 mr-2">•</span>
+                    <span>A technical issue occurred on our server</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-purple-500 mr-2">•</span>
+                    <span>Your data is safe and secure</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="text-purple-500 mr-2">•</span>
+                    <span>Our team has been automatically notified</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block action_buttons %}
+<button onclick="location.reload()" class="group relative inline-flex items-center justify-center px-8 py-3 overflow-hidden font-bold text-white rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+    <svg class="w-5 h-5 mr-2 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+    </svg>
+    Try Again
+</button>
+<a href="/" class="group inline-flex items-center justify-center px-8 py-3 font-bold text-gray-700 bg-white rounded-full hover:bg-gray-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 border-2 border-gray-200">
+    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+    </svg>
+    Go Home
+</a>
+{% endblock %}
+
+{% block help_title %}Problem persists?{% endblock %}
+
+{% block help_links %}
+<a href="/contact" class="text-sm px-6 py-2 text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+    <svg class="inline-block w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+    </svg>
+    Contact Support
+</a>
+<a href="/about" class="text-sm px-6 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200 border border-gray-300">
+    System Status
+</a>
+{% endblock %}
+
+{% block extra_footer %}
+{% if error_id %}
+<div class="mt-6 inline-flex items-center text-xs text-gray-500 bg-gray-100 px-4 py-2 rounded-full font-mono">
+    <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+    </svg>
+    Error ID: {{ error_id }}
+</div>
+{% endif %}
+
+<div class="mt-4 text-sm text-gray-500">
+    <div class="inline-flex items-center space-x-2">
+        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+        <span>System monitoring active</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block custom_styles %}
+@keyframes glitch {
+    0%, 100% { 
+        transform: translate(0, 0);
+        filter: hue-rotate(0deg);
+    }
+    20% { 
+        transform: translate(-2px, 2px);
+        filter: hue-rotate(90deg);
+    }
+    40% { 
+        transform: translate(2px, -2px);
+        filter: hue-rotate(180deg);
+    }
+    60% { 
+        transform: translate(-2px, -2px);
+        filter: hue-rotate(270deg);
+    }
+    80% { 
+        transform: translate(2px, 2px);
+        filter: hue-rotate(360deg);
+    }
+}
+
+.animate-glitch {
+    animation: glitch 3s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+    animation: spin-slow 3s linear infinite;
+}
+
+.spark {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #fbbf24;
+    border-radius: 50%;
+    opacity: 0;
+    animation: spark 2s ease-in-out infinite;
+}
+
+.spark-1 {
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+}
+
+.spark-2 {
+    top: 80%;
+    right: 20%;
+    animation-delay: 0.7s;
+}
+
+.spark-3 {
+    top: 40%;
+    right: 10%;
+    animation-delay: 1.4s;
+}
+
+@keyframes spark {
+    0%, 100% {
+        opacity: 0;
+        transform: scale(0) translateY(0);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1) translateY(-20px);
+    }
+}
+{% endblock %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 - Internal Server Error | Blood Diagnosis System</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='img/favicon.ico') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/error.css') }}">
+</head>
+<body class="bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 min-h-screen flex items-center justify-center p-4">
+    <div class="error-container max-w-2xl w-full">
+        <div class="text-center space-y-8 animate-fade-in">
+            <!-- Animated Server Error Icon -->
+            <div class="relative inline-block">
+                <div class="server-container">
+                    <svg class="w-32 h-32 mx-auto text-purple-500 animate-glitch" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                    </svg>
+                    <div class="pulse-ring-purple"></div>
+                    <!-- Error sparks -->
+                    <div class="spark spark-1"></div>
+                    <div class="spark spark-2"></div>
+                    <div class="spark spark-3"></div>
+                </div>
+            </div>
+
+            <!-- Error Code -->
+            <div class="space-y-2">
+                <h1 class="text-9xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-600 animate-gradient">
+                    500
+                </h1>
+                <div class="flex items-center justify-center space-x-2">
+                    <div class="h-1 w-16 bg-gradient-to-r from-purple-500 to-blue-600 rounded-full animate-pulse"></div>
+                    <svg class="w-6 h-6 text-purple-500 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <div class="h-1 w-16 bg-gradient-to-r from-blue-600 to-purple-500 rounded-full animate-pulse"></div>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div class="space-y-4">
+                <h2 class="text-4xl font-bold text-gray-800">
+                    Internal Server Error
+                </h2>
+                <p class="text-xl text-gray-600 max-w-lg mx-auto">
+                    Our diagnostic system encountered an unexpected error. 
+                    Our technical team has been notified and is working on a fix.
+                </p>
+                {% if detail %}
+                <div class="inline-block px-6 py-3 bg-purple-100 border border-purple-300 rounded-lg">
+                    <p class="text-sm text-purple-800 font-medium">
+                        <svg class="inline-block w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        {{ detail }}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Status Info -->
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 max-w-md mx-auto border border-gray-200">
+                <div class="flex items-start space-x-4">
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex-1 text-left">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">What happened?</h3>
+                        <ul class="text-sm text-gray-600 space-y-2">
+                            <li class="flex items-start">
+                                <span class="text-purple-500 mr-2">•</span>
+                                <span>A technical issue occurred on our server</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-purple-500 mr-2">•</span>
+                                <span>Your data is safe and secure</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-purple-500 mr-2">•</span>
+                                <span>Our team has been automatically notified</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+                <button onclick="location.reload()" class="group relative inline-flex items-center justify-center px-8 py-3 overflow-hidden font-bold text-white rounded-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                    <svg class="w-5 h-5 mr-2 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    Try Again
+                </button>
+                <a href="/" class="group inline-flex items-center justify-center px-8 py-3 font-bold text-gray-700 bg-white rounded-full hover:bg-gray-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 border-2 border-gray-200">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    Go Home
+                </a>
+            </div>
+
+            <!-- Help Section -->
+            <div class="pt-8 border-t border-gray-200">
+                <p class="text-sm text-gray-500 mb-4">Problem persists?</p>
+                <div class="flex flex-wrap justify-center gap-3">
+                    <a href="/contact" class="text-sm px-6 py-2 text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                        <svg class="inline-block w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                        Contact Support
+                    </a>
+                    <a href="/about" class="text-sm px-6 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200 border border-gray-300">
+                        System Status
+                    </a>
+                </div>
+            </div>
+
+            <!-- Error ID (if available) -->
+            {% if error_id %}
+            <div class="mt-6 inline-flex items-center text-xs text-gray-500 bg-gray-100 px-4 py-2 rounded-full font-mono">
+                <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                </svg>
+                Error ID: {{ error_id }}
+            </div>
+            {% endif %}
+
+            <!-- Retry Timer -->
+            <div class="mt-4 text-sm text-gray-500">
+                <div class="inline-flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span>System monitoring active</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes gradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .animate-gradient {
+            background-size: 200% 200%;
+            animation: gradient 3s ease infinite;
+        }
+        
+        @keyframes glitch {
+            0%, 100% { 
+                transform: translate(0, 0);
+                filter: hue-rotate(0deg);
+            }
+            20% { 
+                transform: translate(-2px, 2px);
+                filter: hue-rotate(90deg);
+            }
+            40% { 
+                transform: translate(2px, -2px);
+                filter: hue-rotate(180deg);
+            }
+            60% { 
+                transform: translate(-2px, -2px);
+                filter: hue-rotate(270deg);
+            }
+            80% { 
+                transform: translate(2px, 2px);
+                filter: hue-rotate(360deg);
+            }
+        }
+        
+        .animate-glitch {
+            animation: glitch 3s ease-in-out infinite;
+        }
+        
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .animate-spin-slow {
+            animation: spin-slow 3s linear infinite;
+        }
+        
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in {
+            animation: fade-in 0.8s ease-out;
+        }
+        
+        .pulse-ring-purple {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140px;
+            height: 140px;
+            border: 3px solid rgba(168, 85, 247, 0.3);
+            border-radius: 50%;
+            animation: pulse-ring 2s ease-out infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 0;
+            }
+        }
+        
+        .server-container {
+            position: relative;
+        }
+        
+        .spark {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #fbbf24;
+            border-radius: 50%;
+            opacity: 0;
+            animation: spark 2s ease-in-out infinite;
+        }
+        
+        .spark-1 {
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        
+        .spark-2 {
+            top: 80%;
+            right: 20%;
+            animation-delay: 0.7s;
+        }
+        
+        .spark-3 {
+            top: 40%;
+            right: 10%;
+            animation-delay: 1.4s;
+        }
+        
+        @keyframes spark {
+            0%, 100% {
+                opacity: 0;
+                transform: scale(0) translateY(0);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1) translateY(-20px);
+            }
+        }
+    </style>
+</body>
+</html>

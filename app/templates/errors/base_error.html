@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Error{% endblock %} | Blood Diagnosis System</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='img/favicon.ico') }}">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/error.css') }}">
+</head>
+<body class="{% block body_class %}bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50{% endblock %} min-h-screen flex items-center justify-center p-4">
+    <div class="error-container max-w-2xl w-full">
+        <div class="text-center space-y-8 animate-fade-in">
+            <!-- Animated Icon -->
+            <div class="relative inline-block">
+                <div class="{% block icon_container_class %}icon-container{% endblock %}">
+                    {% block icon %}
+                    <svg class="w-32 h-32 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    {% endblock %}
+                    <div class="{% block pulse_ring_class %}pulse-ring{% endblock %}"></div>
+                    {% block extra_effects %}{% endblock %}
+                </div>
+            </div>
+
+            <!-- Error Code -->
+            <div class="space-y-2">
+                <h1 class="text-9xl font-extrabold text-transparent bg-clip-text {% block gradient_class %}bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600{% endblock %} animate-gradient">
+                    {% block error_code %}000{% endblock %}
+                </h1>
+                <div class="flex items-center justify-center space-x-2">
+                    <div class="h-1 w-16 {% block line_gradient_left %}bg-gradient-to-r from-blue-500 to-purple-600{% endblock %} rounded-full animate-pulse"></div>
+                    {% block middle_icon %}
+                    <svg class="w-6 h-6 {% block middle_icon_color %}text-blue-500{% endblock %}" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                    {% endblock %}
+                    <div class="h-1 w-16 {% block line_gradient_right %}bg-gradient-to-r from-purple-600 to-blue-500{% endblock %} rounded-full animate-pulse"></div>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div class="space-y-4">
+                <h2 class="text-4xl font-bold text-gray-800">
+                    {% block error_title %}Error Occurred{% endblock %}
+                </h2>
+                <p class="text-xl text-gray-600 max-w-lg mx-auto">
+                    {% block error_description %}An error has occurred. Please try again later.{% endblock %}
+                </p>
+                {% if detail %}
+                <div class="inline-block px-6 py-3 {% block detail_bg %}bg-blue-100 border border-blue-300{% endblock %} rounded-lg">
+                    <p class="text-sm {% block detail_text %}text-blue-800{% endblock %} font-medium">
+                        <svg class="inline-block w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                        {{ detail }}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Additional Info Block -->
+            {% block additional_info %}{% endblock %}
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
+                {% block action_buttons %}
+                <a href="/" class="group relative inline-flex items-center justify-center px-8 py-3 overflow-hidden font-bold text-white rounded-full {% block primary_button_gradient %}bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700{% endblock %} transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    Go Home
+                </a>
+                <button onclick="history.back()" class="group inline-flex items-center justify-center px-8 py-3 font-bold text-gray-700 bg-white rounded-full hover:bg-gray-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 border-2 border-gray-200">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Go Back
+                </button>
+                {% endblock %}
+            </div>
+
+            <!-- Help Section -->
+            {% block help_section %}
+            <div class="pt-8 border-t border-gray-200">
+                <p class="text-sm text-gray-500 mb-4">{% block help_title %}Need help?{% endblock %}</p>
+                <div class="flex flex-wrap justify-center gap-3">
+                    {% block help_links %}
+                    <a href="/contact" class="text-sm px-6 py-2 text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                        <svg class="inline-block w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        Contact Support
+                    </a>
+                    <a href="/about" class="text-sm px-6 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200 border border-gray-300">
+                        About System
+                    </a>
+                    {% endblock %}
+                </div>
+            </div>
+            {% endblock %}
+
+            <!-- Extra Footer -->
+            {% block extra_footer %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Custom Styles -->
+    <style>
+        @keyframes gradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .animate-gradient {
+            background-size: 200% 200%;
+            animation: gradient 3s ease infinite;
+        }
+        
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in {
+            animation: fade-in 0.8s ease-out;
+        }
+        
+        .pulse-ring,
+        .pulse-ring-orange,
+        .pulse-ring-red,
+        .pulse-ring-purple {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 140px;
+            height: 140px;
+            border: 3px solid rgba(59, 130, 246, 0.3);
+            border-radius: 50%;
+            animation: pulse-ring 2s ease-out infinite;
+        }
+        
+        .pulse-ring-orange {
+            border-color: rgba(249, 115, 22, 0.3);
+        }
+        
+        .pulse-ring-red {
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        
+        .pulse-ring-purple {
+            border-color: rgba(168, 85, 247, 0.3);
+        }
+        
+        @keyframes pulse-ring {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 0;
+            }
+        }
+        
+        .icon-container,
+        .blood-drop-container,
+        .lock-container,
+        .shield-container,
+        .server-container {
+            position: relative;
+        }
+
+        </style>
+    {% block custom_styles %}{% endblock %}
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

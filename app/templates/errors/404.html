@@ -1,0 +1,79 @@
+{% extends "errors/base_error.html" %}
+
+{% block title %}404 - Page Not Found{% endblock %}
+
+{% block body_class %}bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50{% endblock %}
+
+{% block icon_container_class %}blood-drop-container{% endblock %}
+
+{% block icon %}
+<svg class="w-32 h-32 mx-auto text-red-500 animate-bounce-slow" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+</svg>
+{% endblock %}
+
+{% block pulse_ring_class %}pulse-ring{% endblock %}
+
+{% block error_code %}404{% endblock %}
+
+{% block gradient_class %}bg-gradient-to-r from-red-500 via-pink-500 to-purple-600{% endblock %}
+
+{% block line_gradient_left %}bg-gradient-to-r from-red-500 to-purple-600{% endblock %}
+
+{% block middle_icon %}
+<svg class="w-6 h-6 text-red-500 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+</svg>
+{% endblock %}
+
+{% block line_gradient_right %}bg-gradient-to-r from-purple-600 to-red-500{% endblock %}
+
+{% block error_title %}Oops! Page Not Found{% endblock %}
+
+{% block error_description %}
+The page you're looking for seems to have gone missing from our medical records. 
+Let's get you back on track!
+{% endblock %}
+
+{% block primary_button_gradient %}bg-gradient-to-r from-red-500 to-purple-600 hover:from-red-600 hover:to-purple-700{% endblock %}
+
+{% block help_title %}You might be looking for:{% endblock %}
+
+{% block help_links %}
+<a href="/auth/login" class="text-sm px-4 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200">
+    Login
+</a>
+<a href="/auth/register" class="text-sm px-4 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200">
+    Register
+</a>
+<a href="/about" class="text-sm px-4 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200">
+    About Us
+</a>
+<a href="/contact" class="text-sm px-4 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200">
+    Contact
+</a>
+{% endblock %}
+
+{% block custom_styles %}
+@keyframes bounce-slow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+.animate-bounce-slow {
+    animation: bounce-slow 2s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+    animation: spin-slow 3s linear infinite;
+}
+
+.pulse-ring {
+    border-color: rgba(239, 68, 68, 0.3);
+}
+{% endblock %}
