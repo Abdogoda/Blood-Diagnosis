@@ -1,4 +1,4 @@
-{% extends "errors/base_error.html" %}
+{% extends "layouts/base_error.html" %}
 
 {% block title %}401 - Authentication Required{% endblock %}
 
@@ -77,7 +77,8 @@ Please log in to continue with your diagnosis.
 {% endblock %}
 
 {% block custom_styles %}
-@keyframes lock-shake {
+<style>
+    @keyframes lock-shake {
     0%, 100% { transform: rotate(0deg); }
     25% { transform: rotate(-10deg); }
     75% { transform: rotate(10deg); }
@@ -86,4 +87,5 @@ Please log in to continue with your diagnosis.
 .animate-lock-shake {
     animation: lock-shake 2s ease-in-out infinite;
 }
+</style>
 {% endblock %}

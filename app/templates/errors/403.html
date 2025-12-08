@@ -1,4 +1,4 @@
-{% extends "errors/base_error.html" %}
+{% extends "layouts/base_error.html" %}
 
 {% block title %}403 - Access Forbidden{% endblock %}
 
@@ -122,7 +122,8 @@ This area is restricted to authorized personnel only.
 {% endblock %}
 
 {% block custom_styles %}
-@keyframes shield-pulse {
+<style>
+    @keyframes shield-pulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.05); }
 }
@@ -130,4 +131,5 @@ This area is restricted to authorized personnel only.
 .animate-shield-pulse {
     animation: shield-pulse 2s ease-in-out infinite;
 }
+</style>
 {% endblock %}

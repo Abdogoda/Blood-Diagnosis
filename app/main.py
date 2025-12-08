@@ -38,6 +38,9 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Initialize templates early so exception handlers can use it
+templates = Jinja2Templates(directory="app/templates")
+
 # Custom exception handler for HTTP errors
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
@@ -185,8 +188,6 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
-
-templates = Jinja2Templates(directory="app/templates")
 
 # Include routers
 app.include_router(public.router)

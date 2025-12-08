@@ -1,4 +1,4 @@
-{% extends "errors/base_error.html" %}
+{% extends "layouts/base_error.html" %}
 
 {% block title %}404 - Page Not Found{% endblock %}
 
@@ -55,7 +55,8 @@ Let's get you back on track!
 {% endblock %}
 
 {% block custom_styles %}
-@keyframes bounce-slow {
+<style>
+    @keyframes bounce-slow {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-20px); }
 }
@@ -76,4 +77,5 @@ Let's get you back on track!
 .pulse-ring {
     border-color: rgba(239, 68, 68, 0.3);
 }
+</style>
 {% endblock %}

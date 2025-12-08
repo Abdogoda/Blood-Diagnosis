@@ -140,14 +140,9 @@ def require_role(allowed_roles: list):
         user = get_current_user_from_cookie(request, db)
         
         if user is None:
-            from fastapi.responses import RedirectResponse
-            from app.services.ui_service import set_flash_message
-            response = RedirectResponse(url="/auth/login", status_code=303)
-            set_flash_message(response, "error", "Please login to continue")
             raise HTTPException(
-                status_code=status.HTTP_303_SEE_OTHER,
-                detail="Authentication required",
-                headers={"Location": "/auth/login"}
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication required"
             )
         
         if user.role not in allowed_roles:
@@ -168,12 +163,9 @@ def require_authentication(
     user = get_current_user_from_cookie(request, db)
     
     if user is None:
-        from fastapi.responses import RedirectResponse
-        response = RedirectResponse(url="/auth/login", status_code=303)
         raise HTTPException(
-            status_code=status.HTTP_303_SEE_OTHER,
-            detail="Authentication required",
-            headers={"Location": "/auth/login"}
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required"
         )
     
     return user
