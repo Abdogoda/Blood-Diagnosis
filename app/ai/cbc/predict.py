@@ -141,24 +141,24 @@ def _anemia_phenotype(row):
     
     if not np.isnan(mcv):
         if mcv < 80:
-            phenotype = "أنيميا ميكروسيتيك (غالبًا نقص الحديد)"
+            phenotype = "Microcytic Anemia (often iron deficiency)"
         elif mcv > 100:
-            phenotype = "أنيميا ماكروسيتيك (قد تشير إلى نقص B12/فولات أو أسباب أخرى)"
+            phenotype = "Macrocytic Anemia (may indicate B12/folate deficiency or other causes)"
         else:
-            phenotype = "أنيميا نورموسيتيك (قد ترتبط بمرض مزمن/نزف حاد/كلوي..)"
+            phenotype = "Normocytic Anemia (may be related to chronic disease/acute bleeding/kidney issues)"
     
     if not np.isnan(mchc) and mchc < 32:
-        hints.append("هيبوكروما (يدعم احتمال نقص الحديد)")
+        hints.append("Hypochromia (supports iron deficiency)")
     if not np.isnan(rdw) and rdw > 14.5:
-        hints.append("RDW مرتفع → تباين واضح في حجم الكريات")
+        hints.append("Elevated RDW → significant variation in cell size")
     
     return phenotype, hints
 
 def build_report(row):
     if int(row['Predicted_Anemia']) == 0:
         return (
-            "النتيجة: غير مصاب بالأنيميا ✅\n"
-            "ملاحظة: يُنصح بنمط حياة صحي، وترطيب كافٍ، وإعادة CBC دوريًا حسب توجيه الطبيب."
+            "Result: Not Anemic ✅\n"
+            "Note: A healthy lifestyle, adequate hydration, and periodic CBC tests as advised by your doctor are recommended."
         )
     
     phenotype, hints = _anemia_phenotype(row)
@@ -166,66 +166,66 @@ def build_report(row):
     mcv = _val(row, 'MCV')
     
     base_tests = [
-        "إعادة CBC للتأكيد",
+        "Repeat CBC for confirmation",
         "Ferritin + Serum Iron + TIBC/Transferrin Saturation",
-        "CRP/ESR عند الشك في مرض التهابي/مزمن",
+        "CRP/ESR if inflammatory/chronic disease is suspected",
     ]
     extra_tests = []
     lifestyle = [
-        "الإكثار من الأطعمة الغنية بالحديد: كبدة، لحوم حمراء، عدس، فول، سبانخ",
-        "تناول فيتامين C مع الوجبات لتحسين امتصاص الحديد",
-        "تجنّب الشاي والقهوة مباشرة بعد الوجبات الغنية بالحديد (يفضَّل بعد 1–2 ساعة)",
+        "Increase iron-rich foods: liver, red meat, lentils, beans, spinach",
+        "Take vitamin C with meals to improve iron absorption",
+        "Avoid tea and coffee immediately after iron-rich meals (preferably wait 1-2 hours)",
     ]
     
     if not np.isnan(mcv):
         if mcv < 80:
             extra_tests += [
-                "فحص نزف خفي بالبراز (FOBT) حسب العمر والأعراض",
-                "تقييم نزف رحمي/سوء امتصاص عند الحاجة",
+                "Fecal occult blood test (FOBT) based on age and symptoms",
+                "Evaluate for uterine bleeding/malabsorption if needed",
             ]
         elif mcv > 100:
             extra_tests += [
-                "قياس فيتامين B12 وفولات",
-                "وظائف الغدة الدرقية (TSH)",
-                "وظائف الكبد (LFTs)",
+                "Vitamin B12 and folate levels",
+                "Thyroid function tests (TSH)",
+                "Liver function tests (LFTs)",
             ]
         else:
             extra_tests += [
-                "وظائف الكُلى (Creatinine/eGFR)",
-                "بحث عن أمراض مزمنة أو نزف حاد",
+                "Kidney function tests (Creatinine/eGFR)",
+                "Screen for chronic diseases or acute bleeding",
             ]
     
     red_flags = [
-        "دوخة/إغماء متكرر، ضيق نفس شديد، ألم صدري",
-        "هبوط شديد في الهيموجلوبين",
-        "نزف ظاهر: قيء دموي، براز أسود، نزف رحمي شديد",
+        "Frequent dizziness/fainting, severe shortness of breath, chest pain",
+        "Severe drop in hemoglobin",
+        "Visible bleeding: bloody vomit, black stools, severe uterine bleeding",
     ]
     
     lines = []
-    lines.append("النتيجة: مصاب بالأنيميا 🩸")
+    lines.append("Result: Anemia Detected 🩸")
     if not np.isnan(hgb):
         lines.append(f"Hb: {hgb:.1f} g/dL")
     if not np.isnan(mcv):
         lines.append(f"MCV: {mcv:.1f} fL")
-    lines.append(f"التصنيف المتوقع: {phenotype}")
+    lines.append(f"Expected Classification: {phenotype}")
     if hints:
-        lines.append("ملاحظات داعمة: " + "؛ ".join(hints))
+        lines.append("Supporting Observations: " + "; ".join(hints))
     
-    lines.append("\n🔬 فحوصات مقترحة (وفق تقييم الطبيب):")
+    lines.append("\n🔬 Suggested Tests (according to physician's evaluation):")
     for t in base_tests + extra_tests:
         lines.append(f"- {t}")
     
-    lines.append("\n🍽️ إرشادات نمط حياة:")
+    lines.append("\n🍽️ Lifestyle Recommendations:")
     for tip in lifestyle:
         lines.append(f"- {tip}")
     
-    lines.append("\n🚩 أعلام خطر تستدعي مراجعة طبية عاجلة:")
+    lines.append("\n🚩 Red Flags Requiring Urgent Medical Attention:")
     for f in red_flags:
         lines.append(f"- {f}")
     
     lines.append(
-        "\n⚠️ تنبيه هام: هذا التقرير آلي استرشادي ولا يُعد تشخيصًا نهائيًا."
-        " القرار العلاجي بالكامل للطبيب المعالج."
+        "\n⚠️ Important Notice: This is an automated advisory report and does not constitute a final diagnosis."
+        " All treatment decisions are the responsibility of the treating physician."
     )
     
     return "\n".join(lines)
