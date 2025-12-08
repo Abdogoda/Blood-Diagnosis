@@ -12,18 +12,18 @@ templates = Jinja2Templates(directory="app/templates")
 async def home(request: Request, db: Session = Depends(get_db)):
     from app.services.auth_dependencies import get_current_user_optional
     current_user = await get_current_user_optional(request, db)
-    return templates.TemplateResponse("home.html", {"request": request, "current_user": current_user})
+    return templates.TemplateResponse("public/home.html", {"request": request, "current_user": current_user})
 
 
 @router.get("/about")
 async def about(request: Request, db: Session = Depends(get_db)):
     from app.services.auth_dependencies import get_current_user_optional
     current_user = await get_current_user_optional(request, db)
-    return templates.TemplateResponse("about.html", {"request": request, "current_user": current_user})
+    return templates.TemplateResponse("public/about.html", {"request": request, "current_user": current_user})
 
 
 @router.get("/contact")
 async def contact(request: Request, db: Session = Depends(get_db)):
     from app.services.auth_dependencies import get_current_user_optional
     current_user = await get_current_user_optional(request, db)
-    return templates.TemplateResponse("contact.html", {"request": request, "current_user": current_user})
+    return templates.TemplateResponse("public/contact.html", {"request": request, "current_user": current_user})

@@ -37,7 +37,7 @@ async def login_page(request: Request, current_user: User = Depends(get_current_
     elif reset == "success":
         success = "Password reset successful! Please login with your new password."
     
-    return templates.TemplateResponse("login.html", {
+    return templates.TemplateResponse("auth/login.html", {
         "request": request,
         "success": success
     })
@@ -55,7 +55,7 @@ async def register_page(request: Request, current_user: User = Depends(get_curre
         else:
             return RedirectResponse(url="/patient/dashboard", status_code=303)
     
-    return templates.TemplateResponse("register.html", {"request": request})
+    return templates.TemplateResponse("auth/register.html", {"request": request})
 
 
 @router.post("/login")
@@ -85,7 +85,7 @@ async def login(
     if not user or not verify_password(password, user.password):
         # Return to login page with error message
         return templates.TemplateResponse(
-            "login.html",
+            "auth/login.html",
             {
                 "request": request,
                 "error": "Incorrect email or password"
@@ -209,7 +209,7 @@ async def register(
     # Validate passwords match
     if password != confirm_password:
         return templates.TemplateResponse(
-            "register.html",
+            "auth/register.html",
             {
                 "request": request,
                 "error": "Passwords do not match"
@@ -220,7 +220,7 @@ async def register(
     # Check if username already exists
     if db.query(User).filter(User.username == username).first():
         return templates.TemplateResponse(
-            "register.html",
+            "auth/register.html",
             {
                 "request": request,
                 "error": "Username already registered"
@@ -231,7 +231,7 @@ async def register(
     # Check if email already exists
     if db.query(User).filter(User.email == email).first():
         return templates.TemplateResponse(
-            "register.html",
+            "auth/register.html",
             {
                 "request": request,
                 "error": "Email already registered"
@@ -242,7 +242,7 @@ async def register(
     # Validate role-specific requirements
     if role == "doctor" and (not license_number or not specialization):
         return templates.TemplateResponse(
-            "register.html",
+            "auth/register.html",
             {
                 "request": request,
                 "error": "License number and specialization are required for doctors"
@@ -455,7 +455,7 @@ async def change_password(
 @router.get("/reset-password")
 async def reset_password_page(request: Request):
     """Display password reset request page."""
-    return templates.TemplateResponse("reset_password.html", {"request": request})
+    return templates.TemplateResponse("auth/reset_password.html", {"request": request})
 
 
 @router.post("/reset-password-request")
@@ -478,7 +478,7 @@ async def reset_password_request(
     
     if not user:
         # Don't reveal if email exists for security
-        return templates.TemplateResponse("reset_password.html", {
+        return templates.TemplateResponse("auth/reset_password.html", {
             "request": request,
             "success": "If that email exists, a password reset link has been sent."
         })
@@ -505,7 +505,7 @@ async def reset_password_request(
     # In production, send email with reset link: /auth/reset-password-confirm?token={token}
     # For now, we'll show a success message
     
-    return templates.TemplateResponse("reset_password.html", {
+    return templates.TemplateResponse("auth/reset_password.html", {
         "request": request,
         "success": f"Password reset link: /auth/reset-password-confirm?token={token} (Copy this link)"
     })
@@ -529,13 +529,13 @@ async def reset_password_confirm_page(
     ).first()
     
     if not reset_token:
-        return templates.TemplateResponse("reset_password_confirm.html", {
+        return templates.TemplateResponse("auth/reset_password_confirm.html", {
             "request": request,
             "error": "Invalid or expired reset token",
             "token": ""
         })
     
-    return templates.TemplateResponse("reset_password_confirm.html", {
+    return templates.TemplateResponse("auth/reset_password_confirm.html", {
         "request": request,
         "token": token
     })
@@ -557,7 +557,7 @@ async def reset_password_confirm(
     
     # Verify passwords match
     if new_password != confirm_password:
-        return templates.TemplateResponse("reset_password_confirm.html", {
+        return templates.TemplateResponse("auth/reset_password_confirm.html", {
             "request": request,
             "error": "Passwords do not match",
             "token": token
@@ -565,7 +565,7 @@ async def reset_password_confirm(
     
     # Check password length
     if len(new_password) < 8:
-        return templates.TemplateResponse("reset_password_confirm.html", {
+        return templates.TemplateResponse("auth/reset_password_confirm.html", {
             "request": request,
             "error": "Password must be at least 8 characters long",
             "token": token
@@ -579,7 +579,7 @@ async def reset_password_confirm(
     ).first()
     
     if not reset_token:
-        return templates.TemplateResponse("reset_password_confirm.html", {
+        return templates.TemplateResponse("auth/reset_password_confirm.html", {
             "request": request,
             "error": "Invalid or expired reset token",
             "token": ""
@@ -588,7 +588,7 @@ async def reset_password_confirm(
     # Get user
     user = db.query(User).filter(User.id == reset_token.user_id).first()
     if not user:
-        return templates.TemplateResponse("reset_password_confirm.html", {
+        return templates.TemplateResponse("auth/reset_password_confirm.html", {
             "request": request,
             "error": "User not found",
             "token": ""
