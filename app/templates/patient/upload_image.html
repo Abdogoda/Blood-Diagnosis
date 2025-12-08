@@ -2,6 +2,10 @@
 
 {% block title %}Upload Blood Cell Image - Blood Diagnosis System{% endblock %}
 
+{% block extra_js %}
+<script src="{{ url_for('static', path='js/image_upload.js') }}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="px-4 py-6 animate-slide-up">
     <div class="max-w-3xl mx-auto">
@@ -132,76 +136,4 @@
         </div>
     </div>
 </div>
-
-<script>
-    const fileInput = document.getElementById('file-upload');
-    const dropZone = document.getElementById('drop-zone');
-    const dragOverlay = document.getElementById('drag-overlay');
-    const filePreview = document.getElementById('file-preview');
-    const fileName = document.getElementById('file-name');
-    const fileSize = document.getElementById('file-size');
-    const removeFileBtn = document.getElementById('remove-file');
-    const imagePreview = document.getElementById('image-preview');
-    const description = document.getElementById('description');
-    const charCount = document.getElementById('char-count');
-
-    // File input change
-    fileInput.addEventListener('change', handleFile);
-
-    // Drag and drop
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dragOverlay.classList.remove('hidden');
-        dragOverlay.classList.add('flex');
-    });
-
-    dropZone.addEventListener('dragleave', () => {
-        dragOverlay.classList.add('hidden');
-        dragOverlay.classList.remove('flex');
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dragOverlay.classList.add('hidden');
-        dragOverlay.classList.remove('flex');
-        fileInput.files = e.dataTransfer.files;
-        handleFile();
-    });
-
-    // Remove file
-    removeFileBtn.addEventListener('click', () => {
-        fileInput.value = '';
-        filePreview.classList.add('hidden');
-        imagePreview.src = '';
-    });
-
-    // Character count
-    description.addEventListener('input', () => {
-        charCount.textContent = description.value.length;
-    });
-
-    function handleFile() {
-        const file = fileInput.files[0];
-        if (file) {
-            fileName.textContent = file.name;
-            fileSize.textContent = formatFileSize(file.size);
-            filePreview.classList.remove('hidden');
-            
-            // Show image preview
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                imagePreview.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-
-    function formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-    }
-</script>
 {% endblock %}

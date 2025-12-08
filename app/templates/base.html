@@ -43,37 +43,7 @@
             }
         }
     </script>
-    <style>
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-        }
-        
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .gradient-blue {
-            background: linear-gradient(135deg, #667eea 0%, #3b82f6 100%);
-        }
-        
-        .hover-lift {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .hover-lift:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        .mobile-menu {
-            display: none;
-        }
-        .mobile-menu.active {
-            display: block;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/base.css') }}">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 min-h-screen">
@@ -207,19 +177,8 @@
         {% block content %}{% endblock %}
     </main>
 
-
+    <script src="{{ url_for('static', path='/js/base.js') }}"></script>
     <script src="{{ url_for('static', path='/js/main.js') }}"></script>
-    <script>
-        // Mobile menu toggle
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        
-        if (mobileMenuBtn && mobileMenu) {
-            mobileMenuBtn.addEventListener('click', () => {
-                mobileMenu.classList.toggle('active');
-            });
-        }
-    </script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

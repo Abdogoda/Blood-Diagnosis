@@ -2,6 +2,10 @@
 
 {% block title %}Register - Blood Diagnosis System{% endblock %}
 
+{% block extra_js %}
+<script src="{{ url_for('static', path='js/register.js') }}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="min-h-[calc(100vh-16rem)] flex items-center justify-center py-8">
     <div class="max-w-6xl w-full px-4">
@@ -299,41 +303,4 @@
         </div>
     </div>
 </div>
-
-<script>
-    function toggleDoctorFields() {
-        const role = document.getElementById('role').value;
-        const doctorFields = document.getElementById('doctor-fields');
-        const licenseInput = document.getElementById('license_number');
-        const specializationSelect = document.getElementById('specialization');
-        
-        if (role === 'doctor') {
-            doctorFields.classList.remove('hidden');
-            licenseInput.required = true;
-            specializationSelect.required = true;
-        } else {
-            doctorFields.classList.add('hidden');
-            licenseInput.required = false;
-            specializationSelect.required = false;
-            // Clear values when hiding
-            licenseInput.value = '';
-            specializationSelect.value = '';
-        }
-    }
-
-    // Password validation
-    const passwordInput = document.getElementById('password');
-    const confirmPasswordInput = document.getElementById('confirm-password');
-    
-    function validatePassword() {
-        if (confirmPasswordInput.value && passwordInput.value !== confirmPasswordInput.value) {
-            confirmPasswordInput.setCustomValidity("Passwords don't match");
-        } else {
-            confirmPasswordInput.setCustomValidity('');
-        }
-    }
-    
-    passwordInput.addEventListener('change', validatePassword);
-    confirmPasswordInput.addEventListener('keyup', validatePassword);
-</script>
 {% endblock %}

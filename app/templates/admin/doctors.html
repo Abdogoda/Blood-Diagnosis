@@ -2,6 +2,10 @@
 
 {% block title %}Manage Doctors - Admin Dashboard{% endblock %}
 
+{% block extra_js %}
+<script src="{{ url_for('static', path='js/admin_doctors.js') }}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <!-- Page Header -->
@@ -220,21 +224,4 @@
         </form>
     </div>
 </div>
-
-<script>
-function openAddDoctorModal() {
-    document.getElementById('addDoctorModal').classList.remove('hidden');
-}
-
-function closeAddDoctorModal() {
-    document.getElementById('addDoctorModal').classList.add('hidden');
-}
-
-// Close modal when clicking outside
-document.getElementById('addDoctorModal')?.addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeAddDoctorModal();
-    }
-});
-</script>
 {% endblock %}

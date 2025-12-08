@@ -2,6 +2,10 @@
 
 {% block title %}Upload CBC Test - Blood Diagnosis System{% endblock %}
 
+{% block extra_js %}
+<script src="{{ url_for('static', path='js/cbc_upload.js') }}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="px-4 py-6 animate-slide-up">
     <div class="max-w-4xl mx-auto">
@@ -190,30 +194,4 @@
         </div>
     </div>
 </div>
-
-<script>
-    // Toggle between CSV and Manual forms
-    const csvBtn = document.getElementById('csvBtn');
-    const manualBtn = document.getElementById('manualBtn');
-    const csvForm = document.getElementById('csvForm');
-    const manualForm = document.getElementById('manualForm');
-
-    csvBtn.addEventListener('click', () => {
-        csvBtn.classList.remove('bg-white', 'text-gray-700');
-        csvBtn.classList.add('bg-blue-600', 'text-white');
-        manualBtn.classList.remove('bg-blue-600', 'text-white');
-        manualBtn.classList.add('bg-white', 'text-gray-700');
-        csvForm.classList.remove('hidden');
-        manualForm.classList.add('hidden');
-    });
-
-    manualBtn.addEventListener('click', () => {
-        manualBtn.classList.remove('bg-white', 'text-gray-700');
-        manualBtn.classList.add('bg-blue-600', 'text-white');
-        csvBtn.classList.remove('bg-blue-600', 'text-white');
-        csvBtn.classList.add('bg-white', 'text-gray-700');
-        manualForm.classList.remove('hidden');
-        csvForm.classList.add('hidden');
-    });
-</script>
 {% endblock %}

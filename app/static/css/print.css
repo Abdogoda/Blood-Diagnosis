@@ -1,0 +1,232 @@
+/* Print Styles for Medical Reports */
+
+@media print {
+    /* Hide non-essential elements */
+    .no-print,
+    nav,
+    header,
+    footer,
+    button,
+    .back-link,
+    .action-buttons {
+        display: none !important;
+    }
+
+    /* Reset page styles */
+    body {
+        background: white !important;
+        color: black !important;
+        margin: 0;
+        padding: 20px;
+    }
+
+    /* Page setup */
+    @page {
+        size: A4;
+        margin: 1.5cm;
+    }
+
+    /* Simple container */
+    .print-container {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    /* Report header */
+    .report-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #000;
+    }
+
+    .report-header h1 {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0 0 10px 0;
+        color: #000;
+    }
+
+    .report-header p {
+        font-size: 12px;
+        color: #333;
+        margin: 5px 0;
+    }
+
+    /* Result sections */
+    .result-section {
+        page-break-inside: avoid;
+        margin-bottom: 30px;
+        border: 1px solid #ddd;
+        padding: 15px;
+    }
+
+    .result-section h2 {
+        font-size: 18px;
+        font-weight: bold;
+        margin: 0 0 15px 0;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #ddd;
+        color: #000;
+    }
+
+    /* Prediction summary */
+    .prediction-summary {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .summary-item {
+        padding: 10px;
+        border: 1px solid #ddd;
+        background: #f9f9f9;
+    }
+
+    .summary-item .label {
+        font-size: 10px;
+        color: #666;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+
+    .summary-item .value {
+        font-size: 16px;
+        font-weight: bold;
+        color: #000;
+    }
+
+    /* CBC Parameters */
+    .cbc-parameters {
+        margin-bottom: 20px;
+    }
+
+    .cbc-parameters h3 {
+        font-size: 14px;
+        font-weight: bold;
+        margin: 0 0 10px 0;
+        color: #000;
+    }
+
+    .parameters-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+
+    .parameter-item {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+        background: white;
+    }
+
+    .parameter-item .param-label {
+        font-size: 9px;
+        color: #666;
+        margin-bottom: 3px;
+    }
+
+    .parameter-item .param-value {
+        font-size: 14px;
+        font-weight: bold;
+        color: #000;
+        margin-bottom: 2px;
+    }
+
+    .parameter-item .param-unit {
+        font-size: 8px;
+        color: #666;
+    }
+
+    /* Medical Report */
+    .medical-report {
+        margin-top: 20px;
+        page-break-inside: avoid;
+    }
+
+    .medical-report h3 {
+        font-size: 14px;
+        font-weight: bold;
+        margin: 0 0 10px 0;
+        color: #000;
+    }
+
+    .medical-report pre {
+        white-space: pre-wrap;
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+        line-height: 1.6;
+        color: #000;
+        border: 1px solid #ddd;
+        padding: 15px;
+        background: white;
+        margin: 0;
+    }
+
+    /* Notes section */
+    .notes-section {
+        margin-top: 20px;
+        padding: 15px;
+        border: 1px solid #ddd;
+        page-break-inside: avoid;
+    }
+
+    .notes-section h3 {
+        font-size: 14px;
+        font-weight: bold;
+        margin: 0 0 10px 0;
+        color: #000;
+    }
+
+    .notes-section p {
+        font-size: 11px;
+        line-height: 1.6;
+        color: #000;
+        margin: 0;
+    }
+
+    /* Footer info */
+    .print-footer {
+        margin-top: 30px;
+        padding-top: 15px;
+        border-top: 1px solid #ddd;
+        font-size: 9px;
+        text-align: center;
+        color: #666;
+    }
+
+    /* Remove colors and gradients */
+    * {
+        color: #000 !important;
+        background: white !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    /* Keep borders and structure */
+    .border,
+    .border-b,
+    .border-t,
+    .border-l,
+    .border-r {
+        border-color: #ddd !important;
+    }
+
+    /* Ensure proper spacing */
+    .mb-8,
+    .my-8 {
+        margin-bottom: 20px !important;
+    }
+
+    /* Icons should be hidden or simplified */
+    svg {
+        display: none;
+    }
+
+    /* Multiple results */
+    .result-separator {
+        page-break-after: always;
+    }
+}
