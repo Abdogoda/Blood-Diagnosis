@@ -80,48 +80,41 @@ class MedicalHistory(Base):
 class Test(Base):
     __tablename__ = "tests"
     id = Column(Integer, primary_key=True)
-    patient_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
-    name = Column(String(150), nullable=False)
-    description = Column(Text)
-    test_time = Column(DateTime, nullable=False)
-
-
-class TestResult(Base):
-    __tablename__ = "test_results"
-    id = Column(Integer, primary_key=True)
-    test_id = Column(Integer, ForeignKey("tests.id", ondelete="CASCADE"))
-    doctor_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"))
-    result_time = Column(DateTime, nullable=False)
-    result_value = Column(String(255), nullable=False)
+    patient_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    model_id = Column(Integer, ForeignKey("models.id", ondelete="SET NULL"), nullable=True)
+    notes = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    reviewed_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    reviewed_at = Column(DateTime, nullable=True)
+    review_status = Column(String(20), default='pending', nullable=False)  # accepted, rejected, pending
+    result = Column(Text, nullable=True)
     comment = Column(Text)
+    confidence = Column(Numeric(5,4), nullable=True)
+    
+    # Relationships
+    test_files = relationship("TestFile", back_populates="test", cascade="all, delete-orphan")
 
 
 class TestFile(Base):
     __tablename__ = "test_files"
     id = Column(Integer, primary_key=True)
-    test_id = Column(Integer, ForeignKey("tests.id", ondelete="CASCADE"))
-    uploaded_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"))
-    file_name = Column(String(255))
-    file_type = Column(String(50))
-    file_path = Column(Text, nullable=False)
-    uploaded_time = Column(DateTime, nullable=False)
+    test_id = Column(Integer, ForeignKey("tests.id", ondelete="CASCADE"), nullable=False)
+    name = Column(String(255), nullable=False)
+    extension = Column(String(50), nullable=False)
+    path = Column(Text, nullable=False)
+    type = Column(String(20), nullable=False)  # input, output
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    
+    # Relationships
+    test = relationship("Test", back_populates="test_files")
 
 
 class Model(Base):
     __tablename__ = "models"
     id = Column(Integer, primary_key=True)
-    name = Column(String(100), nullable=False)
+    name = Column(String(100), nullable=False, unique=True)
     accuracy = Column(Numeric(5,2))
-
-
-class Prediction(Base):
-    __tablename__ = "predictions"
-    id = Column(Integer, primary_key=True)
-    model_id = Column(Integer, ForeignKey("models.id", ondelete="CASCADE"))
-    result_id = Column(Integer, ForeignKey("test_results.id", ondelete="CASCADE"))
-    confidence_score = Column(Numeric(5,4))
-    comment = Column(Text)
-    prediction_time = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
 
 class PasswordResetToken(Base):

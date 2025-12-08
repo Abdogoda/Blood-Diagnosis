@@ -391,7 +391,7 @@ def view_patient_reports(
     current_user: User = Depends(require_role(["admin"])),
     db: Session = Depends(get_db)
 ):
-    from app.database import Test, TestResult, TestFile
+    from app.database import Test, TestFile, Model
     
     patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
     
@@ -401,22 +401,27 @@ def view_patient_reports(
         return response
     
     # Get all tests for this patient
-    tests = db.query(Test).filter(Test.patient_id == patient_id).order_by(Test.test_time.desc()).all()
+    tests = db.query(Test).filter(Test.patient_id == patient_id).order_by(Test.created_at.desc()).all()
     
-    # Format tests with their results and files
+    # Format tests with their files and review status
     formatted_tests = []
     for test in tests:
-        results = db.query(TestResult).filter(TestResult.test_id == test.id).all()
         files = db.query(TestFile).filter(TestFile.test_id == test.id).all()
+        model = db.query(Model).filter(Model.id == test.model_id).first() if test.model_id else None
+        reviewed_by_user = db.query(User).filter(User.id == test.reviewed_by).first() if test.reviewed_by else None
         
         formatted_tests.append({
             "id": test.id,
-            "name": test.name,
-            "description": test.description,
-            "test_time": test.test_time.strftime("%b %d, %Y at %I:%M %p"),
-            "results_count": len(results),
+            "created_at": test.created_at.strftime("%b %d, %Y at %I:%M %p"),
+            "result": test.result,
+            "confidence": float(test.confidence) if test.confidence else None,
+            "review_status": test.review_status,
+            "reviewed_by": f"Dr. {reviewed_by_user.fname} {reviewed_by_user.lname}" if reviewed_by_user else None,
+            "reviewed_at": test.reviewed_at.strftime("%b %d, %Y at %I:%M %p") if test.reviewed_at else None,
+            "model": model.name if model else None,
+            "notes": test.notes,
+            "comment": test.comment,
             "files_count": len(files),
-            "results": results,
             "files": files
         })
     

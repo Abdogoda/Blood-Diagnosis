@@ -241,13 +241,14 @@ async def patient_profile(
     # Get recent tests
     recent_tests_query = db.query(Test).filter(
         Test.patient_id == patient_id
-    ).order_by(Test.test_time.desc()).limit(5).all()
+    ).order_by(Test.created_at.desc()).limit(5).all()
     
     recent_tests = [
         {
             "id": test.id,
-            "name": test.name,
-            "date": test.test_time.strftime("%b %d, %Y")
+            "result": test.result or "Pending",
+            "date": test.created_at.strftime("%b %d, %Y"),
+            "review_status": test.review_status
         }
         for test in recent_tests_query
     ]
