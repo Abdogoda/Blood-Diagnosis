@@ -262,6 +262,13 @@ async def upload_cbc_csv(
 ):
     from app.services.patient_service import upload_cbc_csv_logic
     
+    # Get patient
+    patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
+    if not patient:
+        response = RedirectResponse(url="/doctor/patients", status_code=303)
+        set_flash_message(response, "error", "Patient not found")
+        return response
+    
     result = upload_cbc_csv_logic(
         file=file,
         notes=notes,
@@ -270,9 +277,21 @@ async def upload_cbc_csv(
         db=db
     )
     
-    response = RedirectResponse(url=f"/doctor/patient/{patient_id}", status_code=303)
-    set_flash_message(response, "success" if result["success"] else "error", result["message"])
-    return response
+    if not result["success"]:
+        response = RedirectResponse(url=f"/doctor/upload-cbc/{patient_id}", status_code=303)
+        set_flash_message(response, "error", result["message"])
+        return response
+    
+    # Display results
+    return templates.TemplateResponse("shared/cbc_result.html", {
+        "request": request,
+        "current_user": current_user,
+        "patient": patient,
+        "base_layout": "layouts/base_doctor.html",
+        "back_url": f"/doctor/upload-cbc/{patient_id}",
+        "results": result["results"],
+        "notes": result.get("notes")
+    })
 
 @router.post("/upload-cbc-manual/{patient_id}")
 async def upload_cbc_manual(
@@ -292,6 +311,13 @@ async def upload_cbc_manual(
 ):
     from app.services.patient_service import upload_cbc_manual_logic
     
+    # Get patient
+    patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
+    if not patient:
+        response = RedirectResponse(url="/doctor/patients", status_code=303)
+        set_flash_message(response, "error", "Patient not found")
+        return response
+    
     result = upload_cbc_manual_logic(
         rbc=rbc, hgb=hgb, pcv=pcv, mcv=mcv, mch=mch, mchc=mchc, tlc=tlc, plt=plt,
         notes=notes,
@@ -300,9 +326,21 @@ async def upload_cbc_manual(
         db=db
     )
     
-    response = RedirectResponse(url=f"/doctor/patient/{patient_id}", status_code=303)
-    set_flash_message(response, "success" if result["success"] else "error", result["message"])
-    return response
+    if not result["success"]:
+        response = RedirectResponse(url=f"/doctor/upload-cbc/{patient_id}", status_code=303)
+        set_flash_message(response, "error", result["message"])
+        return response
+    
+    # Display results (manual input returns single result)
+    return templates.TemplateResponse("shared/cbc_result.html", {
+        "request": request,
+        "current_user": current_user,
+        "patient": patient,
+        "base_layout": "layouts/base_doctor.html",
+        "back_url": f"/doctor/upload-cbc/{patient_id}",
+        "results": [result["result"]],  # Wrap in list for consistent template
+        "notes": result.get("notes")
+    })
 
 @router.get("/upload-image/{patient_id}")
 async def upload_image_page(

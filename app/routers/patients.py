@@ -81,9 +81,20 @@ async def upload_cbc_csv(
         db=db
     )
     
-    response = RedirectResponse(url="/patient/dashboard", status_code=303)
-    set_flash_message(response, "success" if result["success"] else "error", result["message"])
-    return response
+    if not result["success"]:
+        response = RedirectResponse(url="/patient/upload-cbc", status_code=303)
+        set_flash_message(response, "error", result["message"])
+        return response
+    
+    # Display results
+    return templates.TemplateResponse("shared/cbc_result.html", {
+        "request": request,
+        "current_user": current_user,
+        "base_layout": "layouts/base_patient.html",
+        "back_url": "/patient/upload-cbc",
+        "results": result["results"],
+        "notes": result.get("notes")
+    })
 
 @router.post("/upload-cbc-manual")
 async def upload_cbc_manual(
@@ -110,9 +121,20 @@ async def upload_cbc_manual(
         db=db
     )
     
-    response = RedirectResponse(url="/patient/dashboard", status_code=303)
-    set_flash_message(response, "success" if result["success"] else "error", result["message"])
-    return response
+    if not result["success"]:
+        response = RedirectResponse(url="/patient/upload-cbc", status_code=303)
+        set_flash_message(response, "error", result["message"])
+        return response
+    
+    # Display results (manual input returns single result)
+    return templates.TemplateResponse("shared/cbc_result.html", {
+        "request": request,
+        "current_user": current_user,
+        "base_layout": "layouts/base_patient.html",
+        "back_url": "/patient/upload-cbc",
+        "results": [result["result"]],  # Wrap in list for consistent template
+        "notes": result.get("notes")
+    })
 
 @router.get("/upload-image")
 async def upload_image_page(
