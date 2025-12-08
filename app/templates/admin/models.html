@@ -1,0 +1,86 @@
+{% extends "layouts/base_admin.html" %}
+
+{% block title %}AI Models - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="px-4 py-6 animate-slide-up">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="text-4xl font-bold text-gray-900">AI Models Management</h1>
+            <button class="px-6 py-3 gradient-blue text-white rounded-lg hover:shadow-lg transition-all duration-200 flex items-center space-x-2">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+                <span>Upload Model</span>
+            </button>
+        </div>
+
+        <!-- Model Cards -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {% for model in models %}
+            <div class="glass-effect rounded-2xl shadow-xl overflow-hidden hover-lift">
+                <div class="gradient-blue px-6 py-4">
+                    <div class="flex items-center justify-between text-white">
+                        <h3 class="text-xl font-bold">{{ model.name }}</h3>
+                        <span class="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-sm font-semibold">ID: {{ model.id }}</span>
+                    </div>
+                </div>
+                <div class="p-6 bg-white">
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="text-center p-3 bg-blue-50 rounded-lg">
+                            <p class="text-2xl font-bold text-blue-600">{{ model.accuracy }}%</p>
+                            <p class="text-xs text-gray-600 mt-1">Accuracy</p>
+                        </div>
+                        <div class="text-center p-3 bg-green-50 rounded-lg">
+                            <p class="text-2xl font-bold text-green-600">{{ model.tests_count }}</p>
+                            <p class="text-xs text-gray-600 mt-1">Total Tests</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3 mb-6">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600">Status:</span>
+                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full font-semibold">
+                                Active
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600">Created At:</span>
+                            <span class="font-semibold text-gray-900">{{ model.created_at.strftime('%Y-%m-%d') }}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-3">
+                        <button class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200">
+                            View Details
+                        </button>
+                        <button class="flex-1 px-4 py-2 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200">
+                            Test Model
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Model Performance -->
+        <div class="mt-8 glass-effect rounded-2xl shadow-xl p-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Overall Performance</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-blue-600 mb-2">{{ avg_accuracy }}%</div>
+                    <div class="text-sm text-gray-600">Average Accuracy</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-green-600 mb-2">{{ total_tests }}</div>
+                    <div class="text-sm text-gray-600">Total Tests</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-purple-600 mb-2">{{ total_models }}</div>
+                    <div class="text-sm text-gray-600">Active Models</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
