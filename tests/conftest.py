@@ -120,31 +120,28 @@ def patient_user(db_session):
 @pytest.fixture
 def auth_headers_admin(client, admin_user):
     """Get authentication headers for admin"""
-    response = client.post(
-        "/auth/login",
-        data={"email": "admin@test.com", "password": "admin123"}
-    )
-    cookies = response.cookies
-    return {"Cookie": f"access_token={cookies.get('access_token')}"}
+    from app.services.auth_service import create_access_token
+    
+    token = create_access_token({"sub": admin_user.username, "role": admin_user.role})
+    client.cookies.set("access_token", token)
+    return {}  # Return empty dict since cookies are set on client
 
 
 @pytest.fixture
 def auth_headers_doctor(client, doctor_user):
     """Get authentication headers for doctor"""
-    response = client.post(
-        "/auth/login",
-        data={"email": "doctor@test.com", "password": "doctor123"}
-    )
-    cookies = response.cookies
-    return {"Cookie": f"access_token={cookies.get('access_token')}"}
+    from app.services.auth_service import create_access_token
+    
+    token = create_access_token({"sub": doctor_user.username, "role": doctor_user.role})
+    client.cookies.set("access_token", token)
+    return {}  # Return empty dict since cookies are set on client
 
 
 @pytest.fixture
 def auth_headers_patient(client, patient_user):
     """Get authentication headers for patient"""
-    response = client.post(
-        "/auth/login",
-        data={"email": "patient@test.com", "password": "patient123"}
-    )
-    cookies = response.cookies
-    return {"Cookie": f"access_token={cookies.get('access_token')}"}
+    from app.services.auth_service import create_access_token
+    
+    token = create_access_token({"sub": patient_user.username, "role": patient_user.role})
+    client.cookies.set("access_token", token)
+    return {}  # Return empty dict since cookies are set on client

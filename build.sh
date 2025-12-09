@@ -262,41 +262,67 @@ run_tests() {
     
     echo "Test Options:"
     echo "  1) Run all tests"
-    echo "  2) Run service tests only"
-    echo "  3) Run route tests only"
-    echo "  4) Run specific test file"
+    echo "  2) Run all tests with coverage report"
+    echo "  3) Run service tests only"
+    echo "  4) Run route tests only"
+    echo "  5) Run model/database tests"
+    echo "  6) Run specific test file"
+    echo "  7) Run fast tests (skip slow/integration)"
     echo ""
-    read -p "Select test option [1-4]: " test_choice
+    read -p "Select test option [1-7]: " test_choice
     
     case $test_choice in
         1)
             print_info "Running all tests..."
-            $PYTHON_CMD -m pytest tests/ -v
+            $PYTHON_CMD -m pytest tests/ -v --tb=short
             ;;
         2)
-            print_info "Running service tests only..."
-            $PYTHON_CMD -m pytest tests/ -k "not routes" -v
+            print_info "Running all tests with coverage..."
+            $PYTHON_CMD -m pytest tests/ -v --cov=app --cov-report=term-missing --cov-report=html
+            print_success "Coverage report generated in htmlcov/index.html"
             ;;
         3)
-            print_info "Running route tests only..."
-            $PYTHON_CMD -m pytest tests/ -k "routes" -v
+            print_info "Running service tests only..."
+            $PYTHON_CMD -m pytest tests/ -k "service" -v --tb=short
             ;;
         4)
+            print_info "Running route tests only..."
+            $PYTHON_CMD -m pytest tests/ -k "routes" -v --tb=short
+            ;;
+        5)
+            print_info "Running model and database tests..."
+            $PYTHON_CMD -m pytest tests/test_database_models.py -v --tb=short
+            ;;
+        6)
             echo ""
             echo "Available test files:"
-            echo "  - test_auth_service.py"
-            echo "  - test_patient_service.py"
-            echo "  - test_ai_service.py"
-            echo "  - test_ui_service.py"
-            echo "  - test_auth_routes.py"
-            echo "  - test_doctor_routes.py"
-            echo "  - test_patient_routes.py"
-            echo "  - test_admin_routes.py"
-            echo "  - test_public_routes.py"
+            echo "  Service Tests:"
+            echo "    - test_auth_service.py"
+            echo "    - test_patient_service.py"
+            echo "    - test_ai_service.py"
+            echo "    - test_ui_service.py"
+            echo "    - test_medical_history_service.py"
+            echo "    - test_message_service.py"
+            echo "    - test_profile_service.py"
+            echo "    - test_policy_service.py"
+            echo ""
+            echo "  Route Tests:"
+            echo "    - test_auth_routes.py"
+            echo "    - test_doctor_routes.py"
+            echo "    - test_patient_routes.py"
+            echo "    - test_admin_routes.py"
+            echo "    - test_public_routes.py"
+            echo ""
+            echo "  Model Tests:"
+            echo "    - test_database_models.py"
             echo ""
             read -p "Enter test file name: " test_file
             print_info "Running tests/$test_file..."
-            $PYTHON_CMD -m pytest tests/$test_file -v
+            $PYTHON_CMD -m pytest tests/$test_file -v --tb=short
+            ;;
+        7)
+            print_info "Running fast tests only (excluding slow/integration tests)..."
+            $PYTHON_CMD -m pytest tests/ -v --tb=short -m "not slow and not integration"
             ;;
         *)
             print_error "Invalid option"

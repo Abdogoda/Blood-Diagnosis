@@ -174,3 +174,16 @@ def unlink_patient_from_doctor(patient_id: int, doctor_id: int, db: Session) -> 
     except Exception:
         db.rollback()
         return False
+
+
+def is_patient_linked_to_doctor(patient_id: int, doctor_id: int, db: Session) -> bool:
+    try:
+        existing = db.execute(
+            doctor_patients.select().where(
+                doctor_patients.c.doctor_id == doctor_id,
+                doctor_patients.c.patient_id == patient_id
+            )
+        ).first()
+        return existing is not None
+    except Exception:
+        return False

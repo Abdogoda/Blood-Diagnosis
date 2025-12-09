@@ -37,8 +37,8 @@ class TestPatientAccount:
             "/patient/update-profile",
             headers=auth_headers_patient,
             data={
-                "first_name": "Updated",
-                "last_name": "Name",
+                "fname": "Updated",
+                "lname": "Name",
                 "email": "updated@test.com",
                 "phone": "9999999999",
                 "blood_type": "B+",
