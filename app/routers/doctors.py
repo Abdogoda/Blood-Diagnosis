@@ -366,19 +366,11 @@ async def upload_test_page(
         set_flash_message(response, "error", "Patient not found")
         return response
     
-    # Check if doctor has access to this patient (only for doctors, not admin)
-    if current_user.role == "doctor" and patient not in current_user.patients:
-        return templates.TemplateResponse("errors/403.html", {
-            "request": request,
-            "current_user": current_user,
-            "message": "You don't have access to this patient"
-        }, status_code=403)
-    
-    from app.services.policy_service import check_account_active, handle_policy_violation
-    
-    # Check if account is active
-    if not check_account_active(patient):
-        return handle_policy_violation(request, patient, "deactivated")
+    # Check patient access using policy service
+    from app.services.policy_service import require_patient_access
+    access_error = require_patient_access(request, current_user, patient, db)
+    if access_error:
+        return access_error
     
     return templates.TemplateResponse("shared/upload_test.html", {
         "request": request,
@@ -404,21 +396,11 @@ async def upload_cbc_page(
         set_flash_message(response, "error", "Patient not found")
         return response
     
-    
-    from app.services.policy_service import check_account_active, handle_policy_violation
-    
-    # Check if account is active
-    if not check_account_active(patient):
-        return handle_policy_violation(request, patient, "deactivated")
-    
-
-    # Check if doctor has access to this patient (only for doctors, not admin)
-    if current_user.role == "doctor" and patient not in current_user.patients:
-        return templates.TemplateResponse("errors/403.html", {
-            "request": request,
-            "current_user": current_user,
-            "message": "You don't have access to this patient"
-        }, status_code=403)
+    # Check patient access using policy service
+    from app.services.policy_service import require_patient_access
+    access_error = require_patient_access(request, current_user, patient, db)
+    if access_error:
+        return access_error
     
     return templates.TemplateResponse("shared/upload_cbc.html", {
         "request": request,
@@ -446,13 +428,11 @@ async def upload_cbc_csv(
         set_flash_message(response, "error", "Patient not found")
         return response
     
-    # Check if doctor has access to this patient (only for doctors, not admin)
-    if current_user.role == "doctor" and patient not in current_user.patients:
-        return templates.TemplateResponse("errors/403.html", {
-            "request": request,
-            "current_user": current_user,
-            "message": "You don't have access to this patient"
-        }, status_code=403)
+    # Check patient access using policy service
+    from app.services.policy_service import require_patient_access
+    access_error = require_patient_access(request, current_user, patient, db)
+    if access_error:
+        return access_error
     
     result = cbc_prediction_service.process_csv_upload(
         file=file,
@@ -501,13 +481,11 @@ async def upload_cbc_manual(
         set_flash_message(response, "error", "Patient not found")
         return response
     
-    # Check if doctor has access to this patient (only for doctors, not admin)
-    if current_user.role == "doctor" and patient not in current_user.patients:
-        return templates.TemplateResponse("errors/403.html", {
-            "request": request,
-            "current_user": current_user,
-            "message": "You don't have access to this patient"
-        }, status_code=403)
+    # Check patient access using policy service
+    from app.services.policy_service import require_patient_access
+    access_error = require_patient_access(request, current_user, patient, db)
+    if access_error:
+        return access_error
     
     result = cbc_prediction_service.process_manual_input(
         rbc=rbc, hgb=hgb, pcv=pcv, mcv=mcv, mch=mch, mchc=mchc, tlc=tlc, plt=plt,
@@ -547,20 +525,11 @@ async def upload_image_page(
         set_flash_message(response, "error", "Patient not found")
         return response
     
-    # Check if doctor has access to this patient (only for doctors, not admin)
-    if current_user.role == "doctor" and patient not in current_user.patients:
-        return templates.TemplateResponse("errors/403.html", {
-            "request": request,
-            "current_user": current_user,
-            "message": "You don't have access to this patient"
-        }, status_code=403)
-    
-    
-    from app.services.policy_service import check_account_active, handle_policy_violation
-    
-    # Check if account is active
-    if not check_account_active(patient):
-        return handle_policy_violation(request, patient, "deactivated")
+    # Check patient access using policy service
+    from app.services.policy_service import require_patient_access
+    access_error = require_patient_access(request, current_user, patient, db)
+    if access_error:
+        return access_error
     
 
     return templates.TemplateResponse("shared/upload_image.html", {

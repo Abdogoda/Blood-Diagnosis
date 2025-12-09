@@ -7,6 +7,7 @@ Modules:
 - ui_service: Flash messages and UI utilities
 - patient_service: Patient management and doctor-patient relationships  
 - ai_service: AI predictions for CBC analysis and blood images
+- policy_service: Access control, permissions, and authorization policies
 """
 
 from .auth_service import (
@@ -45,6 +46,23 @@ from .ai_service import (
     blood_image_service
 )
 
+from .policy_service import (
+    check_account_active,
+    require_active_account,
+    check_patient_access,
+    require_patient_access,
+    can_upload_test,
+    can_view_patient_data,
+    can_add_diagnosis,
+    can_modify_diagnosis,
+    require_diagnosis_permission,
+    can_manage_users,
+    handle_policy_violation,
+    check_role_permission,
+    AccountDeactivatedException,
+    PermissionDeniedException
+)
+
 __all__ = [
     # Auth
     "verify_password",
@@ -73,5 +91,20 @@ __all__ = [
     "CBCPredictionService",
     "BloodImageAnalysisService",
     "cbc_prediction_service",
-    "blood_image_service"
+    "blood_image_service",
+    # Policy
+    "check_account_active",
+    "require_active_account",
+    "check_patient_access",
+    "require_patient_access",
+    "can_upload_test",
+    "can_view_patient_data",
+    "can_add_diagnosis",
+    "can_modify_diagnosis",
+    "require_diagnosis_permission",
+    "can_manage_users",
+    "handle_policy_violation",
+    "check_role_permission",
+    "AccountDeactivatedException",
+    "PermissionDeniedException"
 ]

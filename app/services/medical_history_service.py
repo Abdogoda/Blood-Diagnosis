@@ -26,27 +26,26 @@ def create_diagnosis(
     Returns:
         Tuple of (success: bool, message: str, record: MedicalHistory or None)
     """
-    # Verify patient exists
-    patient = db.query(User).filter(
-        User.id == patient_id,
-        User.role == "patient"
-    ).first()
-    
-    if not patient:
-        return False, "Patient not found", None
-    
-    # Verify doctor exists
-    doctor = db.query(User).filter(
-        User.id == doctor_id,
-        User.role == "doctor"
-    ).first()
-    
+    # Get doctor
+    doctor = db.query(User).filter(User.id == doctor_id).first()
     if not doctor:
         return False, "Doctor not found", None
     
-    # Check if doctor has access to this patient
-    if patient not in doctor.patients and doctor.role != "admin":
-        return False, "You don't have access to this patient", None
+    # Use policy service to check permission
+    from app.services.policy_service import can_add_diagnosis
+    can_add, reason = can_add_diagnosis(doctor, patient_id, db)
+    
+    if not can_add:
+        if reason == "deactivated":
+            return False, "Your account is deactivated", None
+        elif reason == "deactivated_patient":
+            return False, "Patient's account is deactivated", None
+        elif reason == "patient_not_found":
+            return False, "Patient not found", None
+        elif reason == "not_linked":
+            return False, "You don't have access to this patient", None
+        else:
+            return False, "Unauthorized to add diagnosis", None
     
     # Create medical history record
     medical_record = MedicalHistory(
@@ -121,14 +120,27 @@ def update_diagnosis(
     Returns:
         Tuple of (success: bool, message: str)
     """
+    # Get doctor
+    doctor = db.query(User).filter(User.id == doctor_id).first()
+    if not doctor:
+        return False, "Doctor not found"
+    
+    # Use policy service to check permission
+    from app.services.policy_service import can_modify_diagnosis
+    can_modify, reason = can_modify_diagnosis(doctor, record_id, db)
+    
+    if not can_modify:
+        if reason == "deactivated":
+            return False, "Your account is deactivated"
+        elif reason == "record_not_found":
+            return False, "Medical record not found"
+        elif reason == "not_owner":
+            return False, "You can only update your own diagnosis records"
+        else:
+            return False, "Unauthorized to update this diagnosis"
+    
+    # Get record
     record = db.query(MedicalHistory).filter(MedicalHistory.id == record_id).first()
-    
-    if not record:
-        return False, "Medical record not found"
-    
-    # Only the doctor who created the record can update it
-    if record.doctor_id != doctor_id:
-        return False, "You can only update your own diagnosis records"
     
     # Update fields if provided
     if medical_condition:
@@ -159,14 +171,27 @@ def delete_diagnosis(
     Returns:
         Tuple of (success: bool, message: str)
     """
+    # Get doctor
+    doctor = db.query(User).filter(User.id == doctor_id).first()
+    if not doctor:
+        return False, "Doctor not found"
+    
+    # Use policy service to check permission
+    from app.services.policy_service import can_modify_diagnosis
+    can_modify, reason = can_modify_diagnosis(doctor, record_id, db)
+    
+    if not can_modify:
+        if reason == "deactivated":
+            return False, "Your account is deactivated"
+        elif reason == "record_not_found":
+            return False, "Medical record not found"
+        elif reason == "not_owner":
+            return False, "You can only delete your own diagnosis records"
+        else:
+            return False, "Unauthorized to delete this diagnosis"
+    
+    # Get record
     record = db.query(MedicalHistory).filter(MedicalHistory.id == record_id).first()
-    
-    if not record:
-        return False, "Medical record not found"
-    
-    # Only the doctor who created the record can delete it
-    if record.doctor_id != doctor_id:
-        return False, "You can only delete your own diagnosis records"
     
     db.delete(record)
     db.commit()
