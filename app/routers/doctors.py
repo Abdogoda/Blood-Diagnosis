@@ -475,16 +475,10 @@ async def upload_cbc_csv(
         set_flash_message(response, "error", result["message"])
         return response
     
-    # Display results
-    return templates.TemplateResponse("shared/cbc_result.html", {
-        "request": request,
-        "current_user": current_user,
-        "patient": patient,
-        "base_layout": "layouts/base_doctor.html",
-        "back_url": f"/doctor/upload-cbc/{patient_id}",
-        "results": result["results"],
-        "notes": result.get("notes")
-    })
+    # Redirect to test detail page
+    response = RedirectResponse(url=f"/doctor/test/{result['test_id']}", status_code=303)
+    set_flash_message(response, "success", result["message"])
+    return response
 
 @router.post("/upload-cbc-manual/{patient_id}")
 async def upload_cbc_manual(
@@ -528,16 +522,10 @@ async def upload_cbc_manual(
         set_flash_message(response, "error", result["message"])
         return response
     
-    # Display results (manual input returns single result)
-    return templates.TemplateResponse("shared/cbc_result.html", {
-        "request": request,
-        "current_user": current_user,
-        "patient": patient,
-        "base_layout": "layouts/base_doctor.html",
-        "back_url": f"/doctor/upload-cbc/{patient_id}",
-        "results": [result["result"]],  # Wrap in list for consistent template
-        "notes": result.get("notes")
-    })
+    # Redirect to test detail page
+    response = RedirectResponse(url=f"/doctor/test/{result['test_id']}", status_code=303)
+    set_flash_message(response, "success", result["message"])
+    return response
 
 @router.get("/upload-image/{patient_id}")
 async def upload_image_page(
@@ -598,7 +586,7 @@ async def view_test(
     db: Session = Depends(get_db)
 ):
     """View test details for review"""
-    from app.database import Test, TestFile, doctor_patients
+    from app.database import Test, TestFile, doctor_patients, Model
     from datetime import datetime
     
     # Get the test
@@ -622,10 +610,36 @@ async def view_test(
     # Get test files
     test_files = db.query(TestFile).filter(TestFile.test_id == test_id).all()
     
+    # Load CSV data if exists
+    csv_data = None
+    csv_file = None
+    for file in test_files:
+        if file.extension == '.csv' and file.type == 'output':
+            csv_file = file
+            try:
+                import pandas as pd
+                from app.ai.cbc import build_report
+                df = pd.read_csv(file.path)
+                csv_data = df.to_dict('records')
+                # Generate reports for each record
+                for record in csv_data:
+                    record['medical_report'] = build_report(record)
+            except Exception as e:
+                print(f"Error loading CSV: {e}")
+                csv_data = None
+            break
+    
     # Get reviewer info if reviewed
     reviewer = None
     if test.reviewed_by:
         reviewer = db.query(User).filter(User.id == test.reviewed_by).first()
+    
+    # Get model name for test type
+    model_name = None
+    if test.model_id:
+        model = db.query(Model).filter(Model.id == test.model_id).first()
+        if model:
+            model_name = model.name
     
     return templates.TemplateResponse("doctor/test_detail.html", {
         "request": request,
@@ -633,7 +647,10 @@ async def view_test(
         "test": test,
         "patient": patient,
         "test_files": test_files,
-        "reviewer": reviewer
+        "csv_data": csv_data,
+        "csv_file": csv_file,
+        "reviewer": reviewer,
+        "model_name": model_name
     })
 
 @router.post("/test/{test_id}/review")

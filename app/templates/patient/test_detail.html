@@ -2,11 +2,15 @@
 
 {% block title %}Test Details - Patient Dashboard{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', path='css/print.css') }}">
+{% endblock %}
+
 {% block content %}
 <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-5xl mx-auto">
         <!-- Header -->
-        <div class="mb-8">
+        <div class="mb-8 no-print">
             <a href="/patient/tests" class="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -50,7 +54,7 @@
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">Type</p>
-                                <p class="font-semibold text-gray-900">Blood Cell Image</p>
+                                <p class="font-semibold text-gray-900">{{ model_name if model_name else 'Medical Test' }}</p>
                             </div>
                         </div>
 
@@ -109,6 +113,122 @@
                 </div>
 
                 <!-- Test Files -->
+                {% if csv_data %}
+                <!-- CBC Results Display -->
+                <div class="glass-effect rounded-2xl shadow-xl p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">CBC Analysis Results</h2>
+                        {% if csv_file %}
+                        <a href="/{{ csv_file.path }}" download="{{ csv_file.name }}" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 flex items-center gap-2">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            Export CSV
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <!-- Results Loop -->
+                    {% for record in csv_data %}
+                    <div class="mb-6 p-6 border-2 rounded-xl {% if record.Diagnosis == 'Anemia' %}border-red-200 bg-red-50{% else %}border-green-200 bg-green-50{% endif %} print-page-break">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold {% if record.Diagnosis == 'Anemia' %}text-red-900{% else %}text-green-900{% endif %}">
+                                    {% if record.Diagnosis == 'Anemia' %}🩸 Anemia Detected{% else %}✅ Normal Results{% endif %}
+                                </h3>
+                                {% if csv_data|length > 1 %}
+                                <p class="text-sm text-gray-600">Sample {{ loop.index }} of {{ csv_data|length }}</p>
+                                {% endif %}
+                            </div>
+                            <button onclick="printRecord({{ loop.index0 }})" class="px-3 py-1 text-sm bg-white hover:bg-gray-100 text-gray-700 rounded-lg border border-gray-300 no-print">
+                                Print This Record
+                            </button>
+                        </div>
+
+                        <!-- CBC Parameters Grid -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                            <div class="p-3 bg-white rounded-lg border border-gray-200">
+                                <div class="text-xs text-gray-500">RBC</div>
+                                <div class="text-lg font-bold text-gray-900">{{ "%.2f"|format(record.RBC) }}</div>
+                                <div class="text-xs text-gray-500">million/µL</div>
+                            </div>
+                            <div class="p-3 bg-white rounded-lg border border-gray-200">
+                                <div class="text-xs text-gray-500">HGB</div>
+                                <div class="text-lg font-bold text-gray-900">{{ "%.2f"|format(record.HGB) }}</div>
+                                <div class="text-xs text-gray-500">g/dL</div>
+                            </div>
+                            <div class="p-3 bg-white rounded-lg border border-gray-200">
+                                <div class="text-xs text-gray-500">PCV</div>
+                                <div class="text-lg font-bold text-gray-900">{{ "%.2f"|format(record.PCV) }}</div>
+                                <div class="text-xs text-gray-500">%</div>
+                            </div>
+                            <div class="p-3 bg-white rounded-lg border border-gray-200">
+                                <div class="text-xs text-gray-500">MCV</div>
+                                <div class="text-lg font-bold text-gray-900">{{ "%.2f"|format(record.MCV) }}</div>
+                                <div class="text-xs text-gray-500">fL</div>
+                            </div>
+                            <div class="p-3 bg-white rounded-lg border border-gray-200">
+                                <div class="text-xs text-gray-500">MCH</div>
+                                <div class="text-lg font-bold text-gray-900">{{ "%.2f"|format(record.MCH) }}</div>
+                                <div class="text-xs text-gray-500">pg</div>
+                            </div>
+                            <div class="p-3 bg-white rounded-lg border border-gray-200">
+                                <div class="text-xs text-gray-500">MCHC</div>
+                                <div class="text-lg font-bold text-gray-900">{{ "%.2f"|format(record.MCHC) }}</div>
+                                <div class="text-xs text-gray-500">g/dL</div>
+                            </div>
+                            <div class="p-3 bg-white rounded-lg border border-gray-200">
+                                <div class="text-xs text-gray-500">TLC</div>
+                                <div class="text-lg font-bold text-gray-900">{{ "%.0f"|format(record.TLC) }}</div>
+                                <div class="text-xs text-gray-500">/µL</div>
+                            </div>
+                            <div class="p-3 bg-white rounded-lg border border-gray-200">
+                                <div class="text-xs text-gray-500">PLT</div>
+                                <div class="text-lg font-bold text-gray-900">{{ "%.0f"|format(record.PLT) }}</div>
+                                <div class="text-xs text-gray-500">/µL</div>
+                            </div>
+                        </div>
+
+                        <!-- Prediction Summary -->
+                        <div class="p-4 bg-white rounded-lg border border-gray-200 mb-3">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <div class="text-sm text-gray-500">Diagnosis</div>
+                                    <div class="text-xl font-bold {% if record.Diagnosis == 'Anemia' %}text-red-700{% else %}text-green-700{% endif %}">
+                                        {{ record.Diagnosis }}
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm text-gray-500">Prediction Code</div>
+                                    <div class="text-xl font-bold text-gray-900">{{ record.Predicted_Anemia }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Collapsible Medical Report -->
+                        {% if record.medical_report %}
+                        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                            <button onclick="toggleReport({{ loop.index0 }})" class="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors no-print">
+                                <div class="flex items-center gap-2">
+                                    <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    <span class="font-semibold text-gray-900">Medical Report & Recommendations</span>
+                                </div>
+                                <svg id="report-icon-{{ loop.index0 }}" class="h-5 w-5 text-gray-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+                            <div id="report-content-{{ loop.index0 }}" class="hidden px-4 py-4 bg-gradient-to-br from-blue-50 to-purple-50 border-t border-gray-200">
+                                <pre class="whitespace-pre-wrap font-sans text-sm text-gray-800 leading-relaxed">{{ record.medical_report }}</pre>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <!-- Original Test Files Section for non-CBC tests -->
                 <div class="glass-effect rounded-2xl shadow-xl p-6">
                     <h2 class="text-2xl font-bold text-gray-900 mb-4">Uploaded Files</h2>
                     {% if test_files %}
@@ -159,10 +279,11 @@
                     <p class="text-gray-500 text-center py-4">No files uploaded</p>
                     {% endif %}
                 </div>
+                {% endif %}
             </div>
 
             <!-- Quick Info & Actions -->
-            <div class="lg:col-span-1">
+            <div class="lg:col-span-1 no-print">
                 <div class="glass-effect rounded-2xl shadow-xl p-6 sticky top-8">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">Quick Info</h2>
                     
@@ -247,4 +368,43 @@
         </div>
     </div>
 </div>
+
+<script>
+function toggleReport(index) {
+    const content = document.getElementById(`report-content-${index}`);
+    const icon = document.getElementById(`report-icon-${index}`);
+    
+    if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+    } else {
+        content.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+    }
+}
+
+function printRecord(index) {
+    // Hide all records except the one to print
+    const records = document.querySelectorAll('.print-page-break');
+    records.forEach((record, i) => {
+        if (i !== index) {
+            record.style.display = 'none';
+        } else {
+            // Expand the report for printing if it exists
+            const reportContent = record.querySelector(`#report-content-${i}`);
+            if (reportContent) {
+                reportContent.classList.remove('hidden');
+            }
+        }
+    });
+    
+    window.print();
+    
+    // Show all records again after printing
+    records.forEach(record => {
+        record.style.display = 'block';
+    });
+}
+</script>
+
 {% endblock %}

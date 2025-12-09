@@ -19,7 +19,8 @@ try:
     from app.ai.cbc import (
         load_model_and_assets,
         prepare_dataframe_for_inference,
-        build_report
+        build_report,
+        predict_and_annotate_dataframe
     )
     CBC_AI_AVAILABLE = True
 except ImportError as e:
@@ -143,19 +144,6 @@ class CBCPredictionService:
         notes: str = "",
         db: Optional[Session] = None
     ) -> Dict[str, Any]:
-        """
-        Process CBC test data from uploaded CSV file.
-        
-        Args:
-            file: Uploaded CSV file
-            patient_id: Patient ID
-            uploaded_by_id: ID of user uploading
-            notes: Additional notes
-            db: Database session (for future persistence)
-            
-        Returns:
-            Dict with success status, message, and results
-        """
         try:
             # Validate file
             if not file or not file.filename:
@@ -179,8 +167,8 @@ class CBCPredictionService:
                 }
             
             # Parse CSV
-            df = pd.read_csv(io.BytesIO(contents))
-            if df.empty:
+            df_original = pd.read_csv(io.BytesIO(contents))
+            if df_original.empty:
                 return {
                     "success": False,
                     "message": "The CSV file contains no data. Please ensure your file has CBC test results."
@@ -190,25 +178,108 @@ class CBCPredictionService:
             if not self._loaded:
                 self.load_model()
             
-            # Prepare dataframe
-            df_prepared = prepare_dataframe_for_inference(df, self.used_features)
-            if len(df_prepared) == 0:
+            # Make predictions and add columns to dataframe
+            df_annotated, probabilities = predict_and_annotate_dataframe(
+                df_original, 
+                self.model, 
+                self.scaler, 
+                self.used_features
+            )
+            
+            if len(df_annotated) == 0:
                 return {
                     "success": False,
                     "message": "No valid data rows found in CSV. Please check your file format and values."
                 }
             
-            # Convert to list of dicts for batch prediction
-            cbc_data_list = df_prepared[self.used_features].to_dict('records')
+            # Prepare results for display
+            results = []
+            for idx, row in df_annotated.iterrows():
+                # Calculate probability - get it from the model predictions
+                prob_anemia = probabilities[idx][1] if len(probabilities) > idx else 0.5
+                confidence_percentage = prob_anemia * 100
+                
+                result = {
+                    "row_index": int(idx),
+                    "prediction": row['Diagnosis'],
+                    "prediction_code": int(row['Predicted_Anemia']),
+                    "probability": f"{confidence_percentage:.2f}%",
+                    "values": {
+                        "RBC": float(row.get('RBC', 0)),
+                        "HGB": float(row.get('HGB', 0)),
+                        "PCV": float(row.get('PCV', 0)),
+                        "MCV": float(row.get('MCV', 0)),
+                        "MCH": float(row.get('MCH', 0)),
+                        "MCHC": float(row.get('MCHC', 0)),
+                        "TLC": float(row.get('TLC', 0)),
+                        "PLT": float(row.get('PLT', 0)),
+                    },
+                    "report": build_report(row)
+                }
+                results.append(result)
             
-            # Get predictions with reports
-            results = self.predict_batch(cbc_data_list, with_report=True)
+            # Save to database - db is required
+            if not db:
+                return {
+                    "success": False,
+                    "message": "Database session is required to save test results."
+                }
             
-            # TODO: Save to database when ready
-            # if db:
-            #     - Create Test record
-            #     - Create TestResult records
-            #     - Save TestFile record
+            test_id = None
+            try:
+                from app.database import Test, TestFile, Model
+                
+                # Get or create CBC model
+                cbc_model = db.query(Model).filter(Model.name == "CBC Anemia Detection").first()
+                if not cbc_model:
+                    cbc_model = Model(name="CBC Anemia Detection", accuracy=95.0, tests_count=0)
+                    db.add(cbc_model)
+                    db.flush()
+                
+                # Create test record
+                new_test = Test(
+                    patient_id=patient_id,
+                    model_id=cbc_model.id,
+                    notes=notes if notes else "CBC test uploaded via CSV",
+                    review_status='pending'
+                )
+                db.add(new_test)
+                db.flush()  # Get the test ID
+                test_id = new_test.id
+                
+                # Create uploads directory if it doesn't exist
+                upload_dir = Path("uploads/tests/cbc")
+                upload_dir.mkdir(parents=True, exist_ok=True)
+                
+                # Generate unique filename with datetime
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                random_id = uuid.uuid4().hex[:8]
+                filename = f"cbc_{timestamp}_{random_id}.csv"
+                file_path = upload_dir / filename
+                
+                # Save annotated CSV file
+                df_annotated.to_csv(file_path, index=False)
+                
+                # Create test_files record for output CSV
+                test_file = TestFile(
+                    test_id=new_test.id,
+                    name=filename,
+                    extension='.csv',
+                    path=str(file_path),
+                    type='output'
+                )
+                db.add(test_file)
+                
+                # Update model test count
+                cbc_model.tests_count += 1
+                
+                db.commit()
+            except Exception as db_error:
+                db.rollback()
+                return {
+                    "success": False,
+                    "message": f"Error saving test to database: {str(db_error)}"
+                }
             
             return {
                 "success": True,
@@ -216,15 +287,20 @@ class CBCPredictionService:
                 "results": results,
                 "notes": notes,
                 "patient_id": patient_id,
-                "uploaded_by_id": uploaded_by_id
+                "uploaded_by_id": uploaded_by_id,
+                "test_id": test_id
             }
             
         except ValueError as ve:
+            if db:
+                db.rollback()
             return {
                 "success": False,
                 "message": f"CSV validation error: {str(ve)}"
             }
         except Exception as e:
+            if db:
+                db.rollback()
             return {
                 "success": False,
                 "message": f"Error processing CSV: {str(e)}"
@@ -245,22 +321,9 @@ class CBCPredictionService:
         notes: str = "",
         db: Optional[Session] = None
     ) -> Dict[str, Any]:
-        """
-        Process manually entered CBC test data.
-        
-        Args:
-            rbc, hgb, pcv, mcv, mch, mchc, tlc, plt: CBC parameters
-            patient_id: Patient ID
-            uploaded_by_id: ID of user uploading
-            notes: Additional notes
-            db: Database session (for future persistence)
-            
-        Returns:
-            Dict with success status, message, and result
-        """
         try:
-            # Create single-row dataframe
-            cbc_data = {
+            # Create single-row dataframe with input data
+            df_input = pd.DataFrame([{
                 'RBC': rbc,
                 'HGB': hgb,
                 'PCV': pcv,
@@ -269,30 +332,111 @@ class CBCPredictionService:
                 'MCHC': mchc,
                 'TLC': tlc,
                 'PLT': plt
-            }
+            }])
             
             # Load model if needed
             if not self._loaded:
                 self.load_model()
             
-            # Prepare and validate
-            df = pd.DataFrame([cbc_data])
-            df_prepared = prepare_dataframe_for_inference(df, self.used_features)
+            # Make predictions and add columns to dataframe
+            df_annotated, probabilities = predict_and_annotate_dataframe(
+                df_input, 
+                self.model, 
+                self.scaler, 
+                self.used_features
+            )
             
-            if len(df_prepared) == 0:
+            if len(df_annotated) == 0:
                 return {
                     "success": False,
                     "message": "Invalid CBC values provided. Please check your input."
                 }
             
-            # Get prediction with report
-            results = self.predict_batch([cbc_data], with_report=True)
-            result_data = results[0]
+            # Get the single result row
+            row = df_annotated.iloc[0]
+            prob_anemia = probabilities[0][1]
+            confidence_percentage = prob_anemia * 100
             
-            # TODO: Save to database when ready
-            # if db:
-            #     - Create Test record
-            #     - Create TestResult with parameters
+            result_data = {
+                "row_index": 0,
+                "prediction": row['Diagnosis'],
+                "prediction_code": int(row['Predicted_Anemia']),
+                "probability": f"{confidence_percentage:.2f}%",
+                "values": {
+                    "RBC": float(row.get('RBC', 0)),
+                    "HGB": float(row.get('HGB', 0)),
+                    "PCV": float(row.get('PCV', 0)),
+                    "MCV": float(row.get('MCV', 0)),
+                    "MCH": float(row.get('MCH', 0)),
+                    "MCHC": float(row.get('MCHC', 0)),
+                    "TLC": float(row.get('TLC', 0)),
+                    "PLT": float(row.get('PLT', 0)),
+                },
+                "report": build_report(row)
+            }
+            
+            # Save to database - db is required
+            if not db:
+                return {
+                    "success": False,
+                    "message": "Database session is required to save test results."
+                }
+            
+            test_id = None
+            try:
+                from app.database import Test, TestFile, Model
+                
+                # Get or create CBC model
+                cbc_model = db.query(Model).filter(Model.name == "CBC Anemia Detection").first()
+                if not cbc_model:
+                    cbc_model = Model(name="CBC Anemia Detection", accuracy=95.0, tests_count=0)
+                    db.add(cbc_model)
+                    db.flush()
+                
+                # Create test record
+                new_test = Test(
+                    patient_id=patient_id,
+                    model_id=cbc_model.id,
+                    notes=notes if notes else "CBC test entered manually",
+                    review_status='pending'
+                )
+                db.add(new_test)
+                db.flush()  # Get the test ID
+                test_id = new_test.id
+                
+                # Create uploads directory if it doesn't exist
+                upload_dir = Path("uploads/tests/cbc")
+                upload_dir.mkdir(parents=True, exist_ok=True)
+                
+                # Generate unique filename with datetime
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                random_id = uuid.uuid4().hex[:8]
+                filename = f"cbc_manual_{timestamp}_{random_id}.csv"
+                file_path = upload_dir / filename
+                
+                # Save annotated CSV file
+                df_annotated.to_csv(file_path, index=False)
+                
+                # Create test_files record for output CSV
+                test_file = TestFile(
+                    test_id=new_test.id,
+                    name=filename,
+                    extension='.csv',
+                    path=str(file_path),
+                    type='output'
+                )
+                db.add(test_file)
+                
+                # Update model test count
+                cbc_model.tests_count += 1
+                
+                db.commit()
+            except Exception as db_error:
+                db.rollback()
+                return {
+                    "success": False,
+                    "message": f"Error saving test to database: {str(db_error)}"
+                }
             
             return {
                 "success": True,
@@ -300,15 +444,20 @@ class CBCPredictionService:
                 "result": result_data,
                 "notes": notes,
                 "patient_id": patient_id,
-                "uploaded_by_id": uploaded_by_id
+                "uploaded_by_id": uploaded_by_id,
+                "test_id": test_id
             }
             
         except ValueError as ve:
+            if db:
+                db.rollback()
             return {
                 "success": False,
                 "message": f"Validation error: {str(ve)}"
             }
         except Exception as e:
+            if db:
+                db.rollback()
             return {
                 "success": False,
                 "message": f"Error during CBC analysis: {str(e)}"

@@ -229,3 +229,38 @@ def build_report(row):
     )
     
     return "\n".join(lines)
+
+
+# =================== Prediction with DataFrame Output ===================
+def predict_and_annotate_dataframe(df: pd.DataFrame, model, scaler, used_features):
+    """
+    Make predictions on a dataframe and add Diagnosis and Predicted_Anemia columns.
+    
+    Args:
+        df: Input dataframe with CBC data
+        model: Trained model
+        scaler: Fitted scaler
+        used_features: List of feature names
+        
+    Returns:
+        Tuple of (annotated DataFrame, probabilities array)
+    """
+    # Prepare the dataframe
+    df_prepared = prepare_dataframe_for_inference(df, used_features)
+    
+    # Extract features and scale
+    X = df_prepared[used_features].values
+    X_scaled = scaler.transform(X)
+    
+    # Make predictions
+    predictions = model.predict(X_scaled)
+    probabilities = model.predict_proba(X_scaled)
+    
+    # Create output dataframe with original data
+    df_output = df_prepared.copy()
+    
+    # Add prediction columns
+    df_output['Predicted_Anemia'] = predictions
+    df_output['Diagnosis'] = ['Anemia' if pred == 1 else 'Normal' for pred in predictions]
+    
+    return df_output, probabilities

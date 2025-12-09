@@ -194,15 +194,10 @@ async def upload_cbc_csv(
         set_flash_message(response, "error", result["message"])
         return response
     
-    # Display results
-    return templates.TemplateResponse("shared/cbc_result.html", {
-        "request": request,
-        "current_user": current_user,
-        "base_layout": "layouts/base_patient.html",
-        "back_url": "/patient/upload-cbc",
-        "results": result["results"],
-        "notes": result.get("notes")
-    })
+    # Redirect to test detail page
+    response = RedirectResponse(url=f"/patient/test/{result['test_id']}", status_code=303)
+    set_flash_message(response, "success", result["message"])
+    return response
 
 @router.post("/upload-cbc-manual")
 async def upload_cbc_manual(
@@ -219,6 +214,12 @@ async def upload_cbc_manual(
     current_user: User = Depends(require_role(["patient", "admin"])),
     db: Session = Depends(get_db)
 ):
+    from app.services.policy_service import check_account_active, handle_policy_violation
+    
+    # Check if account is active
+    if not check_account_active(current_user):
+        return handle_policy_violation(request, current_user, "deactivated")
+    
     result = cbc_prediction_service.process_manual_input(
         rbc=rbc, hgb=hgb, pcv=pcv, mcv=mcv, mch=mch, mchc=mchc, tlc=tlc, plt=plt,
         patient_id=current_user.id,
@@ -232,15 +233,10 @@ async def upload_cbc_manual(
         set_flash_message(response, "error", result["message"])
         return response
     
-    # Display results (manual input returns single result)
-    return templates.TemplateResponse("shared/cbc_result.html", {
-        "request": request,
-        "current_user": current_user,
-        "base_layout": "layouts/base_patient.html",
-        "back_url": "/patient/upload-cbc",
-        "results": [result["result"]],  # Wrap in list for consistent template
-        "notes": result.get("notes")
-    })
+    # Redirect to test detail page
+    response = RedirectResponse(url=f"/patient/test/{result['test_id']}", status_code=303)
+    set_flash_message(response, "success", result["message"])
+    return response
 
 @router.get("/upload-image")
 async def upload_image_page(
@@ -294,7 +290,7 @@ async def view_test(
     db: Session = Depends(get_db)
 ):
     """View test details"""
-    from app.database import Test, TestFile
+    from app.database import Test, TestFile, Model
     
     # Get the test
     test = db.query(Test).filter(Test.id == test_id).first()
@@ -312,6 +308,25 @@ async def view_test(
     # Get test files
     test_files = db.query(TestFile).filter(TestFile.test_id == test_id).all()
     
+    # Load CSV data if exists
+    csv_data = None
+    csv_file = None
+    for file in test_files:
+        if file.extension == '.csv' and file.type == 'output':
+            csv_file = file
+            try:
+                import pandas as pd
+                from app.ai.cbc import build_report
+                df = pd.read_csv(file.path)
+                csv_data = df.to_dict('records')
+                # Generate reports for each record
+                for record in csv_data:
+                    record['medical_report'] = build_report(record)
+            except Exception as e:
+                print(f"Error loading CSV: {e}")
+                csv_data = None
+            break
+    
     # Get reviewer info if reviewed
     reviewer = None
     if test.reviewed_by:
@@ -325,14 +340,24 @@ async def view_test(
     # Get connected doctors for patient
     connected_doctors = get_patient_doctors(current_user.id, db)
     
+    # Get model name for test type
+    model_name = None
+    if test.model_id:
+        model = db.query(Model).filter(Model.id == test.model_id).first()
+        if model:
+            model_name = model.name
+    
     return templates.TemplateResponse("patient/test_detail.html", {
         "request": request,
         "current_user": current_user,
         "test": test,
         "test_files": test_files,
+        "csv_data": csv_data,
+        "csv_file": csv_file,
         "reviewer": reviewer,
         "review_requested_doctor": review_requested_doctor,
-        "connected_doctors": connected_doctors
+        "connected_doctors": connected_doctors,
+        "model_name": model_name
     })
 
 @router.post("/test/{test_id}/request-review")
