@@ -17,6 +17,11 @@ from app.services import (
     verify_password,
     hash_password
 )
+from app.services.profile_service import (
+    update_doctor_profile,
+    change_user_password,
+    upload_user_profile_image
+)
 import os
 import uuid
 from pathlib import Path
@@ -582,39 +587,20 @@ async def update_profile(
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
-    # Check if email already exists for another user
-    existing_user = db.query(User).filter(User.email == email, User.id != current_user.id).first()
-    if existing_user:
-        response = RedirectResponse(url="/doctor/account", status_code=303)
-        set_flash_message(response, "error", "Email already exists for another user")
-        return response
-    
-    # Update user information
-    current_user.fname = fname
-    current_user.lname = lname
-    current_user.email = email
-    current_user.phone = phone
-    current_user.address = address
-    
-    # Update doctor info
-    if specialization:
-        doctor_info = current_user.doctor_info
-        if doctor_info:
-            doctor_info.specialization = specialization
-        else:
-            from app.database import DoctorInfo
-            new_doctor_info = DoctorInfo(
-                user_id=current_user.id,
-                license_number="TEMP-" + str(current_user.id),
-                specialization=specialization
-            )
-            db.add(new_doctor_info)
-    
-    db.commit()
-    db.refresh(current_user)
+    success, message = await update_doctor_profile(
+        current_user=current_user,
+        db=db,
+        fname=fname,
+        lname=lname,
+        email=email,
+        phone=phone,
+        address=address,
+        specialization=specialization,
+        redirect_url="/doctor/account"
+    )
     
     response = RedirectResponse(url="/doctor/account", status_code=303)
-    set_flash_message(response, "success", "Profile updated successfully!")
+    set_flash_message(response, "success" if success else "error", message)
     return response
 
 
@@ -627,30 +613,16 @@ async def change_password(
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
-    # Verify current password
-    if not verify_password(current_password, current_user.password):
-        response = RedirectResponse(url="/doctor/account", status_code=303)
-        set_flash_message(response, "error", "Current password is incorrect")
-        return response
-    
-    # Check if new passwords match
-    if new_password != confirm_password:
-        response = RedirectResponse(url="/doctor/account", status_code=303)
-        set_flash_message(response, "error", "New passwords do not match")
-        return response
-    
-    # Check password length
-    if len(new_password) < 8:
-        response = RedirectResponse(url="/doctor/account", status_code=303)
-        set_flash_message(response, "error", "Password must be at least 8 characters long")
-        return response
-    
-    # Update password
-    current_user.password = hash_password(new_password)
-    db.commit()
+    success, message = await change_user_password(
+        current_user=current_user,
+        db=db,
+        current_password=current_password,
+        new_password=new_password,
+        confirm_password=confirm_password
+    )
     
     response = RedirectResponse(url="/doctor/account", status_code=303)
-    set_flash_message(response, "success", "Password changed successfully!")
+    set_flash_message(response, "success" if success else "error", message)
     return response
 
 
@@ -661,38 +633,12 @@ async def upload_profile_image(
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
-    # Validate file type
-    allowed_extensions = {".jpg", ".jpeg", ".png", ".gif"}
-    file_ext = os.path.splitext(profile_image.filename)[1].lower()
-    
-    if file_ext not in allowed_extensions:
-        response = RedirectResponse(url="/doctor/account", status_code=303)
-        set_flash_message(response, "error", "Invalid file type. Only JPG, PNG, and GIF are allowed")
-        return response
-    
-    # Create uploads/profiles directory if it doesn't exist
-    upload_dir = Path("uploads/profiles")
-    upload_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Generate unique filename
-    unique_filename = f"{uuid.uuid4()}{file_ext}"
-    file_path = upload_dir / unique_filename
-    
-    # Delete old profile image if exists
-    if current_user.profile_image:
-        old_file = Path(current_user.profile_image)
-        if old_file.exists():
-            old_file.unlink()
-    
-    # Save new file
-    with open(file_path, "wb") as buffer:
-        content = await profile_image.read()
-        buffer.write(content)
-    
-    # Update user profile_image path
-    current_user.profile_image = str(file_path)
-    db.commit()
+    success, message = await upload_user_profile_image(
+        current_user=current_user,
+        db=db,
+        profile_image=profile_image
+    )
     
     response = RedirectResponse(url="/doctor/account", status_code=303)
-    set_flash_message(response, "success", "Profile image updated successfully!")
+    set_flash_message(response, "success" if success else "error", message)
     return response

@@ -2,16 +2,12 @@
 Patient Management Service
 Handles patient-related operations including patient-doctor relationships
 """
-from fastapi import Form, UploadFile, File
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from typing import Dict, Any, List
 import random
 import string
-import pandas as pd
-import io
-from pathlib import Path
 
 from app.database import User, DoctorInfo, doctor_patients
 from app.services.ui_service import set_flash_message
