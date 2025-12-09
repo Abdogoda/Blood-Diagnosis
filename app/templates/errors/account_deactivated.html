@@ -1,0 +1,98 @@
+{% extends "layouts/base_error.html" %}
+
+{% block title %}Account Suspended{% endblock %}
+
+{% block body_class %}bg-gradient-to-br from-orange-50 via-red-50 to-yellow-50{% endblock %}
+
+{% block icon_container_class %}icon-container{% endblock %}
+
+{% block icon %}
+<svg class="w-32 h-32 mx-auto text-orange-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+</svg>
+{% endblock %}
+
+{% block pulse_ring_class %}pulse-ring-red{% endblock %}
+
+{% block error_code %}403{% endblock %}
+
+{% block gradient_class %}bg-gradient-to-r from-orange-500 via-red-500 to-pink-600{% endblock %}
+
+{% block line_gradient_left %}bg-gradient-to-r from-orange-500 to-red-600{% endblock %}
+
+{% block middle_icon %}
+<svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+</svg>
+{% endblock %}
+
+{% block line_gradient_right %}bg-gradient-to-r from-red-600 to-orange-500{% endblock %}
+
+{% block error_title %}Account Access Suspended{% endblock %}
+
+{% block error_description %}
+{% if current_user and current_user.role == "doctor" %}
+Your doctor account has been temporarily suspended by the system administrator. During this time, you cannot access patient records, upload tests, or create diagnoses.
+{% elif current_user and current_user.role == "patient" %}
+Your patient account has been temporarily suspended by the system administrator. During this time, you cannot access your medical records, view test results, or upload new tests.
+{% else %}
+Your account has been temporarily suspended by the system administrator. Please contact support for more information.
+{% endif %}
+{% endblock %}
+
+{% block detail_bg %}bg-orange-100 border border-orange-300{% endblock %}
+{% block detail_text %}text-orange-800{% endblock %}
+
+{% block additional_info %}
+<div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 max-w-md mx-auto border border-gray-200">
+    <div class="flex items-start space-x-4">
+        <div class="flex-shrink-0">
+            <svg class="w-10 h-10 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+        </div>
+        <div class="flex-1 text-left">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">What This Means:</h3>
+            <ul class="space-y-2 text-sm text-gray-600">
+                <li class="flex items-start">
+                    <svg class="w-4 h-4 mr-2 mt-0.5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    All account features are currently disabled
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-4 h-4 mr-2 mt-0.5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    Your data remains secure and unchanged
+                </li>
+                <li class="flex items-start">
+                    <svg class="w-4 h-4 mr-2 mt-0.5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    Contact admin to understand the reason and resolve this
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block primary_button_gradient %}bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700{% endblock %}
+
+{% block help_title %}Need to restore access?{% endblock %}
+
+{% block help_links %}
+<a href="/contact?subject=Account%20Reactivation%20Request%20-%20{{ current_user.role.title() if current_user else 'User' }}" class="text-sm px-6 py-2 text-white bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+    <svg class="inline-block w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+    </svg>
+    Contact Support Team
+</a>
+<a href="/auth/logout" class="text-sm px-6 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors duration-200 border border-red-300">
+    <svg class="inline-block w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+    </svg>
+    Logout
+</a>
+{% endblock %}

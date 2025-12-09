@@ -133,6 +133,7 @@
                         Subject <span class="text-red-500">*</span>
                     </label>
                     <input type="text" id="subject" name="subject" required
+                           value="{{ prefill_subject if prefill_subject else '' }}"
                            class="block w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:border-blue-300"
                            placeholder="How can we help you?">
                 </div>

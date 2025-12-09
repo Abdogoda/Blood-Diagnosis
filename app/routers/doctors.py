@@ -57,8 +57,8 @@ async def doctor_dashboard(
         ).order_by(User.created_at.desc()).limit(5).all()
     else:
         # Admin sees all patients
-        total_patients = db.query(User).filter(User.role == "patient", User.is_active == 1).count()
-        recent_patients_query = db.query(User).filter(User.role == "patient", User.is_active == 1).order_by(User.created_at.desc()).limit(5).all()
+        total_patients = db.query(User).filter(User.role == "patient").count()
+        recent_patients_query = db.query(User).filter(User.role == "patient").order_by(User.created_at.desc()).limit(5).all()
     
     stats = {
         "total_patients": total_patients,
@@ -99,7 +99,7 @@ async def patients_list(
     from sqlalchemy import select
     
     # Build query for patients
-    query = db.query(User).filter(User.role == "patient", User.is_active == 1)
+    query = db.query(User).filter(User.role == "patient")
     
     # Filter by doctor's patients only
     if my_patients == "true" and current_user.role == "doctor":
@@ -374,6 +374,12 @@ async def upload_test_page(
             "message": "You don't have access to this patient"
         }, status_code=403)
     
+    from app.services.policy_service import check_account_active, handle_policy_violation
+    
+    # Check if account is active
+    if not check_account_active(patient):
+        return handle_policy_violation(request, patient, "deactivated")
+    
     return templates.TemplateResponse("shared/upload_test.html", {
         "request": request,
         "current_user": current_user,
@@ -398,6 +404,14 @@ async def upload_cbc_page(
         set_flash_message(response, "error", "Patient not found")
         return response
     
+    
+    from app.services.policy_service import check_account_active, handle_policy_violation
+    
+    # Check if account is active
+    if not check_account_active(patient):
+        return handle_policy_violation(request, patient, "deactivated")
+    
+
     # Check if doctor has access to this patient (only for doctors, not admin)
     if current_user.role == "doctor" and patient not in current_user.patients:
         return templates.TemplateResponse("errors/403.html", {
@@ -540,6 +554,13 @@ async def upload_image_page(
             "current_user": current_user,
             "message": "You don't have access to this patient"
         }, status_code=403)
+    
+    
+    from app.services.policy_service import check_account_active, handle_policy_violation
+    
+    # Check if account is active
+    if not check_account_active(patient):
+        return handle_policy_violation(request, patient, "deactivated")
     
 
     return templates.TemplateResponse("shared/upload_image.html", {

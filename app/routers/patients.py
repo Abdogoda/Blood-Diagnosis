@@ -111,6 +111,12 @@ async def upload_test_page(
     request: Request,
     current_user: User = Depends(require_role(["patient", "admin"]))
 ):
+    from app.services.policy_service import check_account_active, handle_policy_violation
+    
+    # Check if account is active
+    if not check_account_active(current_user):
+        return handle_policy_violation(request, current_user, "deactivated")
+    
     return templates.TemplateResponse("shared/upload_test.html", {
         "request": request,
         "current_user": current_user,
@@ -125,6 +131,12 @@ async def upload_cbc_page(
     request: Request,
     current_user: User = Depends(require_role(["patient", "admin"]))
 ):
+    from app.services.policy_service import check_account_active, handle_policy_violation
+    
+    # Check if account is active
+    if not check_account_active(current_user):
+        return handle_policy_violation(request, current_user, "deactivated")
+    
     return templates.TemplateResponse("shared/upload_cbc.html", {
         "request": request,
         "current_user": current_user,
@@ -142,6 +154,12 @@ async def upload_cbc_csv(
     current_user: User = Depends(require_role(["patient", "admin"])),
     db: Session = Depends(get_db)
 ):
+    from app.services.policy_service import check_account_active, handle_policy_violation
+    
+    # Check if account is active
+    if not check_account_active(current_user):
+        return handle_policy_violation(request, current_user, "deactivated")
+    
     result = cbc_prediction_service.process_csv_upload(
         file=file,
         patient_id=current_user.id,
@@ -208,6 +226,12 @@ async def upload_image_page(
     request: Request,
     current_user: User = Depends(require_role(["patient", "admin"]))
 ):
+    from app.services.policy_service import check_account_active, handle_policy_violation
+    
+    # Check if account is active
+    if not check_account_active(current_user):
+        return handle_policy_violation(request, current_user, "deactivated")
+    
     return templates.TemplateResponse("shared/upload_image.html", {
         "request": request,
         "current_user": current_user,
@@ -224,6 +248,11 @@ async def upload_blood_image(
     current_user: User = Depends(require_role(["patient", "admin"])),
     db: Session = Depends(get_db)
 ):
+    from app.services.policy_service import check_account_active, handle_policy_violation
+    
+    # Check if account is active
+    if not check_account_active(current_user):
+        return handle_policy_violation(request, current_user, "deactivated")
     result = blood_image_service.process_image_upload(
         file=file,
         patient_id=current_user.id,

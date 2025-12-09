@@ -5,6 +5,29 @@
 {% block content %}
 <div class="px-4 py-6 animate-slide-up">
     <div class="max-w-4xl mx-auto">
+        <!-- Deactivation Warning Banner -->
+        {% if current_user.is_active != 1 %}
+        <div class="mb-6 bg-gradient-to-r from-red-500 to-orange-600 rounded-xl shadow-xl p-6 text-white">
+            <div class="flex items-start space-x-4">
+                <div class="flex-shrink-0">
+                    <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-xl font-bold mb-2">Account Status: Suspended</h3>
+                    <p class="text-white/90 mb-4">Your account has been temporarily deactivated. Please contact the administrator to resolve this issue and restore full access to your account.</p>
+                    <a href="/contact?subject=Account%20Reactivation%20Request%20-%20Patient" class="inline-flex items-center px-4 py-2 bg-white text-red-600 font-semibold rounded-lg hover:bg-red-50 transition-all duration-200">
+                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        Request Reactivation
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
         <h1 class="text-4xl font-bold text-gray-900 mb-8">My Account</h1>
 
         <div class="space-y-6">

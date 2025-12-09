@@ -25,7 +25,7 @@ async def about(request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/contact")
-async def contact(request: Request, success: int = 0, error: int = 0, db: Session = Depends(get_db)):
+async def contact(request: Request, success: int = 0, error: int = 0, subject: str = "", db: Session = Depends(get_db)):
     current_user = await get_current_user_optional(request, db)
     flash_message = None
     if success:
@@ -36,7 +36,8 @@ async def contact(request: Request, success: int = 0, error: int = 0, db: Sessio
     return templates.TemplateResponse("public/contact.html", {
         "request": request, 
         "current_user": current_user,
-        "flash": flash_message
+        "flash": flash_message,
+        "prefill_subject": subject
     })
 
 
@@ -60,6 +61,23 @@ async def contact_post(
         return RedirectResponse(url="/contact?success=1", status_code=303)
     except Exception as e:
         return RedirectResponse(url="/contact?error=1", status_code=303)
+
+
+@router.get("/account-deactivated")
+async def account_deactivated(request: Request, db: Session = Depends(get_db)):
+    current_user = await get_current_user_optional(request, db)
+    
+    # Get deactivation info based on current user
+    deactivation_info = None
+    if current_user:
+        from app.services.policy_service import get_deactivation_message
+        deactivation_info = get_deactivation_message(current_user.role)
+    
+    return templates.TemplateResponse("errors/account_deactivated.html", {
+        "request": request,
+        "current_user": current_user,
+        "deactivation_info": deactivation_info
+    })
 
 
 @router.get("/models")
