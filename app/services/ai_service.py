@@ -9,6 +9,10 @@ import numpy as np
 import cv2
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
+import os
+import uuid
+from datetime import datetime
+from pathlib import Path
 
 # Try to import AI modules, gracefully handle if not available
 try:
@@ -351,85 +355,72 @@ class BloodImageAnalysisService:
             
             # Validate image extension
             valid_extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.tiff']
-            if not any(file.filename.lower().endswith(ext) for ext in valid_extensions):
+            file_extension = Path(file.filename).suffix.lower()
+            if file_extension not in valid_extensions:
                 return {
                     "success": False,
                     "message": f"Invalid file type. Please upload an image file ({', '.join(valid_extensions)})."
                 }
             
-            # TODO: Save image file to uploads/tests/
-            # TODO: Run quality checks
-            # TODO: Run AI image analysis
-            # TODO: Create Test and TestFile records in database
+            # Create uploads directory structure if it doesn't exist
+            upload_dir = Path("uploads/tests/blood_cell")
+            upload_dir.mkdir(parents=True, exist_ok=True)
             
-            return {
-                "success": True,
-                "message": "Blood image uploaded successfully! Analysis feature coming soon.",
-                "patient_id": patient_id,
-                "uploaded_by_id": uploaded_by_id,
-                "description": description
-            }
+            # Generate unique filename with datetime
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            random_id = uuid.uuid4().hex[:8]
+            filename = f"{timestamp}_{random_id}{file_extension}"
+            file_path = upload_dir / filename
+            
+            # Save the uploaded file
+            contents = file.file.read()
+            with open(file_path, "wb") as f:
+                f.write(contents)
+            
+            # Create Test record in database
+            if db:
+                from app.database import Test, TestFile
+                
+                # Create new test
+                new_test = Test(
+                    patient_id=patient_id,
+                    model_id=None,  # No AI model used
+                    notes=description if description else "Blood cell image uploaded",
+                    review_status='pending'
+                )
+                db.add(new_test)
+                db.flush()  # Get the test ID
+                
+                # Create test_files record
+                test_file = TestFile(
+                    test_id=new_test.id,
+                    name=filename,
+                    extension=file_extension,
+                    path=str(file_path),
+                    type='input'
+                )
+                db.add(test_file)
+                db.commit()
+                
+                return {
+                    "success": True,
+                    "message": "Blood cell image uploaded successfully!",
+                    "test_id": new_test.id,
+                    "file_path": str(file_path)
+                }
+            else:
+                return {
+                    "success": False,
+                    "message": "Database session not provided"
+                }
             
         except Exception as e:
+            if db:
+                db.rollback()
             return {
                 "success": False,
                 "message": f"Error uploading image: {str(e)}"
             }
-    
-    def analyze_image(self, image_path: str) -> Dict[str, Any]:
-        """Analyze blood microscope image for cell detection"""
-        try:
-            # TODO: Load trained model
-            # TODO: Preprocess image
-            # TODO: Run inference
-            # TODO: Post-process results
-            
-            return {
-                "success": True,
-                "cell_counts": {
-                    "red_blood_cells": 0,
-                    "white_blood_cells": 0,
-                    "platelets": 0
-                },
-                "abnormalities": [],
-                "confidence": 0.0
-            }
-        except Exception as e:
-            return {"success": False, "error": str(e)}
-    
-    def check_quality(self, image_path: str) -> Dict[str, Any]:
-        """Check quality of blood microscope image"""
-        try:
-            img = cv2.imread(image_path)
-            
-            if img is None:
-                return {"valid": False, "error": "Could not load image"}
-            
-            # Calculate quality metrics
-            # TODO: Implement quality checks (blur, brightness, contrast)
-            
-            return {
-                "valid": True,
-                "blur_score": 0.0,
-                "brightness": 0.0,
-                "contrast": 0.0,
-                "dimensions": img.shape
-            }
-        except Exception as e:
-            return {"valid": False, "error": str(e)}
-    
-    def detect_abnormalities(self, image_path: str) -> Dict[str, Any]:
-        """Detect abnormalities in blood cells"""
-        try:
-            # TODO: Implement abnormality detection logic
-            return {
-                "success": True,
-                "abnormalities_found": False,
-                "details": []
-            }
-        except Exception as e:
-            return {"success": False, "error": str(e)}
-
 
 # ==================== Service Instances ====================
 

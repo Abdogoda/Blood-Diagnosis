@@ -56,6 +56,16 @@
                             </svg>
                             <span class="text-gray-700">{{ phone or 'N/A' }}</span>
                         </div>
+                        <div class="grid grid-cols-1 gap-3">
+                            <div class="flex flex-wrap items-center justify-between p-4 bg-blue-50 rounded-lg">
+                                <p class="text-sm text-gray-600 mb-1">Blood Type</p>
+                                <p class="text-lg font-bold text-blue-600">{{ patient.blood_type or 'N/A' }}</p>
+                            </div>
+                            <div class="flex flex-wrap items-center justify-between p-4 bg-green-50 rounded-lg">
+                                <p class="text-sm text-gray-600 mb-1">Member Since</p>
+                                <p class="text-lg font-bold text-green-600">{{ patient.created_at.strftime('%Y-%m-%d') }}</p>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mt-6 pt-6 border-t border-gray-200 space-y-3">
@@ -96,21 +106,6 @@
                     </div>
                 </div>
 
-                <!-- Medical Information -->
-                <div class="glass-effect rounded-2xl shadow-xl p-6 mt-6">
-                    <h3 class="text-xl font-bold text-gray-900 mb-4">Medical Information</h3>
-                    <div class="grid grid-cols-1 gap-3">
-                        <div class="p-4 bg-blue-50 rounded-lg">
-                            <p class="text-sm text-gray-600 mb-1">Blood Type</p>
-                            <p class="text-lg font-bold text-blue-600">{{ patient.blood_type or 'N/A' }}</p>
-                        </div>
-                        <div class="p-4 bg-green-50 rounded-lg">
-                            <p class="text-sm text-gray-600 mb-1">Member Since</p>
-                            <p class="text-lg font-bold text-green-600">{{ patient.created_at.strftime('%Y-%m-%d') }}</p>
-                        </div>
-                    </div>
-                </div>
-                
                 <div class="mt-6">
                     <!-- Connected Doctors -->
                     {% with grid_class="grid-cols-1" %}
@@ -227,13 +222,19 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <p class="font-semibold text-gray-900">{{ test.name }}</p>
+                                    <p class="font-semibold text-gray-900">Test #{{ test.id }}</p>
                                     <p class="text-sm text-gray-500">{{ test.date }}</p>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1
+                                        {% if test.review_status == 'accepted' %} bg-green-100 text-green-800
+                                        {% elif test.review_status == 'rejected' %} bg-red-100 text-red-800
+                                        {% else %} bg-yellow-100 text-yellow-800{% endif %}">
+                                        {{ test.review_status|title }}
+                                    </span>
                                 </div>
                             </div>
-                            <button class="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200">
-                                View
-                            </button>
+                            <a href="/doctor/test/{{ test.id }}" class="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 font-medium">
+                                {% if test.review_status == 'pending' %}Review{% else %}View{% endif %}
+                            </a>
                         </div>
                         {% endfor %}
                     </div>

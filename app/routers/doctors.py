@@ -33,7 +33,7 @@ async def doctor_dashboard(
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
-    from app.database import doctor_patients
+    from app.database import doctor_patients, Test
     from sqlalchemy import select
     
     # Get patient count based on role
@@ -55,16 +55,43 @@ async def doctor_dashboard(
             User.is_active == 1,
             User.id.in_(patient_ids) if patient_ids else False
         ).order_by(User.created_at.desc()).limit(5).all()
+        
+        # Get pending tests count for linked patients
+        pending_reports = db.query(Test).filter(
+            Test.patient_id.in_(patient_ids) if patient_ids else False,
+            Test.review_status == 'pending'
+        ).count()
+        
+        # Get review requests for this doctor
+        review_requests = db.query(Test).filter(
+            Test.review_requested_from == current_user.id,
+            Test.review_status == 'pending'
+        ).order_by(Test.review_requested_at.desc()).limit(5).all()
+        
+        review_requests_list = []
+        for test in review_requests:
+            patient = db.query(User).filter(User.id == test.patient_id).first()
+            review_requests_list.append({
+                "test_id": test.id,
+                "patient_name": f"{patient.fname} {patient.lname}",
+                "patient_id": patient.id,
+                "requested_at": test.review_requested_at.strftime("%b %d, %Y") if test.review_requested_at else "N/A",
+                "notes": test.notes or "No notes"
+            })
     else:
         # Admin sees all patients
         total_patients = db.query(User).filter(User.role == "patient").count()
         recent_patients_query = db.query(User).filter(User.role == "patient").order_by(User.created_at.desc()).limit(5).all()
+        
+        # Get all pending tests
+        pending_reports = db.query(Test).filter(Test.review_status == 'pending').count()
+        review_requests_list = []
     
     stats = {
         "total_patients": total_patients,
-        "pending_reports": 0,
-        "urgent_cases": 0,
-        "completed_today": 0
+        "pending_reports": pending_reports,
+        "completed_today": 0,
+        "review_requests": len(review_requests_list)
     }
     
     recent_patients = [
@@ -82,7 +109,8 @@ async def doctor_dashboard(
         "request": request,
         "current_user": current_user,
         "stats": stats,
-        "recent_patients": recent_patients
+        "recent_patients": recent_patients,
+        "review_requests": review_requests_list
     })
 
 @router.get("/patients")
@@ -562,21 +590,111 @@ async def upload_blood_image(
     set_flash_message(response, "success" if result["success"] else "error", result["message"])
     return response
 
-@router.get("/reports")
-async def reports_page(
+@router.get("/test/{test_id}")
+async def view_test(
     request: Request,
+    test_id: int,
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
-    reports = [
-        {"id": 1, "patient": "Sarah Miller", "test_type": "CBC Analysis", "date": "2025-12-01", "status": "Completed"},
-        {"id": 2, "patient": "Michael Johnson", "test_type": "Blood Smear", "date": "2025-11-28", "status": "Pending"},
-    ]
-    return templates.TemplateResponse("doctor/reports.html", {
+    """View test details for review"""
+    from app.database import Test, TestFile, doctor_patients
+    from datetime import datetime
+    
+    # Get the test
+    test = db.query(Test).filter(Test.id == test_id).first()
+    if not test:
+        response = RedirectResponse(url="/doctor/dashboard", status_code=303)
+        set_flash_message(response, "error", "Test not found")
+        return response
+    
+    # Get patient info
+    patient = db.query(User).filter(User.id == test.patient_id).first()
+    
+    # Check if doctor has access to this patient
+    if current_user.role == "doctor":
+        is_linked = patient in current_user.patients
+        if not is_linked:
+            response = RedirectResponse(url="/doctor/dashboard", status_code=303)
+            set_flash_message(response, "error", "You don't have access to this patient's tests")
+            return response
+    
+    # Get test files
+    test_files = db.query(TestFile).filter(TestFile.test_id == test_id).all()
+    
+    # Get reviewer info if reviewed
+    reviewer = None
+    if test.reviewed_by:
+        reviewer = db.query(User).filter(User.id == test.reviewed_by).first()
+    
+    return templates.TemplateResponse("doctor/test_detail.html", {
         "request": request,
         "current_user": current_user,
-        "reports": reports
+        "test": test,
+        "patient": patient,
+        "test_files": test_files,
+        "reviewer": reviewer
     })
+
+@router.post("/test/{test_id}/review")
+async def review_test(
+    request: Request,
+    test_id: int,
+    review_status: str = Form(...),
+    comment: str = Form(None),
+    result: str = Form(None),
+    current_user: User = Depends(require_role(["doctor", "admin"])),
+    db: Session = Depends(get_db)
+):
+    """Update test review status"""
+    from app.database import Test, doctor_patients
+    from datetime import datetime
+    
+    # Get the test
+    test = db.query(Test).filter(Test.id == test_id).first()
+    if not test:
+        response = RedirectResponse(url="/doctor/dashboard", status_code=303)
+        set_flash_message(response, "error", "Test not found")
+        return response
+    
+    # Get patient info
+    patient = db.query(User).filter(User.id == test.patient_id).first()
+    
+    # Check if doctor has access to this patient
+    if current_user.role == "doctor":
+        is_linked = patient in current_user.patients
+        if not is_linked:
+            response = RedirectResponse(url="/doctor/dashboard", status_code=303)
+            set_flash_message(response, "error", "You don't have access to this patient's tests")
+            return response
+    
+    # Validate review status
+    if review_status not in ['accepted', 'rejected', 'pending']:
+        response = RedirectResponse(url=f"/doctor/test/{test_id}", status_code=303)
+        set_flash_message(response, "error", "Invalid review status")
+        return response
+    
+    try:
+        # Update test
+        test.review_status = review_status
+        test.reviewed_by = current_user.id
+        test.reviewed_at = datetime.utcnow()
+        if comment:
+            test.comment = comment
+        if result:
+            test.result = result
+        
+        db.commit()
+        
+        response = RedirectResponse(url=f"/doctor/patient/{test.patient_id}", status_code=303)
+        set_flash_message(response, "success", f"Test marked as {review_status}")
+        return response
+        
+    except Exception as e:
+        db.rollback()
+        response = RedirectResponse(url=f"/doctor/test/{test_id}", status_code=303)
+        set_flash_message(response, "error", f"Error updating test: {str(e)}")
+        return response
 
 @router.get("/account")
 async def account_page(

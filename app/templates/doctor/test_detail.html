@@ -1,0 +1,205 @@
+{% extends "layouts/base_doctor.html" %}
+
+{% block title %}Test Details - Doctor Dashboard{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-5xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="/doctor/patient/{{ patient.id }}" class="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Patient Profile
+            </a>
+            <h1 class="text-4xl font-bold text-gray-900">Test Details</h1>
+            <p class="text-gray-600 mt-2">Review and update test status</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Test Information -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Patient Info -->
+                <div class="glass-effect rounded-2xl shadow-xl p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Patient Information</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-500">Patient Name</p>
+                            <p class="font-semibold text-gray-900">{{ patient.fname }} {{ patient.lname }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Patient ID</p>
+                            <p class="font-semibold text-gray-900">#{{ patient.id }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Blood Type</p>
+                            <p class="font-semibold text-gray-900">{{ patient.blood_type if patient.blood_type else 'N/A' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Gender</p>
+                            <p class="font-semibold text-gray-900">{{ patient.gender|title if patient.gender else 'N/A' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Test Details -->
+                <div class="glass-effect rounded-2xl shadow-xl p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Test Information</h2>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm text-gray-500">Test ID</p>
+                                <p class="font-semibold text-gray-900">#{{ test.id }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Date Submitted</p>
+                                <p class="font-semibold text-gray-900">{{ test.created_at.strftime('%b %d, %Y at %I:%M %p') }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Status</p>
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                                    {% if test.review_status == 'accepted' %} bg-green-100 text-green-800
+                                    {% elif test.review_status == 'rejected' %} bg-red-100 text-red-800
+                                    {% else %} bg-yellow-100 text-yellow-800{% endif %}">
+                                    {{ test.review_status|title }}
+                                </span>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Type</p>
+                                <p class="font-semibold text-gray-900">Blood Cell Image</p>
+                            </div>
+                        </div>
+
+                        {% if test.notes %}
+                        <div>
+                            <p class="text-sm text-gray-500 mb-2">Notes</p>
+                            <p class="text-gray-900 bg-gray-50 p-3 rounded-lg">{{ test.notes }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if test.result %}
+                        <div>
+                            <p class="text-sm text-gray-500 mb-2">Result</p>
+                            <p class="text-gray-900 bg-blue-50 p-3 rounded-lg">{{ test.result }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if test.comment %}
+                        <div>
+                            <p class="text-sm text-gray-500 mb-2">Review Comment</p>
+                            <p class="text-gray-900 bg-gray-50 p-3 rounded-lg">{{ test.comment }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if reviewer %}
+                        <div class="grid grid-cols-2 gap-4 pt-4 border-t">
+                            <div>
+                                <p class="text-sm text-gray-500">Reviewed By</p>
+                                <p class="font-semibold text-gray-900">Dr. {{ reviewer.fname }} {{ reviewer.lname }}</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Review Date</p>
+                                <p class="font-semibold text-gray-900">{{ test.reviewed_at.strftime('%b %d, %Y at %I:%M %p') }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Test Files -->
+                <div class="glass-effect rounded-2xl shadow-xl p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Uploaded Files</h2>
+                    {% if test_files %}
+                    <div class="space-y-3">
+                        {% for file in test_files %}
+                        <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:shadow-md transition-all duration-200">
+                            <div class="flex items-center space-x-4">
+                                <div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                                    <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900">{{ file.name }}</p>
+                                    <p class="text-sm text-gray-500">{{ file.type|title }} • {{ file.extension }}</p>
+                                </div>
+                            </div>
+                            <a href="/{{ file.path }}" target="_blank" class="px-3 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 text-sm font-medium">
+                                View Image
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-gray-500 text-center py-4">No files uploaded</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Review Form -->
+            <div class="lg:col-span-1">
+                <div class="glass-effect rounded-2xl shadow-xl p-6 sticky top-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">Review Test</h2>
+                    <form action="/doctor/test/{{ test.id }}/review" method="POST" class="space-y-4">
+                        <!-- Status -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Review Status</label>
+                            <select name="review_status" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="pending" {% if test.review_status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="accepted" {% if test.review_status == 'accepted' %}selected{% endif %}>Accepted</option>
+                                <option value="rejected" {% if test.review_status == 'rejected' %}selected{% endif %}>Rejected</option>
+                            </select>
+                        </div>
+
+                        <!-- Result -->
+                        <div>
+                            <label for="result" class="block text-sm font-medium text-gray-700 mb-2">Result</label>
+                            <textarea 
+                                id="result" 
+                                name="result" 
+                                rows="3" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Enter test result..."
+                            >{{ test.result if test.result else '' }}</textarea>
+                        </div>
+
+                        <!-- Comment -->
+                        <div>
+                            <label for="comment" class="block text-sm font-medium text-gray-700 mb-2">Review Comment</label>
+                            <textarea 
+                                id="comment" 
+                                name="comment" 
+                                rows="4" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Add your review comments..."
+                            >{{ test.comment if test.comment else '' }}</textarea>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button 
+                            type="submit"
+                            class="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold py-3 px-4 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-md hover:shadow-lg"
+                        >
+                            Update Review
+                        </button>
+                    </form>
+
+                    <!-- Quick Actions -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-3">Quick Actions</h3>
+                        <div class="space-y-2">
+                            <a href="/doctor/patient/{{ patient.id }}" class="block w-full text-center px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-200 text-sm font-medium">
+                                View Patient Profile
+                            </a>
+                            <a href="/doctor/upload-image/{{ patient.id }}" class="block w-full text-center px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all duration-200 text-sm font-medium">
+                                Upload New Test
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

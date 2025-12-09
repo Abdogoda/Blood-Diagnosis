@@ -90,6 +90,8 @@ class Test(Base):
     result = Column(Text, nullable=True)
     comment = Column(Text, nullable=True)
     confidence = Column(Numeric(5,4), nullable=True)
+    review_requested_from = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    review_requested_at = Column(DateTime, nullable=True)
     
     # Relationships
     test_files = relationship("TestFile", back_populates="test", cascade="all, delete-orphan")
