@@ -121,8 +121,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 datasets: [{
                     data: Object.values(genderDistributionData),
                     backgroundColor: [
-                        chartColors.blue,
                         chartColors.pink,
+                        chartColors.blue,
                         chartColors.purple
                     ]
                 }]
