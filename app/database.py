@@ -127,6 +127,18 @@ class PasswordResetToken(Base):
     used = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+
+class Message(Base):
+    __tablename__ = "messages"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    email = Column(String(200), nullable=False)
+    subject = Column(String(200), nullable=False)
+    message = Column(Text, nullable=False)
+    is_read = Column(Integer, default=0, nullable=False)  # 0=unread, 1=read
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
+
 if __name__ == "__main__":
     from database import Base, engine
     Base.metadata.create_all(bind=engine)

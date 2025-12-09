@@ -29,14 +29,6 @@ window.bloodTypeDistributionData = {{ blood_type_distribution | tojson }};
             </div>
             <p class="text-3xl font-bold text-gray-900">{{ stats.total_users }}</p>
             <p class="text-sm text-gray-600 mt-1">Total Users</p>
-            <div class="mt-2 flex items-center text-xs">
-                {% if stats.growth_rate >= 0 %}
-                <span class="text-green-600 font-semibold">↑ {{ stats.growth_rate }}%</span>
-                {% else %}
-                <span class="text-red-600 font-semibold">↓ {{ stats.growth_rate }}%</span>
-                {% endif %}
-                <span class="text-gray-500 ml-1">vs last month</span>
-            </div>
         </div>
 
         <div class="glass-effect rounded-xl shadow-lg p-4 sm:p-6 hover-lift">
@@ -59,21 +51,24 @@ window.bloodTypeDistributionData = {{ blood_type_distribution | tojson }};
                     </svg>
                 </div>
             </div>
-            <p class="text-3xl font-bold text-gray-900">{{ stats.active_users }}</p>
-            <p class="text-sm text-gray-600 mt-1">Active Users (30 days)</p>
+            <p class="text-3xl font-bold text-gray-900">{{ stats.total_doctors }}</p>
+            <p class="text-sm text-gray-600 mt-1">Total Doctors</p>
         </div>
 
-        <div class="glass-effect rounded-xl shadow-lg p-4 sm:p-6 hover-lift">
+        <a href="/admin/messages" class="glass-effect rounded-xl shadow-lg p-4 sm:p-6 hover-lift transition-all duration-200 hover:shadow-2xl">
             <div class="flex items-center justify-between mb-4">
                 <div class="h-12 w-12 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
                     <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                     </svg>
                 </div>
+                {% if stats.unread_messages > 0 %}
+                <span class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">{{ stats.unread_messages }}</span>
+                {% endif %}
             </div>
-            <p class="text-3xl font-bold text-gray-900">{{ stats.avg_processing_time }}s</p>
-            <p class="text-sm text-gray-600 mt-1">Avg Processing Time</p>
-        </div>
+            <p class="text-3xl font-bold text-gray-900">{{ stats.total_messages }}</p>
+            <p class="text-sm text-gray-600 mt-1">Total Messages</p>
+        </a>
     </div>
 
     <!-- User Analytics Charts -->
@@ -156,35 +151,42 @@ window.bloodTypeDistributionData = {{ blood_type_distribution | tojson }};
         </div>
 
         <div class="glass-effect rounded-xl shadow-xl p-6">
-            <h2 class="text-lg font-bold text-gray-900 mb-4">System Health</h2>
-            <div class="space-y-4">
-                <div class="p-4 bg-green-50 rounded-lg">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-semibold text-gray-700">API Server</span>
-                        <span class="px-2 py-1 bg-green-200 text-green-800 text-xs font-semibold rounded">Online</span>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-gray-900">Recent Messages</h2>
+                <a href="/admin/messages" class="text-sm text-blue-600 hover:text-blue-700 font-semibold hover:underline">
+                    View All →
+                </a>
+            </div>
+            <div class="space-y-3">
+                {% if recent_messages %}
+                    {% for message in recent_messages %}
+                    <a href="/admin/messages/{{ message.id }}" class="block p-4 border border-gray-200 rounded-lg hover:shadow-md hover:border-blue-300 transition-all duration-200">
+                        <div class="flex items-start justify-between mb-2">
+                            <div class="flex items-center space-x-3 flex-1">
+                                <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                                    {{ message.name[0].upper() }}
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="font-semibold text-gray-900 truncate">{{ message.name }}</p>
+                                    <p class="text-sm text-gray-600 truncate">{{ message.subject }}</p>
+                                </div>
+                            </div>
+                            {% if message.is_read == 0 %}
+                            <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded-full flex-shrink-0 ml-2">Unread</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-xs text-gray-500 truncate">{{ message.message[:80] }}...</p>
+                        <p class="text-xs text-gray-400 mt-1">{{ message.created_at.strftime('%b %d, %Y at %I:%M %p') }}</p>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-8">
+                        <svg class="mx-auto h-12 w-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        <p class="text-sm text-gray-500">No messages yet</p>
                     </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-green-600 h-2 rounded-full" style="width: 98%"></div>
-                    </div>
-                </div>
-                <div class="p-4 bg-blue-50 rounded-lg">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-semibold text-gray-700">Database</span>
-                        <span class="px-2 py-1 bg-blue-200 text-blue-800 text-xs font-semibold rounded">Healthy</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-blue-600 h-2 rounded-full" style="width: 95%"></div>
-                    </div>
-                </div>
-                <div class="p-4 bg-purple-50 rounded-lg">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm font-semibold text-gray-700">AI Models</span>
-                        <span class="px-2 py-1 bg-purple-200 text-purple-800 text-xs font-semibold rounded">Running</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-purple-600 h-2 rounded-full" style="width: 99%"></div>
-                    </div>
-                </div>
+                {% endif %}
             </div>
         </div>
     </div>

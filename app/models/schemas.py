@@ -69,3 +69,24 @@ class CBCInput(BaseModel):
     TLC: float
     PLT: float
     RDW: Optional[float] = None
+
+
+# Message Schemas
+class MessageCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100)
+    email: EmailStr
+    subject: str = Field(..., min_length=1, max_length=200)
+    message: str = Field(..., min_length=1)
+
+
+class MessageResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    subject: str
+    message: str
+    is_read: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

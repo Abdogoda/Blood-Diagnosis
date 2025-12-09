@@ -35,28 +35,20 @@ def admin_dashboard(
 ):
     from sqlalchemy import func, extract
     from datetime import timedelta
-    from app.database import Test
+    from app.database import Test, Message
+    from app.services.message_service import get_unread_count
     
     total_users = db.query(User).count()
     total_doctors = db.query(User).filter(User.role == "doctor").count()
     total_patients = db.query(User).filter(User.role == "patient").count()
     total_admins = db.query(User).filter(User.role == "admin").count()
     total_tests = db.query(Test).count()
+    total_messages = db.query(Message).count()
+    unread_messages = get_unread_count(db)
     
     # Calculate active users (users created in the last 30 days)
     thirty_days_ago = datetime.utcnow() - timedelta(days=30)
     active_users = db.query(User).filter(User.created_at >= thirty_days_ago).count()
-    
-    # Calculate user growth (percentage increase from previous period)
-    sixty_days_ago = datetime.utcnow() - timedelta(days=60)
-    previous_period_users = db.query(User).filter(
-        User.created_at >= sixty_days_ago,
-        User.created_at < thirty_days_ago
-    ).count()
-    
-    growth_rate = 0
-    if previous_period_users > 0:
-        growth_rate = ((active_users - previous_period_users) / previous_period_users) * 100
     
     stats = {
         "total_users": total_users,
@@ -65,9 +57,8 @@ def admin_dashboard(
         "total_admins": total_admins,
         "total_tests": total_tests,
         "active_users": active_users,
-        "growth_rate": round(growth_rate, 1),
-        "model_accuracy": 99.5,
-        "avg_processing_time": 2.3
+        "total_messages": total_messages,
+        "unread_messages": unread_messages
     }
     
     # User Analytics - Registration trend for last 7 days
@@ -117,11 +108,17 @@ def admin_dashboard(
         for u in recent_users_query
     ]
     
+    # Get recent messages
+    from app.services.message_service import get_all_messages
+    all_messages = get_all_messages(db)
+    recent_messages = all_messages[:5] if all_messages else []
+    
     return templates.TemplateResponse("admin/dashboard.html", {
         "request": request,
         "current_user": current_user,
         "stats": stats,
         "recent_users": recent_users,
+        "recent_messages": recent_messages,
         "registration_trend": registration_trend,
         "role_distribution": role_distribution,
         "gender_distribution": gender_distribution,
@@ -595,4 +592,99 @@ async def upload_profile_image(
     
     response = RedirectResponse(url="/admin/account", status_code=303)
     set_flash_message(response, "success" if success else "error", message)
+    return response
+
+
+@router.get("/messages")
+def admin_messages(
+    request: Request,
+    current_user: User = Depends(require_role(["admin"])),
+    db: Session = Depends(get_db)
+):
+    from app.services.message_service import get_all_messages, get_unread_count
+    
+    messages = get_all_messages(db)
+    unread_count = get_unread_count(db)
+    
+    return templates.TemplateResponse("admin/messages.html", {
+        "request": request,
+        "current_user": current_user,
+        "messages": messages,
+        "unread_count": unread_count
+    })
+
+
+@router.get("/messages/{message_id}")
+def view_message(
+    request: Request,
+    message_id: int,
+    current_user: User = Depends(require_role(["admin"])),
+    db: Session = Depends(get_db)
+):
+    from app.services.message_service import get_message_by_id, mark_message_as_read
+    
+    message = get_message_by_id(message_id, db)
+    if not message:
+        response = RedirectResponse(url="/admin/messages", status_code=303)
+        set_flash_message(response, "error", "Message not found")
+        return response
+    
+    # Mark as read
+    mark_message_as_read(message_id, db)
+    
+    return templates.TemplateResponse("admin/message_detail.html", {
+        "request": request,
+        "current_user": current_user,
+        "message": message
+    })
+
+
+@router.post("/messages/{message_id}/delete")
+def delete_message(
+    request: Request,
+    message_id: int,
+    current_user: User = Depends(require_role(["admin"])),
+    db: Session = Depends(get_db)
+):
+    from app.services.message_service import delete_message
+    
+    if delete_message(message_id, db):
+        response = RedirectResponse(url="/admin/messages", status_code=303)
+        set_flash_message(response, "success", "Message deleted successfully")
+    else:
+        response = RedirectResponse(url="/admin/messages", status_code=303)
+        set_flash_message(response, "error", "Message not found")
+    
+    return response
+
+
+@router.post("/messages/{message_id}/mark-read")
+def mark_read(
+    request: Request,
+    message_id: int,
+    current_user: User = Depends(require_role(["admin"])),
+    db: Session = Depends(get_db)
+):
+    from app.services.message_service import mark_message_as_read
+    
+    mark_message_as_read(message_id, db)
+    response = RedirectResponse(url="/admin/messages", status_code=303)
+    set_flash_message(response, "success", "Message marked as read")
+    return response
+
+
+@router.post("/messages/mark-all-read")
+def mark_all_read(
+    request: Request,
+    current_user: User = Depends(require_role(["admin"])),
+    db: Session = Depends(get_db)
+):
+    from app.database import Message
+    
+    # Mark all unread messages as read
+    db.query(Message).filter(Message.is_read == 0).update({"is_read": 1})
+    db.commit()
+    
+    response = RedirectResponse(url="/admin/messages", status_code=303)
+    set_flash_message(response, "success", "All messages marked as read")
     return response

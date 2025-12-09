@@ -1,9 +1,12 @@
 # Public router for unauthenticated/public routes
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request, Depends, Form
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.services import get_current_user_optional
+from app.models.schemas import MessageCreate
+from app.services.message_service import create_message
 
 router = APIRouter(tags=["public"])
 templates = Jinja2Templates(directory="app/templates")
@@ -22,9 +25,41 @@ async def about(request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/contact")
-async def contact(request: Request, db: Session = Depends(get_db)):
+async def contact(request: Request, success: int = 0, error: int = 0, db: Session = Depends(get_db)):
     current_user = await get_current_user_optional(request, db)
-    return templates.TemplateResponse("public/contact.html", {"request": request, "current_user": current_user})
+    flash_message = None
+    if success:
+        flash_message = {"type": "success", "message": "Your message has been sent successfully! We'll get back to you soon."}
+    elif error:
+        flash_message = {"type": "error", "message": "Failed to send message. Please try again."}
+    
+    return templates.TemplateResponse("public/contact.html", {
+        "request": request, 
+        "current_user": current_user,
+        "flash": flash_message
+    })
+
+
+@router.post("/contact")
+async def contact_post(
+    request: Request,
+    name: str = Form(...),
+    email: str = Form(...),
+    subject: str = Form(...),
+    message: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    try:
+        message_data = MessageCreate(
+            name=name,
+            email=email,
+            subject=subject,
+            message=message
+        )
+        create_message(message_data, db)
+        return RedirectResponse(url="/contact?success=1", status_code=303)
+    except Exception as e:
+        return RedirectResponse(url="/contact?error=1", status_code=303)
 
 
 @router.get("/models")
