@@ -256,7 +256,129 @@ clean_reset() {
     echo "Run full setup (option 7) to start fresh"
 }
 
-# 9. Run Tests
+# 9. Setup ngrok
+setup_ngrok() {
+    print_header "Setup ngrok (Public URL Tunnel)"
+    
+    # Check if ngrok already exists
+    if [ -f "./ngrok.exe" ] || command -v ngrok &> /dev/null; then
+        print_success "ngrok is already installed"
+        
+        # Check if authtoken is configured
+        if [ -f "$HOME/.ngrok2/ngrok.yml" ] || [ -f "$USERPROFILE/.ngrok2/ngrok.yml" ]; then
+            print_success "ngrok authtoken is configured"
+            return 0
+        fi
+    else
+        print_info "Downloading ngrok for Windows..."
+        
+        # Download ngrok for Windows
+        curl -L "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-windows-amd64.zip" -o ngrok.zip
+        
+        if [ $? -eq 0 ]; then
+            print_info "Extracting ngrok..."
+            unzip -o ngrok.zip
+            rm ngrok.zip
+            print_success "ngrok downloaded successfully"
+        else
+            print_error "Failed to download ngrok"
+            echo "Please download manually from: https://ngrok.com/download"
+            return 1
+        fi
+    fi
+    
+    # Configure authtoken
+    echo ""
+    print_info "To use ngrok, you need a free authtoken from ngrok.com"
+    echo ""
+    echo "Steps:"
+    echo "  1. Go to https://dashboard.ngrok.com/signup (free account)"
+    echo "  2. After login, go to: https://dashboard.ngrok.com/get-started/your-authtoken"
+    echo "  3. Copy your authtoken"
+    echo ""
+    read -p "Do you have an ngrok authtoken? [Y/n]: " -r
+    echo
+    
+    if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+        read -p "Enter your ngrok authtoken: " authtoken
+        
+        if [ ! -z "$authtoken" ]; then
+            if [ -f "./ngrok.exe" ]; then
+                ./ngrok.exe config add-authtoken "$authtoken"
+            else
+                ngrok config add-authtoken "$authtoken"
+            fi
+            
+            if [ $? -eq 0 ]; then
+                print_success "ngrok authtoken configured successfully!"
+            else
+                print_error "Failed to configure authtoken"
+                return 1
+            fi
+        fi
+    else
+        print_warning "You can configure the authtoken later with:"
+        echo "  ./ngrok.exe config add-authtoken YOUR_TOKEN"
+    fi
+}
+
+# 10. Run with ngrok
+run_with_ngrok() {
+    print_header "Running Application with ngrok Tunnel"
+    
+    # Check if ngrok exists
+    if [ ! -f "./ngrok.exe" ] && ! command -v ngrok &> /dev/null; then
+        print_error "ngrok is not installed!"
+        echo ""
+        read -p "Do you want to setup ngrok now? [Y/n]: " -r
+        echo
+        if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+            setup_ngrok
+            if [ $? -ne 0 ]; then
+                return 1
+            fi
+        else
+            return 1
+        fi
+    fi
+    
+    if [ ! -f ".env" ]; then
+        print_error ".env file not found!"
+        echo "Please setup environment variables first (Option 2)"
+        return 1
+    fi
+    
+    # Check if uvicorn is installed
+    if ! $PYTHON_CMD -c "import uvicorn" 2>/dev/null; then
+        print_error "uvicorn not installed!"
+        echo "Please install dependencies first (Option 1)"
+        return 1
+    fi
+    
+    print_info "Starting application on port 8000..."
+    print_info "Starting ngrok tunnel..."
+    echo ""
+    
+    # Start uvicorn in background
+    $PYTHON_CMD -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 &
+    UVICORN_PID=$!
+    
+    # Wait a bit for server to start
+    sleep 3
+    
+    # Start ngrok
+    if [ -f "./ngrok.exe" ]; then
+        ./ngrok.exe http 8000
+    else
+        ngrok http 8000
+    fi
+    
+    # When ngrok is closed, kill uvicorn
+    print_info "Stopping application..."
+    kill $UVICORN_PID 2>/dev/null
+}
+
+# 11. Run Tests
 run_tests() {
     print_header "Running Test Suite"
     
@@ -338,23 +460,27 @@ run_tests() {
 show_menu() {
     clear
     echo -e "${CYAN}================================================================${NC}"
-    echo -e "${CYAN}     BLOOD DIAGNOSIS SYSTEM - BUILD SCRIPT${NC}"
+    echo -e "${CYAN}       BLOOD DIAGNOSIS SYSTEM - BUILD & DEPLOY TOOL${NC}"
     echo -e "${CYAN}================================================================${NC}"
     echo ""
-    echo "Select an option:"
+    echo -e "${YELLOW}QUICK START:${NC}"
+    echo "   1) Full Setup (First Time Installation)"
+    echo "   2) Run Application (Local Network)"
+    echo "   3) Run Application (Public Internet via ngrok)"
     echo ""
-    echo "  1) Install Dependencies"
-    echo "  2) Setup Environment Variables"
-    echo "  3) Create Required Directories"
-    echo "  4) Initialize Database (Drop & Recreate)"
-    echo "  5) Create Admin User"
-    echo "  6) Run Application"
+    echo -e "${YELLOW}SETUP & CONFIGURATION:${NC}"
+    echo "   4) Install Dependencies"
+    echo "   5) Setup Environment Variables"
+    echo "   6) Create Required Directories"
+    echo "   7) Initialize Database (Drop & Recreate)"
+    echo "   8) Create Admin User"
+    echo "   9) Setup ngrok (For Public Access)"
     echo ""
-    echo "  7) Full Setup (All Steps 1-5)"
-    echo "  8) Clean/Reset Everything"
-    echo "  9) Run Tests"
+    echo -e "${YELLOW}MAINTENANCE & TESTING:${NC}"
+    echo "  10) Run Tests"
+    echo "  11) Clean/Reset Everything"
     echo ""
-    echo "  0) Exit"
+    echo "   0) Exit"
     echo ""
     echo -e "${CYAN}================================================================${NC}"
 }
@@ -365,18 +491,20 @@ main() {
     
     while true; do
         show_menu
-        read -p "Enter your choice [0-9]: " choice
+        read -p "Enter your choice [0-11]: " choice
         
         case $choice in
-            1) install_dependencies ;;
-            2) setup_env ;;
-            3) create_directories ;;
-            4) init_database ;;
-            5) create_admin ;;
-            6) run_app ;;
-            7) full_setup ;;
-            8) clean_reset ;;
-            9) run_tests ;;
+            1) full_setup ;;
+            2) run_app ;;
+            3) run_with_ngrok ;;
+            4) install_dependencies ;;
+            5) setup_env ;;
+            6) create_directories ;;
+            7) init_database ;;
+            8) create_admin ;;
+            9) setup_ngrok ;;
+            10) run_tests ;;
+            11) clean_reset ;;
             0) 
                 echo ""
                 print_success "Goodbye!"
@@ -384,7 +512,7 @@ main() {
                 exit 0
                 ;;
             *)
-                print_error "Invalid option. Please select 0-9"
+                print_error "Invalid option. Please select 0-11"
                 ;;
         esac
         
