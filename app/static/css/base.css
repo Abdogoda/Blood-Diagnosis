@@ -14,6 +14,10 @@
     background: linear-gradient(135deg, #667eea 0%, #3b82f6 100%);
 }
 
+.gradient-purple {
+    background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+}
+
 .hover-lift {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }

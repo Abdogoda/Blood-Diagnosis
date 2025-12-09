@@ -18,6 +18,7 @@ from app.services.profile_service import (
     change_user_password,
     upload_user_profile_image
 )
+from app.services.medical_history_service import get_patient_medical_history
 import os
 import uuid
 from pathlib import Path
@@ -31,10 +32,15 @@ async def patient_dashboard(
     current_user: User = Depends(require_role(["patient", "admin"])),
     db: Session = Depends(get_db)
 ):
+    # Get all medical history and limit to 3 most recent for dashboard
+    all_medical_history = get_patient_medical_history(current_user.id, db)
+    recent_medical_history = all_medical_history[:3] if all_medical_history else []
+    
     stats = {
         "total_tests": 12,
         "pending_results": 2,
-        "last_test_date": "2025-12-01"
+        "last_test_date": "2025-12-01",
+        "medical_records": len(all_medical_history)
     }
     recent_tests = [
         {"date": "2025-12-01", "test_type": "CBC Analysis", "status": "Completed", "result": "Normal"},
@@ -44,7 +50,60 @@ async def patient_dashboard(
         "request": request,
         "current_user": current_user,
         "stats": stats,
-        "recent_tests": recent_tests
+        "recent_tests": recent_tests,
+        "medical_history": recent_medical_history,
+        "total_records": len(all_medical_history)
+    })
+
+@router.get("/medical-history")
+async def patient_medical_history(
+    request: Request,
+    current_user: User = Depends(require_role(["patient", "admin"])),
+    db: Session = Depends(get_db)
+):
+    """Patient's medical history page"""
+    medical_history = get_patient_medical_history(current_user.id, db)
+    
+    return templates.TemplateResponse("patient/medical_history.html", {
+        "request": request,
+        "current_user": current_user,
+        "medical_history": medical_history
+    })
+
+@router.get("/reports")
+async def patient_reports(
+    request: Request,
+    current_user: User = Depends(require_role(["patient", "admin"])),
+    db: Session = Depends(get_db)
+):
+    """Patient's test reports page"""
+    from app.database import Test
+    
+    # Get all tests for the patient
+    tests = db.query(Test).filter(
+        Test.patient_id == current_user.id
+    ).order_by(Test.created_at.desc()).all()
+    
+    test_reports = []
+    for test in tests:
+        reviewer = db.query(User).filter(User.id == test.reviewed_by).first() if test.reviewed_by else None
+        test_reports.append({
+            "id": test.id,
+            "result": test.result or "Pending",
+            "date": test.created_at.strftime("%b %d, %Y"),
+            "time": test.created_at.strftime("%I:%M %p"),
+            "review_status": test.review_status,
+            "confidence": float(test.confidence) if test.confidence else None,
+            "comment": test.comment,
+            "notes": test.notes,
+            "reviewed_by": f"Dr. {reviewer.fname} {reviewer.lname}" if reviewer else None,
+            "reviewed_at": test.reviewed_at.strftime("%b %d, %Y") if test.reviewed_at else None
+        })
+    
+    return templates.TemplateResponse("patient/reports.html", {
+        "request": request,
+        "current_user": current_user,
+        "reports": test_reports
     })
 
 @router.get("/upload-test")

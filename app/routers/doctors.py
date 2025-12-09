@@ -9,22 +9,20 @@ from app.services import (
     set_flash_message,
     create_patient,
     get_patient_doctors,
-    get_doctor_patients,
-    link_patient_to_doctor,
-    unlink_patient_from_doctor,
     cbc_prediction_service,
     blood_image_service,
-    verify_password,
-    hash_password
 )
 from app.services.profile_service import (
     update_doctor_profile,
     change_user_password,
     upload_user_profile_image
 )
-import os
-import uuid
-from pathlib import Path
+from app.services.medical_history_service import (
+    create_diagnosis,
+    get_patient_medical_history,
+    update_diagnosis,
+    delete_diagnosis
+)
 
 router = APIRouter(prefix="/doctor", tags=["doctors"])
 templates = Jinja2Templates(directory="app/templates")
@@ -209,7 +207,7 @@ async def patient_profile(
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
-    from app.database import MedicalHistory, Test
+    from app.database import Test
     
     # Get patient user
     patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
@@ -220,28 +218,21 @@ async def patient_profile(
             "error": "Patient not found"
         }, status_code=404)
     
+    # Check if patient is linked to this doctor
+    is_linked = False
+    if current_user.role == "admin":
+        is_linked = True
+    else:
+        is_linked = patient in current_user.patients
+    
     # Get patient phone
     phone = patient.phone
     
     # Get connected doctors for this patient
     connected_doctors = get_patient_doctors(patient_id, db)
     
-    # Get medical history ordered from oldest to latest
-    medical_history_query = db.query(MedicalHistory).filter(
-        MedicalHistory.patient_id == patient_id
-    ).order_by(MedicalHistory.diagnosis_date.asc()).all()
-    
-    medical_history = []
-    for record in medical_history_query:
-        doctor = db.query(User).filter(User.id == record.doctor_id).first() if record.doctor_id else None
-        medical_history.append({
-            "id": record.id,
-            "condition": record.medical_condition,
-            "date": record.diagnosis_date.strftime("%b %d, %Y"),
-            "treatment": record.treatment,
-            "notes": record.notes,
-            "doctor_name": f"Dr. {doctor.fname} {doctor.lname}" if doctor else "Unknown"
-        })
+    # Get medical history using service
+    medical_history = get_patient_medical_history(patient_id, db)
     
     # Get recent tests
     recent_tests_query = db.query(Test).filter(
@@ -265,7 +256,8 @@ async def patient_profile(
         "phone": phone,
         "connected_doctors": connected_doctors,
         "medical_history": medical_history,
-        "recent_tests": recent_tests
+        "recent_tests": recent_tests,
+        "is_linked": is_linked
     })
 
 @router.post("/patient/{patient_id}/link")
@@ -366,12 +358,21 @@ async def upload_test_page(
     current_user: User = Depends(require_role(["doctor", "admin"])),
     db: Session = Depends(get_db)
 ):
+    
     # Get patient
     patient = db.query(User).filter(User.id == patient_id, User.role == "patient").first()
     if not patient:
         response = RedirectResponse(url="/doctor/patients", status_code=303)
         set_flash_message(response, "error", "Patient not found")
         return response
+    
+    # Check if doctor has access to this patient (only for doctors, not admin)
+    if current_user.role == "doctor" and patient not in current_user.patients:
+        return templates.TemplateResponse("errors/403.html", {
+            "request": request,
+            "current_user": current_user,
+            "message": "You don't have access to this patient"
+        }, status_code=403)
     
     return templates.TemplateResponse("shared/upload_test.html", {
         "request": request,
@@ -396,6 +397,14 @@ async def upload_cbc_page(
         response = RedirectResponse(url="/doctor/patients", status_code=303)
         set_flash_message(response, "error", "Patient not found")
         return response
+    
+    # Check if doctor has access to this patient (only for doctors, not admin)
+    if current_user.role == "doctor" and patient not in current_user.patients:
+        return templates.TemplateResponse("errors/403.html", {
+            "request": request,
+            "current_user": current_user,
+            "message": "You don't have access to this patient"
+        }, status_code=403)
     
     return templates.TemplateResponse("shared/upload_cbc.html", {
         "request": request,
@@ -422,6 +431,14 @@ async def upload_cbc_csv(
         response = RedirectResponse(url="/doctor/patients", status_code=303)
         set_flash_message(response, "error", "Patient not found")
         return response
+    
+    # Check if doctor has access to this patient (only for doctors, not admin)
+    if current_user.role == "doctor" and patient not in current_user.patients:
+        return templates.TemplateResponse("errors/403.html", {
+            "request": request,
+            "current_user": current_user,
+            "message": "You don't have access to this patient"
+        }, status_code=403)
     
     result = cbc_prediction_service.process_csv_upload(
         file=file,
@@ -470,6 +487,14 @@ async def upload_cbc_manual(
         set_flash_message(response, "error", "Patient not found")
         return response
     
+    # Check if doctor has access to this patient (only for doctors, not admin)
+    if current_user.role == "doctor" and patient not in current_user.patients:
+        return templates.TemplateResponse("errors/403.html", {
+            "request": request,
+            "current_user": current_user,
+            "message": "You don't have access to this patient"
+        }, status_code=403)
+    
     result = cbc_prediction_service.process_manual_input(
         rbc=rbc, hgb=hgb, pcv=pcv, mcv=mcv, mch=mch, mchc=mchc, tlc=tlc, plt=plt,
         patient_id=patient_id,
@@ -508,6 +533,15 @@ async def upload_image_page(
         set_flash_message(response, "error", "Patient not found")
         return response
     
+    # Check if doctor has access to this patient (only for doctors, not admin)
+    if current_user.role == "doctor" and patient not in current_user.patients:
+        return templates.TemplateResponse("errors/403.html", {
+            "request": request,
+            "current_user": current_user,
+            "message": "You don't have access to this patient"
+        }, status_code=403)
+    
+
     return templates.TemplateResponse("shared/upload_image.html", {
         "request": request,
         "current_user": current_user,
@@ -640,5 +674,92 @@ async def upload_profile_image(
     )
     
     response = RedirectResponse(url="/doctor/account", status_code=303)
+    set_flash_message(response, "success" if success else "error", message)
+    return response
+
+
+@router.post("/patient/{patient_id}/diagnose")
+async def add_diagnosis(
+    request: Request,
+    patient_id: int,
+    medical_condition: str = Form(...),
+    treatment: str = Form(None),
+    notes: str = Form(None),
+    current_user: User = Depends(require_role(["doctor", "admin"])),
+    db: Session = Depends(get_db)
+):
+    """Add a new diagnosis/medical history record for a patient"""
+    success, message, record = create_diagnosis(
+        patient_id=patient_id,
+        doctor_id=current_user.id,
+        medical_condition=medical_condition,
+        treatment=treatment,
+        notes=notes,
+        db=db
+    )
+    
+    response = RedirectResponse(url=f"/doctor/patient/{patient_id}", status_code=303)
+    set_flash_message(response, "success" if success else "error", message)
+    return response
+
+
+@router.post("/diagnosis/{record_id}/update")
+async def update_diagnosis_record(
+    request: Request,
+    record_id: int,
+    medical_condition: str = Form(...),
+    treatment: str = Form(None),
+    notes: str = Form(None),
+    current_user: User = Depends(require_role(["doctor", "admin"])),
+    db: Session = Depends(get_db)
+):
+    """Update an existing diagnosis/medical history record"""
+    success, message = update_diagnosis(
+        record_id=record_id,
+        doctor_id=current_user.id,
+        medical_condition=medical_condition,
+        treatment=treatment,
+        notes=notes,
+        db=db
+    )
+    
+    # Get patient_id from the record to redirect back
+    from app.database import MedicalHistory
+    record = db.query(MedicalHistory).filter(MedicalHistory.id == record_id).first()
+    patient_id = record.patient_id if record else None
+    
+    if patient_id:
+        response = RedirectResponse(url=f"/doctor/patient/{patient_id}", status_code=303)
+    else:
+        response = RedirectResponse(url="/doctor/patients", status_code=303)
+    
+    set_flash_message(response, "success" if success else "error", message)
+    return response
+
+
+@router.post("/diagnosis/{record_id}/delete")
+async def delete_diagnosis_record(
+    request: Request,
+    record_id: int,
+    current_user: User = Depends(require_role(["doctor", "admin"])),
+    db: Session = Depends(get_db)
+):
+    """Delete a diagnosis/medical history record"""
+    # Get patient_id before deleting
+    from app.database import MedicalHistory
+    record = db.query(MedicalHistory).filter(MedicalHistory.id == record_id).first()
+    patient_id = record.patient_id if record else None
+    
+    success, message = delete_diagnosis(
+        record_id=record_id,
+        doctor_id=current_user.id,
+        db=db
+    )
+    
+    if patient_id:
+        response = RedirectResponse(url=f"/doctor/patient/{patient_id}", status_code=303)
+    else:
+        response = RedirectResponse(url="/doctor/patients", status_code=303)
+    
     set_flash_message(response, "success" if success else "error", message)
     return response

@@ -43,23 +43,38 @@
                         </div>
                     </div>
 
-                    <div class="mt-6 pt-6 border-t border-gray-200">
+                    <div class="mt-6 pt-6 border-t border-gray-200 space-y-3">
+                        {% if is_linked %}
+                        <button type="button" onclick="openDiagnosisModal()" class="w-full inline-flex items-center justify-center px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Add Diagnosis
+                        </button>
                         <a href="/doctor/upload-test/{{ patient.id }}" class="w-full inline-flex items-center justify-center px-4 py-3 gradient-blue text-white rounded-lg hover:shadow-lg transition-all duration-200">
                             <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                             </svg>
                             Upload Test
                         </a>
+                        {% else %}
+                        <form action="/doctor/patient/{{ patient.id }}/link" method="POST" class="w-full">
+                            <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                                <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                                Link Patient
+                            </button>
+                        </form>
+                        <p class="text-xs text-center text-gray-500 mt-2">Link this patient to access diagnosis and upload features</p>
+                        {% endif %}
                     </div>
                 </div>
-            </div>
 
-            <!-- Medical Records -->
-            <div class="lg:col-span-2 space-y-6">
                 <!-- Medical Information -->
-                <div class="glass-effect rounded-2xl shadow-xl p-8">
-                    <h3 class="text-2xl font-bold text-gray-900 mb-6">Medical Information</h3>
-                    <div class="grid grid-cols-2 gap-4">
+                <div class="glass-effect rounded-2xl shadow-xl p-6 mt-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Medical Information</h3>
+                    <div class="grid grid-cols-1 gap-3">
                         <div class="p-4 bg-blue-50 rounded-lg">
                             <p class="text-sm text-gray-600 mb-1">Blood Type</p>
                             <p class="text-lg font-bold text-blue-600">{{ patient.blood_type or 'N/A' }}</p>
@@ -70,7 +85,17 @@
                         </div>
                     </div>
                 </div>
+                
+                <div class="mt-6">
+                    <!-- Connected Doctors -->
+                    {% with grid_class="grid-cols-1" %}
+                        {% include "shared/connected_doctors.html" %}
+                    {% endwith %}
+                </div>
+            </div>
 
+            <!-- Medical Records -->
+            <div class="lg:col-span-2 space-y-6">
                 <!-- Medical History Timeline -->
                 <div class="glass-effect rounded-2xl shadow-xl p-8">
                     <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
@@ -98,10 +123,10 @@
                                 
                                 <!-- Timeline content -->
                                 <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 p-5 shadow-md hover:shadow-xl transition-all duration-200 group-hover:border-purple-300">
-                                    <div class="flex items-start justify-between mb-3">
+                                    <div class="flex items-start justify-between flex-wrap mb-3">
                                         <div class="flex-1">
                                             <h4 class="text-lg font-bold text-gray-900 mb-1">{{ record.condition }}</h4>
-                                            <div class="flex items-center text-sm text-gray-500 space-x-4">
+                                            <div class="flex flex-wrap items-center text-sm text-gray-500 space-x-4">
                                                 <span class="flex items-center">
                                                     <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
@@ -116,6 +141,22 @@
                                                 </span>
                                             </div>
                                         </div>
+                                        {% if is_linked and record.doctor_id == current_user.id %}
+                                        <div class="flex items-center gap-2 ml-4">
+                                            <button onclick="openEditModal({{ record.id }}, '{{ record.condition }}', '{{ record.treatment or '' }}', '{{ record.notes or '' }}')" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200" title="Edit">
+                                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                            </button>
+                                            <form action="/doctor/diagnosis/{{ record.id }}/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this diagnosis record?');" class="inline">
+                                                <button type="submit" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200" title="Delete">
+                                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                        {% endif %}
                                     </div>
                                     
                                     {% if record.treatment %}
@@ -146,9 +187,6 @@
                     </div>
                     {% endif %}
                 </div>
-
-                <!-- Connected Doctors -->
-                {% include "shared/connected_doctors.html" %}
 
                 <!-- Recent Tests -->
                 <div class="glass-effect rounded-2xl shadow-xl p-8">
@@ -188,4 +226,214 @@
         </div>
     </div>
 </div>
+
+<!-- Diagnosis Modal -->
+<div id="diagnosisModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="sticky top-0 bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+            <h3 class="text-xl font-bold text-white flex items-center">
+                <svg class="h-6 w-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                New Diagnosis Record
+            </h3>
+            <button type="button" onclick="closeDiagnosisModal()" class="text-white hover:text-gray-200 transition-colors">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <form action="/doctor/patient/{{ patient.id }}/diagnose" method="POST" class="p-6 space-y-6">
+            <div>
+                <label for="modal_medical_condition" class="block text-sm font-medium text-gray-700 mb-2">
+                    Medical Condition / Diagnosis <span class="text-red-500">*</span>
+                </label>
+                <input 
+                    type="text" 
+                    id="modal_medical_condition" 
+                    name="medical_condition" 
+                    required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    placeholder="e.g., Hypertension, Type 2 Diabetes, etc."
+                />
+            </div>
+
+            <div>
+                <label for="modal_treatment" class="block text-sm font-medium text-gray-700 mb-2">
+                    Treatment / Prescription
+                </label>
+                <textarea 
+                    id="modal_treatment" 
+                    name="treatment" 
+                    rows="4"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Describe the prescribed treatment or medication..."
+                ></textarea>
+            </div>
+
+            <div>
+                <label for="modal_notes" class="block text-sm font-medium text-gray-700 mb-2">
+                    Additional Notes
+                </label>
+                <textarea 
+                    id="modal_notes" 
+                    name="notes" 
+                    rows="4"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Any additional observations or instructions..."
+                ></textarea>
+            </div>
+
+            <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+                <button 
+                    type="button" 
+                    onclick="closeDiagnosisModal()"
+                    class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium"
+                >
+                    Cancel
+                </button>
+                <button 
+                    type="submit"
+                    class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                >
+                    Save Diagnosis
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Diagnosis Modal -->
+<div id="editDiagnosisModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+            <h3 class="text-xl font-bold text-white flex items-center">
+                <svg class="h-6 w-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                Edit Diagnosis Record
+            </h3>
+            <button type="button" onclick="closeEditModal()" class="text-white hover:text-gray-200 transition-colors">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <form id="editDiagnosisForm" method="POST" class="p-6 space-y-6">
+            <input type="hidden" id="edit_record_id" name="record_id">
+            
+            <div>
+                <label for="edit_medical_condition" class="block text-sm font-medium text-gray-700 mb-2">
+                    Medical Condition / Diagnosis <span class="text-red-500">*</span>
+                </label>
+                <input 
+                    type="text" 
+                    id="edit_medical_condition" 
+                    name="medical_condition" 
+                    required
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    placeholder="e.g., Hypertension, Type 2 Diabetes, etc."
+                />
+            </div>
+
+            <div>
+                <label for="edit_treatment" class="block text-sm font-medium text-gray-700 mb-2">
+                    Treatment / Prescription
+                </label>
+                <textarea 
+                    id="edit_treatment" 
+                    name="treatment" 
+                    rows="4"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Describe the prescribed treatment or medication..."
+                ></textarea>
+            </div>
+
+            <div>
+                <label for="edit_notes" class="block text-sm font-medium text-gray-700 mb-2">
+                    Additional Notes
+                </label>
+                <textarea 
+                    id="edit_notes" 
+                    name="notes" 
+                    rows="4"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    placeholder="Any additional observations or instructions..."
+                ></textarea>
+            </div>
+
+            <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+                <button 
+                    type="button" 
+                    onclick="closeEditModal()"
+                    class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium"
+                >
+                    Cancel
+                </button>
+                <button 
+                    type="submit"
+                    class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                >
+                    Update Diagnosis
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openDiagnosisModal() {
+    const modal = document.getElementById('diagnosisModal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDiagnosisModal() {
+    const modal = document.getElementById('diagnosisModal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+    // Clear form fields
+    document.getElementById('modal_medical_condition').value = '';
+    document.getElementById('modal_treatment').value = '';
+    document.getElementById('modal_notes').value = '';
+}
+
+function openEditModal(recordId, condition, treatment, notes) {
+    const modal = document.getElementById('editDiagnosisModal');
+    const form = document.getElementById('editDiagnosisForm');
+    
+    // Set form action
+    form.action = `/doctor/diagnosis/${recordId}/update`;
+    
+    // Populate fields
+    document.getElementById('edit_record_id').value = recordId;
+    document.getElementById('edit_medical_condition').value = condition;
+    document.getElementById('edit_treatment').value = treatment;
+    document.getElementById('edit_notes').value = notes;
+    
+    // Show modal
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeEditModal() {
+    const modal = document.getElementById('editDiagnosisModal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+// Close modal when clicking outside
+document.getElementById('diagnosisModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDiagnosisModal();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeDiagnosisModal();
+    }
+});
+</script>
 {% endblock %}

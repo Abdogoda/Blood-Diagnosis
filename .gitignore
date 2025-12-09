@@ -71,7 +71,3 @@ htmlcov/
 # Temporary files
 *.tmp
 *.bak
-
-# Logging Files
-*.log
-logs/
