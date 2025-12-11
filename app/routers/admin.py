@@ -164,7 +164,7 @@ def admin_doctors(
             "email": d.email,
             "specialization": d.doctor_info.specialization if d.doctor_info else "N/A",
             "license": d.doctor_info.license_number if d.doctor_info else "N/A",
-            "patient_count": 0,  # Will be implemented when patient assignments are added
+            "patient_count": len(d.patients),
             "is_active": d.is_active
         }
         for d in doctors_query
@@ -301,7 +301,6 @@ async def toggle_doctor_status(
 def admin_patients(
     request: Request,
     search: str = "",
-    blood_type: str = "all",
     status: str = "all",
     current_user: User = Depends(require_role(["admin"])),
     db: Session = Depends(get_db)
@@ -320,10 +319,6 @@ def admin_patients(
             (User.email.ilike(search_filter))
         )
     
-    # Blood type filter
-    if blood_type and blood_type != "all":
-        query = query.filter(User.blood_type == blood_type)
-    
     # Status filter
     if status == "active":
         query = query.filter(User.is_active == 1)
@@ -332,16 +327,13 @@ def admin_patients(
     
     patients_query = query.order_by(User.created_at.desc()).all()
     
-    # Get available blood types
-    blood_types = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
-    
     patients = [
         {
             "id": p.id,
             "initials": f"{p.fname[0]}{p.lname[0]}",
             "name": f"{p.fname} {p.lname}",
             "email": p.email,
-            "blood_type": p.blood_type or "N/A",
+            "doctor_count": len(p.doctors),
             "test_count": db.query(Test).filter(Test.patient_id == p.id).count(),
             "joined": p.created_at.strftime("%b %d, %Y"),
             "is_active": p.is_active == 1
@@ -354,8 +346,6 @@ def admin_patients(
         "current_user": current_user,
         "patients": patients,
         "search": search,
-        "blood_types": blood_types,
-        "selected_blood_type": blood_type,
         "selected_status": status
     })
 

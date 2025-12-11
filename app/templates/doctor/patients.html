@@ -114,6 +114,14 @@
                                     <div class="ml-4">
                                         <div class="flex items-center gap-2">
                                             <div class="text-sm font-medium text-gray-900">{{ patient.fname }} {{ patient.lname }}</div>
+                                            {% if patient.id in doctor_patient_ids %}
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800" title="Linked to Your Account">
+                                                <svg class="inline-block h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                                My Patient
+                                            </span>
+                                            {% endif %}
                                             {% if patient.is_active != 1 %}
                                             <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800" title="Account Deactivated">
                                                 <svg class="inline-block h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -155,20 +163,22 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                         </svg>
                                     </a>
-                                    {% if current_user.is_active == 1 and patient.is_active == 1 %}
-                                    <a href="/doctor/upload-test/{{ patient.id }}" 
-                                       class="text-green-600 hover:text-green-900 transition-colors hover:scale-110 transform" 
-                                       title="Upload Test">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                                        </svg>
-                                    </a>
-                                    {% else %}
-                                    <span class="text-gray-400 cursor-not-allowed" title="{% if current_user.is_active != 1 %}Your account is deactivated{% else %}Patient account is deactivated{% endif %}">
-                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-                                        </svg>
-                                    </span>
+                                    {% if patient.id in doctor_patient_ids %}
+                                        {% if current_user.is_active == 1 and patient.is_active == 1 %}
+                                        <a href="/doctor/upload-test/{{ patient.id }}" 
+                                           class="text-green-600 hover:text-green-900 transition-colors hover:scale-110 transform" 
+                                           title="Upload Test">
+                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                            </svg>
+                                        </a>
+                                        {% else %}
+                                        <span class="text-gray-400 cursor-not-allowed" title="{% if current_user.is_active != 1 %}Your account is deactivated{% else %}Patient account is deactivated{% endif %}">
+                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                                            </svg>
+                                        </span>
+                                        {% endif %}
                                     {% endif %}
                                     {% if current_user.role == 'doctor' %}
                                         {% if patient.id in doctor_patient_ids %}
