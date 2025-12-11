@@ -10,6 +10,7 @@ A comprehensive web-based medical platform for blood test analysis with AI-power
 
 ## 📋 Table of Contents
 
+- [Build Script Guide](#-build-script-guide)
 - [Features](#-features)
 - [Technology Stack](#-technology-stack)
 - [System Architecture](#-system-architecture)
@@ -27,6 +28,188 @@ A comprehensive web-based medical platform for blood test analysis with AI-power
 - [Contributing](#-contributing)
 - [Troubleshooting](#-troubleshooting)
 - [License](#-license)
+
+---
+
+## 🛠 Build Script Guide
+
+### Overview
+
+The **Blood Diagnosis System** uses a powerful interactive build script (`build.sh`) that eliminates the need for manual command-line operations. Everything you need to install, configure, run, test, and deploy the application is accessible through an intuitive menu system.
+
+### Why Use the Build Script?
+
+✨ **No Commands to Remember** - All operations through a simple menu  
+🔒 **Error Prevention** - Automatic validation and safety checks  
+📊 **Visual Feedback** - Colored output showing success, warnings, and errors  
+🔄 **Automated Workflows** - Complex operations done with one selection  
+💾 **Safe Operations** - Automatic backups before destructive actions  
+🌐 **ngrok Integration** - One-click public URL setup  
+
+### Build Script Menu Structure
+
+When you run `./build.sh`, you'll see three categories of options:
+
+#### 🚀 QUICK START (Options 1-3)
+
+Perfect for getting started quickly:
+
+| Option | Name | Description | When to Use |
+|--------|------|-------------|-------------|
+| **1** | **Full Setup** | Complete first-time installation | First time setting up the project |
+| **2** | **Run Application (Local)** | Start on local network with auto-reload | Development and local testing |
+| **3** | **Run Application (ngrok)** | Start with public HTTPS URL | Sharing with remote users, demos |
+
+#### ⚙️ SETUP & CONFIGURATION (Options 4-9)
+
+Individual setup tasks:
+
+| Option | Name | Description | When to Use |
+|--------|------|-------------|-------------|
+| **4** | **Install Dependencies** | Install Python packages from requirements.txt | After updating requirements, fixing package issues |
+| **5** | **Setup Environment** | Create/update .env configuration file | Changing database settings, updating secrets |
+| **6** | **Create Directories** | Create upload folders structure | After cleanup, fixing file upload issues |
+| **7** | **Initialize Database** | Drop and recreate database tables | Fresh database, schema changes, fixing corruption |
+| **8** | **Create Admin User** | Add new admin account | Creating first admin, adding more admins |
+| **9** | **Setup ngrok** | Configure public URL tunneling | Before using Option 3, changing ngrok account |
+
+#### 🔧 MAINTENANCE & TESTING (Options 10-12)
+
+System maintenance and verification:
+
+| Option | Name | Description | When to Use |
+|--------|------|-------------|-------------|
+| **10** | **Health Check** | Diagnose system status | Troubleshooting, verifying installation |
+| **11** | **Run Tests** | Execute test suite with multiple options | Before deployment, after changes, CI/CD |
+| **12** | **Clean/Reset** | Remove config and cache files | Fresh start, cleaning up after errors |
+
+### Common Workflows
+
+#### First Time Setup
+```
+1. Run ./build.sh
+2. Select Option 1: Full Setup
+3. Wait for installation to complete
+4. Create admin account when prompted
+5. Select Option 2: Run Application
+6. Access http://localhost:8000
+```
+
+#### Daily Development
+```
+1. Run ./build.sh
+2. Select Option 2: Run Application (Local)
+3. Code and test (auto-reload active)
+4. Press Ctrl+C to stop
+```
+
+#### Sharing Your Work
+```
+1. Run ./build.sh
+2. Select Option 3: Run Application (ngrok)
+3. Share the https://xxx.ngrok.io URL
+4. Others can access your local app
+```
+
+#### Troubleshooting Issues
+```
+1. Run ./build.sh
+2. Select Option 10: Health Check
+3. Review what's wrong
+4. Use suggested options to fix
+```
+
+#### Running Tests
+```
+1. Run ./build.sh
+2. Select Option 11: Run Tests
+3. Choose from 7 test options
+4. View results and coverage
+```
+
+#### Complete Reset
+```
+1. Run ./build.sh
+2. Select Option 12: Clean/Reset
+3. Select Option 1: Full Setup
+4. Fresh installation complete
+```
+
+### Build Script Features
+
+#### 🎨 Colored Output
+- 🟢 **Green** = Success messages
+- 🔵 **Blue** = Informational messages
+- 🟡 **Yellow** = Warnings
+- 🔴 **Red** = Errors
+- 🔵 **Cyan** = Headers and sections
+
+#### 🛡️ Safety Features
+- **Backup prompts** before database operations
+- **Confirmation dialogs** for destructive actions
+- **Port conflict detection** before starting server
+- **Dependency verification** before running
+- **PostgreSQL connection testing** before database ops
+
+#### 📝 Detailed Logging
+- Shows Python version in use
+- Displays package installation progress
+- Reports database operation status
+- Indicates ngrok tunnel status
+- Provides public URLs when available
+
+### How to Run the Build Script
+
+**On Linux/Mac:**
+```bash
+cd /path/to/blood-diagnosis
+./build.sh
+```
+
+**On Windows (Git Bash):**
+```bash
+cd /path/to/blood-diagnosis
+bash build.sh
+```
+
+**On Windows (WSL):**
+```bash
+cd /mnt/f/blood-diagnosis  # or your path
+./build.sh
+```
+
+### Understanding Output Messages
+
+**✓ Success Messages**
+```
+✓ Python: 3.12.0
+✓ Dependencies installed successfully
+✓ Database initialized successfully
+```
+Everything is working correctly.
+
+**→ Info Messages**
+```
+→ Starting application on port 8000...
+→ Creating backup: backup_20250608_143022.sql
+```
+Normal operations in progress.
+
+**⚠ Warning Messages**
+```
+⚠ Port 8000 appears to be in use
+⚠ .env file already exists
+⚠ AI prediction features disabled
+```
+Non-critical issues that may need attention.
+
+**✗ Error Messages**
+```
+✗ Failed to install dependencies
+✗ Cannot connect to PostgreSQL
+✗ Python not found
+```
+Critical issues that prevent operation.
 
 ---
 
@@ -140,37 +323,43 @@ Before installation, ensure you have:
 
 ## 🚀 Installation
 
+### Quick Start with Build Script
+
+The application includes an **interactive build script** (`build.sh`) that handles all installation, configuration, and deployment tasks. You don't need to run individual commands – the build script does everything for you!
+
 ### 1. Clone the Repository
 
+Download the project to your local machine (or skip if you already have it).
+
+### 2. Run the Build Script
+
+**On Linux/Mac:**
 ```bash
-git clone https://github.com/yourusername/blood-diagnosis.git
-cd blood-diagnosis
+./build.sh
 ```
 
-### 2. Set Up Virtual Environment (Recommended)
-
+**On Windows (using Git Bash, WSL, or similar):**
 ```bash
-# Create virtual environment
-python -m venv venv
-
-# Activate virtual environment
-# On Windows:
-venv\Scripts\activate
-
-# On Linux/Mac:
-source venv/bin/activate
+bash build.sh
 ```
 
-### 3. Install Dependencies
+### 3. Select "Full Setup" from the Menu
 
-```bash
-# Install all required packages
-pip install -r requirements.txt
-```
+When the build script starts, you'll see an interactive menu. Choose **Option 1: Full Setup (First Time Installation)**.
 
-### 4. Set Up Environment Variables
+This will automatically:
+- ✅ Check Python installation and version
+- ✅ Install all required dependencies from requirements.txt
+- ✅ Create and configure the .env file
+- ✅ Create required directories (uploads, profiles, tests)
+- ✅ Initialize the PostgreSQL database
+- ✅ Create database tables and relationships
+- ✅ Seed initial data
+- ✅ Prompt you to create an admin user
 
-Create a `.env` file in the root directory:
+### Environment Variables
+
+The build script automatically creates a `.env` file with these default settings:
 
 ```env
 # Application Settings
@@ -204,55 +393,67 @@ SMTP_PASSWORD="your-app-password"
 
 ## ⚙ Configuration
 
+All configuration is handled through the `.env` file that the build script creates for you.
+
 ### Database Configuration
 
-Edit `app/database.py` to configure your database connection:
+The build script sets up the default database connection:
+- **Database Name**: `blood_diagnosis_db`
+- **Default User**: `postgres`
+- **Default Password**: `postgres`
+- **Host**: `localhost`
+- **Port**: `5432`
 
-```python
-DATABASE_URL = "postgresql://username:password@host:port/database_name"
-```
+If you need different settings, edit the `.env` file after running the build script (Option 5 in the menu).
 
 ### AI Model Configuration
 
-The AI model files should be located in `app/ai/cbc/`:
-
+The AI model files are already included in `app/ai/cbc/`:
 - `tabnet_anemia_model.zip` - Trained TabNet model
-- `scaler.pkl` - Feature scaler
+- `scaler.pkl` - Feature scaler  
 - `used_features.json` - Feature configuration
+
+No additional configuration needed – the build script ensures everything is ready to use!
 
 ---
 
 ## 🗄 Database Setup
 
-### 1. Create PostgreSQL Database
+### Automatic Database Setup with Build Script
 
-```sql
-CREATE DATABASE blood_diagnosis_db;
-```
+The build script handles all database operations automatically. You have several options:
 
-### 2. Initialize Database Schema
+### Option 1: Full Setup (Recommended for First Time)
 
-Run the database initialization script:
+Select **Option 1** from the build script menu. This performs complete database initialization including:
+- ✅ Creating the PostgreSQL database
+- ✅ Creating all tables and relationships
+- ✅ Seeding initial data (AI models metadata)
+- ✅ Creating an admin user account
 
-```bash
-python init_db.py
-```
+### Option 2: Database Only
 
-This will:
+If you only need to initialize/reset the database:
+1. Run the build script
+2. Select **Option 7: Initialize Database**
 
-- Create all required tables
-- Set up relationships
-- Seed initial data (admin user, AI models)
+The script will:
+- ⚠️ **Warn you** that this will DROP all existing tables
+- 💾 **Offer to create a backup** before proceeding
+- 🔄 Recreate all tables with fresh schema
+- 📊 Seed initial data
 
-### 3. Create Admin User (Alternative Method)
+### Option 3: Create Admin User Only
 
-If you need to create an admin user separately:
-
-```bash
-python create_admin.py
-```
-
-Follow the interactive prompts to set up your admin account.
+If you need to create additional admin users:
+1. Run the build script
+2. Select **Option 8: Create Admin User**
+3. Follow the interactive prompts to enter:
+   - Username
+   - Email
+   - Password
+   - First and last name
+   - Other profile information
 
 ### Database Schema
 
@@ -271,36 +472,61 @@ Follow the interactive prompts to set up your admin account.
 
 ## ▶ Running the Application
 
-### Using the Build Script (Recommended)
+### Using the Build Script (Only Method)
 
-The application includes an interactive build script:
+The build script provides multiple ways to run your application:
 
-```bash
-# On Linux/Mac:
-./build.sh
+#### Option 2: Run Application (Local Network)
 
-# On Windows (Git Bash or WSL):
-bash build.sh
+**Best for development and local testing**
+
+Select **Option 2** from the build script menu.
+
+This will:
+- ✅ Check if dependencies are installed
+- ✅ Verify .env configuration exists
+- ✅ Check if port 8000 is available
+- ✅ Start the application with **auto-reload** (detects code changes)
+- ✅ Make the app accessible on your local network
+
+**Features:**
+- 🔄 **Auto-reload**: Changes to Python files automatically restart the server
+- 🌐 **Network access**: Accessible from other devices on your network
+- 📝 **Live logs**: See all requests and errors in real-time
+- ⚡ **Fast development**: Perfect for testing and debugging
+
+**Access points when running:**
+- Local machine: `http://localhost:8000`
+- Network devices: `http://YOUR_IP:8000`
+- Stop server: Press `Ctrl+C`
+
+#### Option 3: Run Application (Public Internet via ngrok)
+
+**Best for sharing with remote users or testing webhooks**
+
+Select **Option 3** from the build script menu.
+
+This will:
+- ✅ Check if ngrok is installed (downloads it if needed)
+- ✅ Guide you through ngrok setup (free account needed)
+- ✅ Start the application on port 8000
+- ✅ Create a public HTTPS tunnel using ngrok
+- ✅ Display a public URL that anyone can access
+
+**Features:**
+- 🌍 **Public access**: Share your app with anyone via HTTPS URL
+- 🔒 **Secure**: Automatic HTTPS encryption via ngrok
+- 🚀 **No deployment needed**: Instant public access from your machine
+- 📊 **ngrok dashboard**: Monitor requests via ngrok web interface
+
+**Example ngrok output:**
+```
+Session Status: online
+Account: Your Name (Plan: Free)
+Forwarding: https://abc123.ngrok.io -> http://localhost:8000
 ```
 
-The script provides options for:
-
-1. **Quick Start** - Install dependencies and run
-2. **Full Setup** - Complete installation with database initialization
-3. **Development Mode** - Run with auto-reload
-4. **Production Mode** - Optimized production server
-5. **Run Tests** - Execute test suite
-6. **Database Reset** - Reinitialize database
-
-### Manual Start
-
-```bash
-# Development mode with auto-reload
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-
-# Production mode
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
-```
+Share the `https://abc123.ngrok.io` URL with anyone to access your app!
 
 ### Access the Application
 
@@ -695,26 +921,80 @@ blood-diagnosis/
 
 ## 🧪 Testing
 
-### Running Tests
+### Running Tests with Build Script
 
-The project includes a comprehensive test suite covering all major components.
+The build script provides a comprehensive testing menu. Select **Option 11: Run Tests** from the main menu.
 
-```bash
-# Run all tests
-pytest
+### Testing Options
 
-# Run with coverage report
-pytest --cov=app --cov-report=html
+You'll see 7 testing options:
 
-# Run specific test file
-pytest tests/test_auth_service.py
+#### 1. Run All Tests
+Executes the complete test suite with verbose output.
+- Tests all routes, services, and models
+- Shows detailed results for each test
+- Best for comprehensive validation
 
-# Run tests with verbose output
-pytest -v
+#### 2. Run All Tests with Coverage Report
+Runs all tests and generates a detailed coverage report.
+- Shows which lines of code are tested
+- Generates an HTML report in `htmlcov/index.html`
+- Displays coverage percentage for each file
+- Helps identify untested code
 
-# Run tests matching a pattern
-pytest -k "test_admin"
-```
+**Coverage report features:**
+- Line-by-line coverage visualization
+- Percentage coverage per module
+- Missing lines highlighted in red
+- Open `htmlcov/index.html` in your browser to view
+
+#### 3. Run Service Tests Only
+Tests only the service layer (business logic).
+- auth_service, patient_service, ai_service
+- medical_history_service, message_service
+- profile_service, policy_service, ui_service
+- Faster than running all tests
+
+#### 4. Run Route Tests Only
+Tests only the API endpoints.
+- Admin routes, doctor routes, patient routes
+- Authentication routes, public routes
+- Validates request/response handling
+
+#### 5. Run Model/Database Tests
+Tests database models and relationships.
+- User model, doctor info, test results
+- Medical history, messages, AI models
+- Database constraints and validations
+
+#### 6. Run Specific Test File
+The script shows you all available test files and lets you choose one:
+
+**Service Tests:**
+- test_auth_service.py
+- test_patient_service.py
+- test_ai_service.py
+- test_medical_history_service.py
+- test_message_service.py
+- test_profile_service.py
+- test_policy_service.py
+- test_ui_service.py
+
+**Route Tests:**
+- test_auth_routes.py
+- test_doctor_routes.py
+- test_patient_routes.py
+- test_admin_routes.py
+- test_public_routes.py
+
+**Model Tests:**
+- test_database_models.py
+
+#### 7. Run Fast Tests Only
+Skips slow integration tests, runs only fast unit tests.
+- Perfect for quick validation during development
+- Excludes database integration tests
+- Completes in seconds instead of minutes
 
 ### Test Coverage
 
@@ -749,69 +1029,101 @@ asyncio_mode = auto
 
 ## 🚀 Deployment
 
+### Development Deployment (Using Build Script)
+
+For development and testing, use the build script's built-in options:
+
+#### Local Development
+**Run:** Select **Option 2** from build script
+- Perfect for development and testing
+- Auto-reload on code changes
+- Accessible on local network
+- Full debugging capabilities
+
+#### Public Testing (ngrok)
+**Run:** Select **Option 3** from build script
+- Instant public HTTPS URL
+- Share with stakeholders for testing
+- No server setup required
+- Perfect for demos and feedback
+
 ### Production Deployment
 
-#### 1. Environment Configuration
+#### Pre-Deployment Checklist
 
-Ensure production environment variables are set:
+Before deploying to production:
 
-```env
-APP_ENV=production
-DEBUG=false
-SECRET_KEY=<strong-random-key>
-DATABASE_URL=<production-database-url>
-```
+1. **Update Environment Variables**
+   - Use build script **Option 5** to configure `.env`
+   - Set `DEBUG=False`
+   - Use strong `SECRET_KEY`
+   - Configure production database URL
+   - Set up email credentials (SMTP)
 
-#### 2. Database Migration
+2. **Database Backup**
+   - The build script (**Option 7**) offers automatic backup
+   - Always backup before database operations
+   - Store backups securely
 
-```bash
-# Backup existing database (if applicable)
-pg_dump blood_diagnosis_db > backup.sql
+3. **Run Health Check**
+   - Use build script **Option 10: Health Check**
+   - Verifies all components are working
+   - Checks database connectivity
+   - Validates configuration
 
-# Run migrations
-python init_db.py
-```
+4. **Run Tests**
+   - Use build script **Option 11: Run Tests**
+   - Ensure all tests pass
+   - Check test coverage is > 80%
 
-#### 3. Using Gunicorn (Recommended)
+#### Production Server Setup
 
-```bash
-# Install gunicorn
-pip install gunicorn
+For production deployment, you'll need to set up a proper web server. The build script prepares your application, but production requires:
 
-# Run with gunicorn
-gunicorn app.main:app \
-  --workers 4 \
-  --worker-class uvicorn.workers.UvicornWorker \
-  --bind 0.0.0.0:8000 \
-  --access-logfile access.log \
-  --error-logfile error.log
-```
+**Recommended Stack:**
+- **Application Server**: Gunicorn or Uvicorn workers
+- **Reverse Proxy**: Nginx or Apache
+- **Database**: PostgreSQL (managed service recommended)
+- **SSL/TLS**: Let's Encrypt certificates
+- **Process Manager**: systemd or supervisor
 
-#### 4. Using Docker
+**Server Requirements:**
+- Python 3.12+ installed
+- PostgreSQL server running
+- 2GB+ RAM (4GB+ recommended)
+- 10GB+ disk space
+- Ubuntu 20.04+ or similar Linux distro
 
-```dockerfile
-# Dockerfile example
-FROM python:3.12-slim
+#### Using Build Script for Production Setup
 
-WORKDIR /app
+1. **Initial Setup on Server:**
+   ```bash
+   ./build.sh
+   # Select Option 1: Full Setup
+   ```
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+2. **Configure for Production:**
+   ```bash
+   ./build.sh
+   # Select Option 5: Setup Environment Variables
+   # Edit .env file with production values
+   ```
 
-COPY . .
+3. **Verify Installation:**
+   ```bash
+   ./build.sh
+   # Select Option 10: Health Check
+   ```
 
-EXPOSE 8000
+4. **Run Tests:**
+   ```bash
+   ./build.sh
+   # Select Option 11: Run Tests
+   ```
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
+After the build script completes setup, configure your production web server (Gunicorn/Nginx) according to your hosting provider's documentation.
 
-```bash
-# Build and run
-docker build -t blood-diagnosis .
-docker run -p 8000:8000 blood-diagnosis
-```
-
-#### 5. Nginx Reverse Proxy
+#### Nginx Reverse Proxy Example
 
 ```nginx
 server {
@@ -853,25 +1165,82 @@ We welcome contributions! Please follow these guidelines:
 ### How to Contribute
 
 1. **Fork the repository**
-2. **Create a feature branch**
+   - Fork on GitHub to your account
+
+2. **Clone your fork**
+   ```bash
+   git clone https://github.com/your-username/blood-diagnosis.git
+   cd blood-diagnosis
+   ```
+
+3. **Set up development environment**
+   - Run `./build.sh`
+   - Select **Option 1: Full Setup**
+   - This ensures you have the same environment as other developers
+
+4. **Create a feature branch**
    ```bash
    git checkout -b feature/your-feature-name
    ```
-3. **Make your changes**
-4. **Write/update tests**
-5. **Run tests**
+
+5. **Make your changes**
+   - Write clean, documented code
+   - Follow existing code patterns
+
+6. **Test your changes**
+   - Run `./build.sh`
+   - Select **Option 11: Run Tests**
+   - Choose **Option 2: Run all tests with coverage**
+   - Ensure all tests pass and coverage stays above 80%
+
+7. **Run health check**
+   - Run `./build.sh`
+   - Select **Option 10: Health Check**
+   - Verify no issues before committing
+
+8. **Commit your changes**
    ```bash
-   pytest
-   ```
-6. **Commit your changes**
-   ```bash
+   git add .
    git commit -m "Add: your feature description"
    ```
-7. **Push to your fork**
+
+9. **Push to your fork**
    ```bash
    git push origin feature/your-feature-name
    ```
-8. **Create a Pull Request**
+
+10. **Create a Pull Request**
+    - Go to GitHub and create a PR
+    - Describe what you changed and why
+    - Reference any related issues
+
+### Development Workflow
+
+**Daily Development:**
+```bash
+# Start your work session
+./build.sh
+# Select Option 2: Run Application (Local)
+
+# Make changes, test automatically via auto-reload
+
+# Before committing, run tests:
+./build.sh
+# Select Option 11: Run Tests
+```
+
+**Adding New Features:**
+1. Discuss in GitHub issues first
+2. Create feature branch
+3. Use build script to set up and test
+4. Submit PR with test coverage
+
+**Fixing Bugs:**
+1. Create issue describing bug
+2. Create bugfix branch
+3. Fix and add regression test
+4. Verify with build script health check
+5. Submit PR
 
 ### Code Standards
 
@@ -880,12 +1249,23 @@ We welcome contributions! Please follow these guidelines:
 - Add docstrings to functions and classes
 - Include type hints where applicable
 - Maintain test coverage above 80%
+- Use the build script for all operations
+
+### Testing Requirements
+
+Before submitting a PR:
+- ✅ All existing tests must pass
+- ✅ New features must have tests
+- ✅ Bug fixes should include regression tests
+- ✅ Test coverage must be ≥ 80%
+- ✅ Health check must pass (Option 10)
 
 ### Reporting Issues
 
 When reporting bugs, please include:
 
-- Python version
+- Python version (from build script health check)
+- Operating system
 - Operating system
 - Steps to reproduce
 - Expected vs actual behavior
@@ -895,96 +1275,147 @@ When reporting bugs, please include:
 
 ## 🔧 Troubleshooting
 
+### Using Build Script for Diagnostics
+
+Before troubleshooting manually, use the build script's **Option 10: Health Check**. This will automatically:
+- ✅ Verify Python installation
+- ✅ Check all critical packages
+- ✅ Validate .env configuration
+- ✅ Test PostgreSQL connection
+- ✅ Verify directory structure
+- ✅ Check if application is running
+
+The health check will pinpoint exactly what's wrong!
+
 ### Common Issues
 
 #### 1. Database Connection Error
 
 **Problem**: `sqlalchemy.exc.OperationalError: could not connect to server`
 
-**Solution**:
+**Solution using Build Script:**
+1. Run `./build.sh`
+2. Select **Option 10: Health Check**
+3. The script will test PostgreSQL connection
+4. If connection fails, ensure PostgreSQL is installed and running
+5. Use **Option 5** to verify database credentials in `.env`
+6. Try **Option 7: Initialize Database** to recreate the database
 
-```bash
-# Verify PostgreSQL is running
-# Windows:
-net start postgresql
-
-# Linux:
-sudo systemctl start postgresql
-
-# Check connection settings in .env file
-```
+**Quick Fix:**
+- Ensure PostgreSQL service is running on your system
+- Default credentials: `postgres` / `postgres`
+- Default port: `5432`
 
 #### 2. AI Model Not Loading
 
 **Problem**: `Warning: Could not load CBC model`
 
-**Solution**:
+**Solution using Build Script:**
+1. Run `./build.sh`
+2. Select **Option 10: Health Check**
+3. Check if `pytorch_tabnet` is listed as installed
+4. If not installed, select **Option 4: Install Dependencies**
+5. This will reinstall all required packages including AI dependencies
 
-```bash
-# Ensure pytorch_tabnet is installed
-pip install pytorch-tabnet
+**Note:** The application still works without AI features – only prediction functionality is disabled.
 
-# Verify model files exist
-ls app/ai/cbc/tabnet_anemia_model.zip
-```
+#### 3. Missing Dependencies
 
-#### 3. Module Import Errors
+**Problem**: `ModuleNotFoundError: No module named 'xyz'`
 
-**Problem**: `ModuleNotFoundError: No module named 'app'`
-
-**Solution**:
-
-```bash
-# Run from project root directory
-cd /path/to/blood-diagnosis
-
-# Ensure PYTHONPATH includes current directory
-export PYTHONPATH="${PYTHONPATH}:$(pwd)"
-```
+**Solution using Build Script:**
+1. Run `./build.sh`
+2. Select **Option 4: Install Dependencies**
+3. The script will install all packages from `requirements.txt`
+4. Run **Option 10: Health Check** to verify installation
 
 #### 4. Port Already in Use
 
 **Problem**: `[ERROR] [Errno 98] Address already in use`
 
-**Solution**:
+**Solution:**
+The build script automatically detects if port 8000 is in use and asks if you want to proceed. The running process is likely a previous instance of the application.
 
-```bash
-# Find process using port 8000
-# Linux/Mac:
-lsof -i :8000
-kill -9 <PID>
-
-# Windows:
-netstat -ano | findstr :8000
-taskkill /PID <PID> /F
-
-# Or use different port:
-uvicorn app.main:app --port 8001
-```
+**To stop the previous instance:**
+- Press `Ctrl+C` in the terminal running the application
+- Or close the terminal window
+- The build script will warn you before starting a new instance
 
 #### 5. File Upload Issues
 
 **Problem**: File uploads failing or not saving
 
-**Solution**:
+**Solution using Build Script:**
+1. Run `./build.sh`
+2. Select **Option 6: Create Required Directories**
+3. This recreates all upload directories with correct permissions
+4. Run **Option 10: Health Check** to verify directories exist
 
-```bash
-# Check uploads directory exists and has write permissions
-mkdir -p uploads/tests/cbc uploads/tests/blood_cell uploads/profiles
+#### 6. Configuration Issues
 
-# Set permissions (Linux/Mac):
-chmod -R 755 uploads/
-```
+**Problem**: Application not starting or strange errors
 
-#### 6. JWT Token Errors
+**Solution using Build Script:**
+1. Run `./build.sh`
+2. Select **Option 12: Clean/Reset Everything**
+3. Then select **Option 1: Full Setup**
+4. This gives you a fresh installation
+
+**Note:** Clean/Reset removes configuration but NOT the database or installed packages.
+
+#### 7. Database Tables Missing
+
+**Problem**: `relation "users" does not exist` or similar errors
+
+**Solution using Build Script:**
+1. Run `./build.sh`
+2. Select **Option 7: Initialize Database**
+3. The script will drop and recreate all tables
+4. **Warning:** This deletes all data! The script offers to create a backup first.
+
+#### 8. JWT Token Errors
 
 **Problem**: `JWTError: Signature verification failed`
 
-**Solution**:
+**Solution using Build Script:**
+1. Run `./build.sh`
+2. Select **Option 5: Setup Environment Variables**
+3. Ensure `SECRET_KEY` in `.env` is set and consistent
+4. Clear browser cookies and login again
 
-- Ensure `SECRET_KEY` in `.env` is consistent
-- Check token expiration settings
-- Clear browser cookies and login again
+### Complete System Reset
+
+If you're experiencing multiple issues or want a fresh start:
+
+1. Run `./build.sh`
+2. Select **Option 12: Clean/Reset Everything** 
+   - This removes configuration and cache files
+3. Select **Option 1: Full Setup**
+   - Complete fresh installation
+4. Select **Option 10: Health Check**
+   - Verify everything is working
+
+### Build Script Menu Overview
+
+The build script provides 12 options organized in three categories:
+
+**QUICK START (Options 1-3):**
+- **Option 1**: Full Setup - Complete first-time installation
+- **Option 2**: Run Application (Local) - Start on local network
+- **Option 3**: Run Application (ngrok) - Start with public URL
+
+**SETUP & CONFIGURATION (Options 4-9):**
+- **Option 4**: Install Dependencies - Install Python packages
+- **Option 5**: Setup Environment - Create/update .env file
+- **Option 6**: Create Directories - Make upload folders
+- **Option 7**: Initialize Database - Create/reset database
+- **Option 8**: Create Admin User - Add admin account
+- **Option 9**: Setup ngrok - Configure public tunneling
+
+**MAINTENANCE & TESTING (Options 10-12):**
+- **Option 10**: Health Check - Diagnose system status
+- **Option 11**: Run Tests - Execute test suite
+- **Option 12**: Clean/Reset - Fresh start
 
 ### Getting Help
 
@@ -1092,10 +1523,63 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 ---
 
+## 🎯 Quick Reference
+
+### Essential Commands
+
+**All operations are done through the build script:**
+
+```bash
+# Start the build script
+./build.sh
+
+# Then select from the menu:
+# 1 = Full Setup (first time)
+# 2 = Run App (development)
+# 3 = Run App (public URL)
+# 10 = Health Check (troubleshooting)
+# 11 = Run Tests
+```
+
+### No Manual Commands Needed!
+
+This project is designed to be **completely managed through the build script**. You don't need to remember or run individual commands like:
+- ❌ `pip install -r requirements.txt`
+- ❌ `python init_db.py`
+- ❌ `uvicorn app.main:app --reload`
+- ❌ `pytest`
+
+Instead, everything is accessible through the **simple menu system** in `build.sh`!
+
+### Three Steps to Get Started
+
+```bash
+1️⃣  ./build.sh
+2️⃣  Select Option 1 (Full Setup)
+3️⃣  Select Option 2 (Run Application)
+```
+
+That's it! 🎉
+
+### When You Need Help
+
+```bash
+./build.sh → Option 10: Health Check
+```
+
+This will diagnose any issues automatically!
+
+---
+
 <div align="center">
 
 **Made with ❤️ for better healthcare**
 
 ⭐ Star this repository if you find it helpful!
 
+---
+
+### 📖 Remember: Everything through `./build.sh` - No manual commands required!
+
 </div>
+
