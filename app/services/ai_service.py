@@ -530,12 +530,20 @@ class BloodImageAnalysisService:
             
             # Create Test record in database
             if db:
-                from app.database import Test, TestFile
+                from app.database import Test, TestFile, Model
+                
+                # Get Blood Cell Image Classification model
+                image_model = db.query(Model).filter(Model.name == "Blood Cell Image Classification").first()
+                if not image_model:
+                    return {
+                        "success": False,
+                        "message": "Blood Cell Image Classification model not found. Please ensure database is properly initialized."
+                    }
                 
                 # Create new test
                 new_test = Test(
                     patient_id=patient_id,
-                    model_id=None,  # No AI model used
+                    model_id=image_model.id,
                     notes=description if description else "Blood cell image uploaded",
                     review_status='pending'
                 )
@@ -551,6 +559,10 @@ class BloodImageAnalysisService:
                     type='input'
                 )
                 db.add(test_file)
+                
+                # Increment model tests count
+                image_model.tests_count += 1
+                
                 db.commit()
                 
                 return {
