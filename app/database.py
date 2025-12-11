@@ -1,7 +1,7 @@
 # Database configuration and session management
-from sqlalchemy import create_engine, Column, Integer, String, Date, DateTime, Numeric, Text, ForeignKey, Table
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, Numeric, Text, ForeignKey, Table
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship, declarative_base
+from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
 
 DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/blood_diagnosis_db"

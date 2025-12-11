@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 from app.database import Message
 from app.models.schemas import MessageCreate
-from datetime import datetime
 
 
 def create_message(message_data: MessageCreate, db: Session) -> Message:

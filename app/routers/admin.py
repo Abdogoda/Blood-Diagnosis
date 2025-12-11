@@ -9,7 +9,6 @@ from app.services import (
     set_flash_message,
     create_patient,
     get_patient_doctors,
-    verify_password,
     hash_password
 )
 from app.services.profile_service import (

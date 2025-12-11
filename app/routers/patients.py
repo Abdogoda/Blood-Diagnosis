@@ -9,9 +9,7 @@ from app.services import (
     set_flash_message,
     get_patient_doctors,
     cbc_prediction_service,
-    blood_image_service,
-    verify_password,
-    hash_password
+    blood_image_service
 )
 from app.services.profile_service import (
     update_user_profile,

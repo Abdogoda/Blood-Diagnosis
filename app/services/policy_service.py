@@ -3,8 +3,8 @@ Policy Service - Centralized access control and permission policies
 Handles account activation, role-based restrictions, and other access policies
 """
 
-from fastapi import HTTPException, Request
-from fastapi.responses import RedirectResponse, Response
+from fastapi import Request
+from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from app.database import User
@@ -98,7 +98,7 @@ def require_patient_access(
     current_user: User,
     patient: User,
     db: Session
-) -> Response | None:
+):
     """
     Check patient access and return error response if denied
     Returns None if access is granted, otherwise returns Response
@@ -275,20 +275,7 @@ def require_diagnosis_permission(
     user: User,
     patient_id: int,
     db: Session
-) -> Response | None:
-    """
-    Check diagnosis permission and return error response if denied
-    Returns None if permission granted, otherwise returns Response
-    
-    Args:
-        request: FastAPI request
-        user: The user requesting access
-        patient_id: The patient ID
-        db: Database session
-        
-    Returns:
-        None if permission granted, otherwise RedirectResponse or TemplateResponse
-    """
+):
     can_add, reason = can_add_diagnosis(user, patient_id, db)
     
     if not can_add:
@@ -321,15 +308,6 @@ def require_diagnosis_permission(
 
 
 def can_manage_users(user: User) -> tuple[bool, str]:
-    """
-    Check if a user can manage other users
-    
-    Args:
-        user: The user to check
-        
-    Returns:
-        Tuple of (can_manage: bool, reason: str)
-    """
     # Check if account is active
     if not check_account_active(user):
         return False, "deactivated"
@@ -342,15 +320,6 @@ def can_manage_users(user: User) -> tuple[bool, str]:
 
 
 def get_deactivation_message(user_role: str) -> dict:
-    """
-    Get a formatted deactivation message for a user role
-    
-    Args:
-        user_role: The role of the deactivated user
-        
-    Returns:
-        Dictionary with title and message
-    """
     messages = {
         "doctor": {
             "title": "Account Deactivated",
@@ -377,17 +346,6 @@ def get_deactivation_message(user_role: str) -> dict:
 
 
 def handle_policy_violation(request: Request, user: User, violation_type: str):
-    """
-    Handle policy violations with appropriate responses
-    
-    Args:
-        request: FastAPI request object
-        user: The user who violated the policy
-        violation_type: Type of violation (deactivated, deactivated_patient, unauthorized, not_linked)
-        
-    Returns:
-        RedirectResponse with flash message or TemplateResponse
-    """
     from app.services import set_flash_message
     
     if violation_type == "deactivated":
@@ -418,16 +376,6 @@ def handle_policy_violation(request: Request, user: User, violation_type: str):
 
 
 def check_role_permission(user: User, allowed_roles: list[str]) -> tuple[bool, str]:
-    """
-    Check if user has one of the allowed roles
-    
-    Args:
-        user: The user to check
-        allowed_roles: List of allowed role names
-        
-    Returns:
-        Tuple of (has_permission: bool, reason: str)
-    """
     if not check_account_active(user):
         return False, "deactivated"
     
