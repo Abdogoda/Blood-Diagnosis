@@ -33,6 +33,7 @@ A comprehensive web-based medical platform for blood test analysis with AI-power
 ## ✨ Features
 
 ### Core Features
+
 - 🔐 **Secure Authentication & Authorization** - Role-based access control (Admin, Doctor, Patient)
 - 🤖 **AI-Powered CBC Analysis** - Automated anemia detection using TabNet neural network
 - 📊 **Blood Test Management** - Upload, view, and analyze blood test results
@@ -46,6 +47,7 @@ A comprehensive web-based medical platform for blood test analysis with AI-power
 - 📧 **Email Notifications** - Automated email alerts for test results
 
 ### AI Capabilities
+
 - **Anemia Detection** - ML model trained on CBC parameters
 - **Feature Normalization** - Automatic data preprocessing and scaling
 - **Flexible Input** - Supports various CBC parameter naming conventions
@@ -56,6 +58,7 @@ A comprehensive web-based medical platform for blood test analysis with AI-power
 ## 🛠 Technology Stack
 
 ### Backend
+
 - **Framework**: FastAPI 0.124.0
 - **Language**: Python 3.12
 - **Database**: PostgreSQL with SQLAlchemy ORM
@@ -63,17 +66,20 @@ A comprehensive web-based medical platform for blood test analysis with AI-power
 - **Template Engine**: Jinja2
 
 ### AI/ML
+
 - **Deep Learning**: PyTorch 2.2.0
 - **ML Framework**: PyTorch-TabNet 4.1.0
 - **Data Processing**: pandas, numpy, scikit-learn
 - **Image Processing**: OpenCV 4.8.1
 
 ### Frontend
+
 - **HTML5/CSS3** - Modern responsive design
 - **JavaScript** - Vanilla JS with async/await patterns
 - **Bootstrap** - UI components (via templates)
 
 ### Development Tools
+
 - **Testing**: pytest, pytest-asyncio, pytest-cov
 - **Linting**: Built-in Python standards
 - **Version Control**: Git
@@ -126,6 +132,7 @@ Before installation, ensure you have:
 - **Modern web browser** (Chrome, Firefox, Safari, Edge)
 
 ### Operating System Support
+
 - ✅ Windows 10/11
 - ✅ Linux (Ubuntu 20.04+, Debian, CentOS)
 - ✅ macOS 11+
@@ -209,6 +216,7 @@ DATABASE_URL = "postgresql://username:password@host:port/database_name"
 ### AI Model Configuration
 
 The AI model files should be located in `app/ai/cbc/`:
+
 - `tabnet_anemia_model.zip` - Trained TabNet model
 - `scaler.pkl` - Feature scaler
 - `used_features.json` - Feature configuration
@@ -232,6 +240,7 @@ python init_db.py
 ```
 
 This will:
+
 - Create all required tables
 - Set up relationships
 - Seed initial data (admin user, AI models)
@@ -249,6 +258,7 @@ Follow the interactive prompts to set up your admin account.
 ### Database Schema
 
 **Main Tables:**
+
 - `users` - User accounts (patients, doctors, admins)
 - `doctor_info` - Doctor-specific information
 - `doctor_patients` - Many-to-many relationship table
@@ -275,6 +285,7 @@ bash build.sh
 ```
 
 The script provides options for:
+
 1. **Quick Start** - Install dependencies and run
 2. **Full Setup** - Complete installation with database initialization
 3. **Development Mode** - Run with auto-reload
@@ -295,6 +306,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
 ### Access the Application
 
 Once running, access the application at:
+
 - **Homepage**: http://localhost:8000
 - **Login**: http://localhost:8000/auth/login
 - **Admin Dashboard**: http://localhost:8000/admin/dashboard
@@ -312,24 +324,29 @@ Once running, access the application at:
 **Access:** `/admin/*`
 
 **Capabilities:**
+
 - 👤 **User Management**
+
   - View all users (doctors and patients)
   - Activate/deactivate accounts
   - View detailed user profiles
   - Monitor user activity
 
 - 📊 **Dashboard Analytics**
+
   - Total users statistics
   - Active users count
   - Test submission metrics
   - System health monitoring
 
 - 🔬 **AI Model Management**
+
   - View active AI models
   - Model performance metrics
   - Model version control
 
 - 💬 **Message Management**
+
   - View all system messages
   - Monitor doctor-patient communications
   - Message filtering and search
@@ -344,24 +361,29 @@ Once running, access the application at:
 **Access:** `/doctors/*`
 
 **Capabilities:**
+
 - 👨‍⚕️ **Patient Management**
+
   - View assigned patients
   - Access patient profiles
   - Review medical history
   - Add medical notes
 
 - 🩺 **Test Review**
+
   - View patient blood tests
   - Review AI predictions
   - Validate test results
   - Add professional interpretation
 
 - 💬 **Communication**
+
   - Send messages to patients
   - Respond to patient queries
   - Receive test notifications
 
 - 📊 **Dashboard**
+
   - Overview of assigned patients
   - Recent test submissions
   - Pending reviews
@@ -377,29 +399,35 @@ Once running, access the application at:
 **Access:** `/patients/*`
 
 **Capabilities:**
+
 - 🔬 **Test Management**
+
   - Upload CBC test results (CSV format)
   - Upload blood cell images
   - View test history
   - Track test status
 
 - 🤖 **AI Analysis**
+
   - Receive automated anemia predictions
   - View confidence scores
   - Get health recommendations
   - Understand test interpretations
 
 - 📋 **Medical History**
+
   - View complete medical records
   - Track health trends over time
   - Export medical history
 
 - 💬 **Doctor Communication**
+
   - Send messages to assigned doctors
   - Receive medical advice
   - Ask questions about results
 
 - 📊 **Dashboard**
+
   - Health status overview
   - Recent test results
   - AI predictions summary
@@ -485,6 +513,7 @@ GET    /redoc                  - API documentation (ReDoc)
 The system uses a **TabNet neural network** for anemia detection based on Complete Blood Count (CBC) parameters.
 
 #### Model Architecture
+
 - **Algorithm**: TabNet (Attentive Interpretable Tabular Learning)
 - **Framework**: PyTorch + pytorch_tabnet
 - **Input Features**: 10 CBC parameters
@@ -492,18 +521,18 @@ The system uses a **TabNet neural network** for anemia detection based on Comple
 
 #### Supported CBC Parameters
 
-| Parameter | Aliases | Description |
-|-----------|---------|-------------|
-| **RBC** | rbc, red blood cells | Red Blood Cell count |
-| **HGB** | hgb, hb, hemoglobin | Hemoglobin level |
-| **HCT/PCV** | hct, pcv, hematocrit | Hematocrit/Packed Cell Volume |
-| **MCV** | mcv | Mean Corpuscular Volume |
-| **MCH** | mch | Mean Corpuscular Hemoglobin |
-| **MCHC** | mchc | Mean Corpuscular Hemoglobin Concentration |
-| **RDW** | rdw, rdw-cv | Red Cell Distribution Width |
-| **TLC/WBC** | tlc, wbc, white blood cells | White Blood Cell count |
-| **PLT** | plt, platelets | Platelet count |
-| **Age** | age, years | Patient age |
+| Parameter   | Aliases                     | Description                               |
+| ----------- | --------------------------- | ----------------------------------------- |
+| **RBC**     | rbc, red blood cells        | Red Blood Cell count                      |
+| **HGB**     | hgb, hb, hemoglobin         | Hemoglobin level                          |
+| **HCT/PCV** | hct, pcv, hematocrit        | Hematocrit/Packed Cell Volume             |
+| **MCV**     | mcv                         | Mean Corpuscular Volume                   |
+| **MCH**     | mch                         | Mean Corpuscular Hemoglobin               |
+| **MCHC**    | mchc                        | Mean Corpuscular Hemoglobin Concentration |
+| **RDW**     | rdw, rdw-cv                 | Red Cell Distribution Width               |
+| **TLC/WBC** | tlc, wbc, white blood cells | White Blood Cell count                    |
+| **PLT**     | plt, platelets              | Platelet count                            |
+| **Age**     | age, years                  | Patient age                               |
 
 #### Usage Example
 
@@ -529,6 +558,7 @@ result = await cbc_prediction_service.predict_from_csv(
 ```
 
 #### Model Performance
+
 - **Accuracy**: ~95% (on validation set)
 - **Inference Time**: < 100ms per prediction
 - **Memory Usage**: ~200MB (model loaded in RAM)
@@ -536,6 +566,7 @@ result = await cbc_prediction_service.predict_from_csv(
 #### Supported Input Formats
 
 **CSV Format:**
+
 ```csv
 Parameter,Value
 RBC,4.5
@@ -551,6 +582,7 @@ Age,35
 ```
 
 **Alternative CSV Format (with aliases):**
+
 ```csv
 Red Blood Cells,Hemoglobin,Hematocrit,MCV,MCH,MCHC,RDW-CV,White Blood Cells,Platelets,Age
 4.5,13.2,39.5,87.8,29.3,33.4,13.1,7200,250000,35
@@ -688,6 +720,7 @@ pytest -k "test_admin"
 ### Test Coverage
 
 The test suite covers:
+
 - ✅ Authentication & Authorization
 - ✅ User Management (Admin, Doctor, Patient)
 - ✅ Blood Test Upload & Processing
@@ -702,6 +735,7 @@ The test suite covers:
 ### Test Configuration
 
 Tests are configured in `pytest.ini`:
+
 ```ini
 [pytest]
 testpaths = tests
@@ -851,6 +885,7 @@ We welcome contributions! Please follow these guidelines:
 ### Reporting Issues
 
 When reporting bugs, please include:
+
 - Python version
 - Operating system
 - Steps to reproduce
@@ -868,6 +903,7 @@ When reporting bugs, please include:
 **Problem**: `sqlalchemy.exc.OperationalError: could not connect to server`
 
 **Solution**:
+
 ```bash
 # Verify PostgreSQL is running
 # Windows:
@@ -884,6 +920,7 @@ sudo systemctl start postgresql
 **Problem**: `Warning: Could not load CBC model`
 
 **Solution**:
+
 ```bash
 # Ensure pytorch_tabnet is installed
 pip install pytorch-tabnet
@@ -897,6 +934,7 @@ ls app/ai/cbc/tabnet_anemia_model.zip
 **Problem**: `ModuleNotFoundError: No module named 'app'`
 
 **Solution**:
+
 ```bash
 # Run from project root directory
 cd /path/to/blood-diagnosis
@@ -910,6 +948,7 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 **Problem**: `[ERROR] [Errno 98] Address already in use`
 
 **Solution**:
+
 ```bash
 # Find process using port 8000
 # Linux/Mac:
@@ -929,6 +968,7 @@ uvicorn app.main:app --port 8001
 **Problem**: File uploads failing or not saving
 
 **Solution**:
+
 ```bash
 # Check uploads directory exists and has write permissions
 mkdir -p uploads/tests/cbc uploads/tests/blood_cell uploads/profiles
@@ -942,6 +982,7 @@ chmod -R 755 uploads/
 **Problem**: `JWTError: Signature verification failed`
 
 **Solution**:
+
 - Ensure `SECRET_KEY` in `.env` is consistent
 - Check token expiration settings
 - Clear browser cookies and login again
@@ -949,6 +990,7 @@ chmod -R 755 uploads/
 ### Getting Help
 
 If you encounter issues not listed here:
+
 1. Check the [GitHub Issues](https://github.com/yourusername/blood-diagnosis/issues)
 2. Review application logs in the terminal
 3. Check `error.log` file (if using production mode)
@@ -1003,18 +1045,21 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 ## 📚 Additional Resources
 
 ### Documentation
+
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
 - [SQLAlchemy ORM](https://docs.sqlalchemy.org/)
 - [PyTorch TabNet](https://github.com/dreamquark-ai/tabnet)
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 
 ### Tutorials
+
 - Setting up FastAPI applications
 - Building ML models with TabNet
 - PostgreSQL database design
 - JWT authentication implementation
 
 ### Related Projects
+
 - Medical imaging analysis tools
 - Healthcare management systems
 - AI-powered diagnostic platforms
@@ -1024,6 +1069,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 ## 🔄 Version History
 
 ### Version 1.0.0 (Current)
+
 - ✅ Initial release
 - ✅ User authentication & authorization
 - ✅ CBC anemia prediction
@@ -1034,6 +1080,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 - ✅ Responsive web interface
 
 ### Planned Features (Future Versions)
+
 - 🔜 Mobile application (iOS/Android)
 - 🔜 Additional blood test analysis (lipid profile, liver function)
 - 🔜 Appointment scheduling system
