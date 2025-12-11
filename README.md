@@ -128,7 +128,6 @@ Before installation, ensure you have:
 - **PostgreSQL** database server (version 12+)
 - **pip** package manager
 - **Git** (optional, for cloning)
-- **8GB RAM** minimum (for AI model loading)
 - **Modern web browser** (Chrome, Firefox, Safari, Edge)
 
 ### Operating System Support
