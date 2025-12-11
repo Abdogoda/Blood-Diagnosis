@@ -54,6 +54,11 @@ check_python() {
 install_dependencies() {
     print_header "Installing Dependencies"
     
+    if [ ! -f "requirements.txt" ]; then
+        print_error "requirements.txt not found!"
+        return 1
+    fi
+    
     print_info "Upgrading pip, setuptools, and wheel..."
     $PYTHON_CMD -m pip install --upgrade pip setuptools wheel 2>/dev/null || print_warning "Pip upgrade skipped"
     
@@ -68,6 +73,11 @@ install_dependencies() {
         print_error "Failed to install dependencies"
         echo ""
         print_warning "Check the error message above for details."
+        echo ""
+        print_info "Common issues and solutions:"
+        echo "  - Missing build tools: Install Visual Studio Build Tools (Windows) or build-essential (Linux)"
+        echo "  - Network issues: Check internet connection or use --proxy if behind proxy"
+        echo "  - Permission issues: Try running with administrator/sudo privileges"
         return 1
     fi
 }
@@ -130,6 +140,26 @@ init_database() {
         return 1
     fi
     
+    # Check if PostgreSQL is accessible
+    print_info "Checking PostgreSQL connection..."
+    if ! $PYTHON_CMD -c "import psycopg2; psycopg2.connect('postgresql://postgres:postgres@localhost:5432/postgres')" 2>/dev/null; then
+        print_warning "Cannot connect to PostgreSQL!"
+        echo ""
+        echo "Please ensure:"
+        echo "  1. PostgreSQL is installed and running"
+        echo "  2. Default credentials are correct (postgres/postgres)"
+        echo "  3. PostgreSQL is listening on localhost:5432"
+        echo ""
+        read -p "Continue anyway? [y/N]: " -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            print_info "Database initialization cancelled"
+            return 0
+        fi
+    else
+        print_success "PostgreSQL connection successful"
+    fi
+    
     print_warning "This will DROP all existing tables and recreate them!"
     echo "  Database: blood_diagnosis_db"
     echo "  User: postgres (or as configured in .env)"
@@ -139,7 +169,20 @@ init_database() {
     echo "To create database manually, run:"
     echo "  psql -U postgres -c 'CREATE DATABASE blood_diagnosis_db;'"
     echo ""
-    read -p "Continue? [Y/n]: " -r
+    read -p "Do you want to create a backup first? [y/N]: " -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        BACKUP_FILE="backup_$(date +%Y%m%d_%H%M%S).sql"
+        print_info "Creating backup: $BACKUP_FILE"
+        pg_dump -U postgres -d blood_diagnosis_db > "$BACKUP_FILE" 2>/dev/null
+        if [ $? -eq 0 ]; then
+            print_success "Backup created successfully"
+        else
+            print_warning "Backup failed (database may not exist yet)"
+        fi
+    fi
+    echo ""
+    read -p "Continue with database initialization? [Y/n]: " -r
     echo
     if [[ $REPLY =~ ^[Nn]$ ]]; then
         print_info "Database initialization cancelled"
@@ -182,9 +225,23 @@ run_app() {
         return 1
     fi
     
-    print_info "Application will be available at: http://localhost:8000"
+    print_info "Application will be available at:"
+    echo "  - Local:   http://localhost:8000"
+    echo "  - Network: http://0.0.0.0:8000"
+    echo ""
+    print_info "API Documentation: http://localhost:8000/docs"
     print_info "Press CTRL+C to stop"
     echo ""
+    
+    # Check if port 8000 is already in use
+    if netstat -ano 2>/dev/null | grep -q ":8000.*LISTENING" || lsof -i:8000 >/dev/null 2>&1; then
+        print_warning "Port 8000 appears to be in use"
+        read -p "Try to start anyway? [Y/n]: " -r
+        echo
+        if [[ $REPLY =~ ^[Nn]$ ]]; then
+            return 0
+        fi
+    fi
     
     $PYTHON_CMD -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 }
@@ -360,11 +417,16 @@ run_with_ngrok() {
     echo ""
     
     # Start uvicorn in background
-    $PYTHON_CMD -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 &
+    $PYTHON_CMD -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 > /dev/null 2>&1 &
     UVICORN_PID=$!
     
-    # Wait a bit for server to start
+    # Wait a bit for server to start and verify it's running
     sleep 3
+    if ! kill -0 $UVICORN_PID 2>/dev/null; then
+        print_error "Failed to start application"
+        return 1
+    fi
+    print_success "Application started (PID: $UVICORN_PID)"
     
     # Start ngrok
     if [ -f "./ngrok.exe" ]; then
@@ -376,9 +438,69 @@ run_with_ngrok() {
     # When ngrok is closed, kill uvicorn
     print_info "Stopping application..."
     kill $UVICORN_PID 2>/dev/null
+    wait $UVICORN_PID 2>/dev/null
 }
 
-# 11. Run Tests
+# 11. Health Check
+health_check() {
+    print_header "System Health Check"
+    
+    # Check Python
+    print_info "Checking Python installation..."
+    if command -v python &> /dev/null || command -v python3 &> /dev/null; then
+        print_success "Python: $PYTHON_VERSION"
+    else
+        print_error "Python not found"
+    fi
+    
+    # Check pip packages
+    print_info "Checking critical packages..."
+    critical_packages=("fastapi" "uvicorn" "sqlalchemy" "psycopg2-binary" "pydantic")
+    for pkg in "${critical_packages[@]}"; do
+        if $PYTHON_CMD -c "import ${pkg//-/_}" 2>/dev/null; then
+            print_success "$pkg installed"
+        else
+            print_error "$pkg not installed"
+        fi
+    done
+    
+    # Check .env file
+    print_info "Checking configuration..."
+    if [ -f ".env" ]; then
+        print_success ".env file exists"
+    else
+        print_error ".env file not found"
+    fi
+    
+    # Check directories
+    print_info "Checking directories..."
+    if [ -d "uploads/profiles" ] && [ -d "uploads/tests" ]; then
+        print_success "Upload directories exist"
+    else
+        print_warning "Upload directories missing"
+    fi
+    
+    # Check PostgreSQL
+    print_info "Checking PostgreSQL connection..."
+    if $PYTHON_CMD -c "import psycopg2; psycopg2.connect('postgresql://postgres:postgres@localhost:5432/postgres')" 2>/dev/null; then
+        print_success "PostgreSQL accessible"
+    else
+        print_error "Cannot connect to PostgreSQL"
+    fi
+    
+    # Check if application is running
+    print_info "Checking if application is running..."
+    if netstat -ano 2>/dev/null | grep -q ":8000.*LISTENING" || lsof -i:8000 >/dev/null 2>&1; then
+        print_success "Application running on port 8000"
+    else
+        print_info "Application not running"
+    fi
+    
+    echo ""
+    print_success "Health check completed!"
+}
+
+# 12. Run Tests
 run_tests() {
     print_header "Running Test Suite"
     
@@ -477,8 +599,9 @@ show_menu() {
     echo "   9) Setup ngrok (For Public Access)"
     echo ""
     echo -e "${YELLOW}MAINTENANCE & TESTING:${NC}"
-    echo "  10) Run Tests"
-    echo "  11) Clean/Reset Everything"
+    echo "  10) Health Check (System Status)"
+    echo "  11) Run Tests"
+    echo "  12) Clean/Reset Everything"
     echo ""
     echo "   0) Exit"
     echo ""
@@ -491,7 +614,7 @@ main() {
     
     while true; do
         show_menu
-        read -p "Enter your choice [0-11]: " choice
+        read -p "Enter your choice [0-12]: " choice
         
         case $choice in
             1) full_setup ;;
@@ -503,8 +626,9 @@ main() {
             7) init_database ;;
             8) create_admin ;;
             9) setup_ngrok ;;
-            10) run_tests ;;
-            11) clean_reset ;;
+            10) health_check ;;
+            11) run_tests ;;
+            12) clean_reset ;;
             0) 
                 echo ""
                 print_success "Goodbye!"
@@ -512,7 +636,7 @@ main() {
                 exit 0
                 ;;
             *)
-                print_error "Invalid option. Please select 0-11"
+                print_error "Invalid option. Please select 0-12"
                 ;;
         esac
         
