@@ -229,12 +229,13 @@ class CBCPredictionService:
             try:
                 from app.database import Test, TestFile, Model
                 
-                # Get or create CBC model
+                # Get CBC model
                 cbc_model = db.query(Model).filter(Model.name == "CBC Anemia Detection").first()
                 if not cbc_model:
-                    cbc_model = Model(name="CBC Anemia Detection", accuracy=95.0, tests_count=0)
-                    db.add(cbc_model)
-                    db.flush()
+                    return {
+                        "success": False,
+                        "message": "CBC Anemia Detection model not found. Please ensure database is properly initialized."
+                    }
                 
                 # Create test record
                 new_test = Test(
@@ -386,12 +387,13 @@ class CBCPredictionService:
             try:
                 from app.database import Test, TestFile, Model
                 
-                # Get or create CBC model
+                # Get CBC model
                 cbc_model = db.query(Model).filter(Model.name == "CBC Anemia Detection").first()
                 if not cbc_model:
-                    cbc_model = Model(name="CBC Anemia Detection", accuracy=95.0, tests_count=0)
-                    db.add(cbc_model)
-                    db.flush()
+                    return {
+                        "success": False,
+                        "message": "CBC Anemia Detection model not found. Please ensure database is properly initialized."
+                    }
                 
                 # Create test record
                 new_test = Test(

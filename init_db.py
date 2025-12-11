@@ -81,12 +81,12 @@ def seed_models():
     try:
         models_data = [
             {
-                "name": "CBC Analysis Model",
-                "accuracy": 95.50,
+                "name": "CBC Anemia Detection",
+                "accuracy": 95.0,
                 "tests_count": 0
             },
             {
-                "name": "Blood Cell Image Classification Model",
+                "name": "Blood Cell Image Classification",
                 "accuracy": 92.30,
                 "tests_count": 0
             }
