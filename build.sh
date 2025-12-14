@@ -102,7 +102,7 @@ setup_env() {
     else
         cat > .env << 'EOF'
 # Blood Diagnosis System Environment Variables
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/blood_diagnosis_db
+DATABASE_URL=postgresql://postgres:root@localhost:5432/blood_diagnosis_db
 SECRET_KEY=your-secret-key-change-this-in-production
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
@@ -455,7 +455,7 @@ health_check() {
     
     # Check pip packages
     print_info "Checking critical packages..."
-    critical_packages=("fastapi" "uvicorn" "sqlalchemy" "psycopg2-binary" "pydantic")
+    critical_packages=("fastapi" "uvicorn" "sqlalchemy" "pydantic")
     for pkg in "${critical_packages[@]}"; do
         if $PYTHON_CMD -c "import ${pkg//-/_}" 2>/dev/null; then
             print_success "$pkg installed"
@@ -482,7 +482,7 @@ health_check() {
     
     # Check PostgreSQL
     print_info "Checking PostgreSQL connection..."
-    if $PYTHON_CMD -c "import psycopg2; psycopg2.connect('postgresql://postgres:postgres@localhost:5432/postgres')" 2>/dev/null; then
+    if $PYTHON_CMD -c "import psycopg2; psycopg2.connect('postgresql://postgres:root@localhost:5432/blood_diagnosis_db')" 2>/dev/null; then
         print_success "PostgreSQL accessible"
     else
         print_error "Cannot connect to PostgreSQL"

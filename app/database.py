@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
 
-DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/blood_diagnosis_db"
+DATABASE_URL = "postgresql://postgres:root@localhost:5432/blood_diagnosis_db"
 
 engine = create_engine(
     DATABASE_URL
