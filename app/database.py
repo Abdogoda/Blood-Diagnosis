@@ -1,10 +1,19 @@
 # Database configuration and session management
+
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Numeric, Text, ForeignKey, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
+import os
+from dotenv import load_dotenv
 
-DATABASE_URL = "postgresql://postgres:root@localhost:5432/blood_diagnosis_db"
+# Load environment variables from .env file
+load_dotenv()
+
+# Get DATABASE_URL from environment variable
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL environment variable not set.")
 
 engine = create_engine(
     DATABASE_URL
