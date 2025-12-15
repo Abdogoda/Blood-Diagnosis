@@ -36,64 +36,54 @@ async def doctor_dashboard(
     from app.database import doctor_patients, Test
     from sqlalchemy import select
     
-    # Get patient count based on role
-    if current_user.role == "doctor":
-        # Get only linked patients count
-        patient_ids_query = select(doctor_patients.c.patient_id).where(
-            doctor_patients.c.doctor_id == current_user.id
-        )
-        patient_ids = [row[0] for row in db.execute(patient_ids_query).fetchall()]
-        total_patients = db.query(User).filter(
-            User.role == "patient", 
-            User.is_active == 1,
-            User.id.in_(patient_ids) if patient_ids else False
-        ).count()
-        
-        # Get recent linked patients only
-        recent_patients_query = db.query(User).filter(
-            User.role == "patient", 
-            User.is_active == 1,
-            User.id.in_(patient_ids) if patient_ids else False
-        ).order_by(User.created_at.desc()).limit(5).all()
-        
-        # Get pending tests count for linked patients
-        pending_reports = db.query(Test).filter(
-            Test.patient_id.in_(patient_ids) if patient_ids else False,
-            Test.review_status == 'pending'
-        ).count()
-        
-        # Get review requests for this doctor
-        review_requests = db.query(Test).filter(
-            Test.review_requested_from == current_user.id,
-            Test.review_status == 'pending'
-        ).order_by(Test.review_requested_at.desc()).limit(5).all()
-        
-        review_requests_list = []
-        for test in review_requests:
-            patient = db.query(User).filter(User.id == test.patient_id).first()
-            review_requests_list.append({
-                "test_id": test.id,
-                "patient_name": f"{patient.fname} {patient.lname}",
-                "patient_id": patient.id,
-                "requested_at": test.review_requested_at.strftime("%b %d, %Y") if test.review_requested_at else "N/A",
-                "notes": test.notes or "No notes"
-            })
-    else:
-        # Admin sees all patients
-        total_patients = db.query(User).filter(User.role == "patient").count()
-        recent_patients_query = db.query(User).filter(User.role == "patient").order_by(User.created_at.desc()).limit(5).all()
-        
-        # Get all pending tests
-        pending_reports = db.query(Test).filter(Test.review_status == 'pending').count()
-        review_requests_list = []
+    # Get only linked patients count
+    patient_ids_query = select(doctor_patients.c.patient_id).where(
+        doctor_patients.c.doctor_id == current_user.id
+    )
+    patient_ids = [row[0] for row in db.execute(patient_ids_query).fetchall()]
+    total_patients = db.query(User).filter(
+        User.role == "patient", 
+        User.is_active == 1,
+        User.id.in_(patient_ids) if patient_ids else False
+    ).count()
+    
+    # Get recent linked patients only
+    recent_patients_query = db.query(User).filter(
+        User.role == "patient", 
+        User.is_active == 1,
+        User.id.in_(patient_ids) if patient_ids else False
+    ).order_by(User.created_at.desc()).limit(5).all()
+    
+    # Get pending tests count for linked patients
+    pending_reports = db.query(Test).filter(
+        Test.patient_id.in_(patient_ids) if patient_ids else False,
+        Test.review_status == 'pending'
+    )
+    
+    # Get review requests for this doctor
+    review_requests = db.query(Test).filter(
+        Test.review_requested_from == current_user.id,
+        Test.review_status == 'pending'
+    ).order_by(Test.review_requested_at.desc()).limit(5).all()
+    
+    review_requests_list = []
+    for test in review_requests:
+        patient = db.query(User).filter(User.id == test.patient_id).first()
+        review_requests_list.append({
+            "test_id": test.id,
+            "patient_name": f"{patient.fname} {patient.lname}",
+            "patient_id": patient.id,
+            "requested_at": test.review_requested_at.strftime("%b %d, %Y") if test.review_requested_at else "N/A",
+            "notes": test.notes or "No notes"
+        })
     
     stats = {
         "total_patients": total_patients,
-        "pending_reports": pending_reports,
+        "pending_reports": len(pending_reports.all()),
         "completed_today": 0,
         "review_requests": len(review_requests_list)
     }
-    
+
     recent_patients = [
         {
             "initials": f"{p.fname[0]}{p.lname[0]}",
@@ -104,13 +94,42 @@ async def doctor_dashboard(
         }
         for p in recent_patients_query
     ]
-    
+
+    # Recent tests the doctor is involved with (reviewed_by or review_requested_from)
+    from app.database import Test
+    recent_tests_query = db.query(Test).filter(Test.reviewed_by == current_user.id).order_by(Test.created_at.desc()).limit(5).all()
+    recent_tests = [
+        {
+            "id": test.id,
+            "patient_id": test.patient_id,
+            "date": test.created_at.strftime("%b %d, %Y"),
+            "result": test.result or "Pending",
+            "review_status": test.review_status
+        }
+        for test in recent_tests_query
+    ]
+
+    # Pending reports involving the doctor
+    all_pending_reports = pending_reports.order_by(Test.created_at.desc()).limit(5).all()
+    pending_reports = [
+        {
+            "id": test.id,
+            "patient_id": test.patient_id,
+            "date": test.created_at.strftime("%b %d, %Y"),
+            "result": test.result or "Pending",
+            "review_status": test.review_status
+        }
+        for test in all_pending_reports
+    ]
+
     return templates.TemplateResponse("doctor/dashboard.html", {
         "request": request,
         "current_user": current_user,
         "stats": stats,
         "recent_patients": recent_patients,
-        "review_requests": review_requests_list
+        "review_requests": review_requests_list,
+        "recent_tests": recent_tests,
+        "pending_reports": pending_reports
     })
 
 @router.get("/patients")
