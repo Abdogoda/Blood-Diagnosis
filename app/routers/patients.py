@@ -60,6 +60,7 @@ async def patient_dashboard(
     
     stats = {
         "total_tests": total_tests,
+        "total_medical_records": len(all_medical_history),
         "pending_results": pending_results,
         "last_test_date": recent_tests[0]["date"] if recent_tests else "N/A",
         "medical_records": len(all_medical_history)
